@@ -25,6 +25,31 @@ const topMeatsData = [
   { name: 'Picanha Suína', value: 109, color: '#8b5cf6' },
 ];
 
+// Dados para alertas de baixo estoque
+const camaraFriaItems = [
+  { name: 'Coração de Frango', quantidade: 38, minimo: 40 },
+  { name: 'Costela Bovina', quantidade: 13, minimo: 30 },
+  { name: 'Picanha Suína', quantidade: 0, minimo: 25 },
+  { name: 'Capa de Filé', quantidade: 30, minimo: 40 },
+  { name: 'Coxão Mole', quantidade: 2, minimo: 15 },
+  { name: 'Coxa e Sobrecoxa', quantidade: 7, minimo: 35 },
+  { name: 'Alcatra com Maminha', quantidade: 4, minimo: 10 },
+  { name: 'Filé de Peito', quantidade: 22, minimo: 25 },
+];
+
+const estoqueSecoItems = [
+  { name: 'Arroz Branco', quantidade: 25, minimo: 10 },
+  { name: 'Feijão Preto', quantidade: 15, minimo: 8 },
+  { name: 'Feijão Carioca', quantidade: 12, minimo: 8 },
+  { name: 'Farinha de Mandioca', quantidade: 8, minimo: 5 },
+  { name: 'Farinha de Trigo', quantidade: 5, minimo: 3 },
+  { name: 'Macarrão Espaguete', quantidade: 10, minimo: 5 },
+  { name: 'Macarrão Penne', quantidade: 8, minimo: 5 },
+  { name: 'Sal Grosso', quantidade: 20, minimo: 10 },
+  { name: 'Açúcar Cristal', quantidade: 18, minimo: 8 },
+  { name: 'Óleo de Soja', quantidade: 6, minimo: 4 },
+];
+
 const stockData = [
   { name: 'Câmara Fria', value: 85, color: '#3b82f6' },
   { name: 'Câmara Refrigerada', value: 65, color: '#10b981' },
@@ -85,6 +110,12 @@ const statsCards = [
 ];
 
 export function Dashboard() {
+  // Filtrar itens com baixo estoque
+  const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= item.minimo);
+  const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= item.minimo);
+  
+  const temAlertas = carnesBaixoEstoque.length > 0 || estoqueBaixo.length > 0;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -220,32 +251,57 @@ export function Dashboard() {
       </div>
 
       {/* Alertas */}
-      <Card className="shadow-md border-0 border-l-4 border-l-orange-500">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-orange-600">
-            <AlertTriangle className="w-5 h-5" />
-            Alertas do Sistema
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-              <AlertTriangle className="w-4 h-4 text-orange-500" />
-              <div>
-                <p className="text-sm font-medium">Estoque Seco com baixa capacidade</p>
-                <p className="text-xs text-muted-foreground">Apenas 45% da capacidade utilizada</p>
-              </div>
+      {temAlertas && (
+        <Card className="shadow-md border-0 border-l-4 border-l-orange-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-orange-600">
+              <AlertTriangle className="w-5 h-5" />
+              Alertas de Baixo Estoque
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {carnesBaixoEstoque.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-sm text-gray-700 mb-2">Câmara Fria - Carnes</h4>
+                  <div className="space-y-2">
+                    {carnesBaixoEstoque.map((item, index) => (
+                      <div key={index} className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
+                        <AlertTriangle className="w-4 h-4 text-red-500" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Estoque atual: {item.quantidade}kg | Mínimo: {item.minimo}kg
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {estoqueBaixo.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-sm text-gray-700 mb-2">Estoque Seco</h4>
+                  <div className="space-y-2">
+                    {estoqueBaixo.map((item, index) => (
+                      <div key={index} className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
+                        <AlertTriangle className="w-4 h-4 text-orange-500" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Estoque atual: {item.quantidade} | Mínimo: {item.minimo}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <div>
-                <p className="text-sm font-medium">Câmara Fria operando normalmente</p>
-                <p className="text-xs text-muted-foreground">Temperatura estável em -18°C</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

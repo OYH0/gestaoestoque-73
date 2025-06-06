@@ -7,6 +7,7 @@ import {
   Package, 
   Trash2, 
   BarChart3,
+  Beef,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -34,29 +35,29 @@ export function AppSidebar() {
   const currentPath = location.pathname;
 
   return (
-    <Sidebar collapsible={isMobile ? "offcanvas" : "none"} className="border-r border-border/40">
-      <div className="flex h-full flex-col bg-gradient-to-b from-background to-muted/20">
-        <div className="flex items-center justify-between p-4 border-b border-border/40">
+    <Sidebar collapsible={isMobile ? "offcanvas" : "none"} className="border-r border-sidebar-border bg-churrasco-gradient">
+      <div className="flex h-full flex-col bg-churrasco-dark/95 backdrop-blur-sm">
+        <div className="flex items-center justify-between p-6 border-b border-sidebar-border/30">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg">
-              <Snowflake className="h-5 w-5 text-white" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-churrasco-red to-churrasco-orange shadow-lg">
+              <Beef className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="font-bold text-lg bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
+              <h2 className="font-bold text-xl bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent">
                 ChurrasControl
               </h2>
-              <p className="text-xs text-muted-foreground">Gestão de Estoque</p>
+              <p className="text-xs text-sidebar-foreground/70">Companhia do Churrasco</p>
             </div>
           </div>
         </div>
 
-        <SidebarContent className="flex-1 px-3 py-4">
+        <SidebarContent className="flex-1 px-4 py-6">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Menu Principal
+            <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3 px-2">
+              Gestão de Estoque
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-1">
+              <SidebarMenu className="space-y-2">
                 {items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
@@ -64,21 +65,21 @@ export function AppSidebar() {
                         to={item.url} 
                         end
                         className={({ isActive }) =>
-                          `flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${
+                          `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden ${
                             isActive 
-                              ? 'bg-gradient-to-r from-red-50 to-red-100 text-red-600 shadow-sm border-l-4 border-red-500' 
-                              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                              ? 'bg-gradient-to-r from-churrasco-red/20 to-churrasco-orange/20 text-churrasco-orange shadow-lg border-l-4 border-churrasco-red backdrop-blur-sm' 
+                              : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/30 hover:text-sidebar-foreground hover:shadow-md'
                           }`
                         }
                       >
-                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
-                          currentPath === item.url ? 'scale-110' : 'group-hover:scale-105'
+                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
+                          currentPath === item.url ? 'scale-110 text-churrasco-orange' : 'group-hover:scale-105'
                         }`} />
                         <span className="font-medium text-sm truncate">
                           {item.title}
                         </span>
                         {currentPath === item.url && (
-                          <div className="absolute right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                          <div className="absolute right-3 w-2 h-2 bg-churrasco-red rounded-full animate-pulse shadow-lg" />
                         )}
                       </NavLink>
                     </SidebarMenuButton>
@@ -89,14 +90,14 @@ export function AppSidebar() {
           </SidebarGroup>
         </SidebarContent>
 
-        <div className="p-4 border-t border-border/40">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+        <div className="p-4 border-t border-sidebar-border/30">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-sidebar-accent/20 to-churrasco-brown/20 backdrop-blur-sm">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-churrasco-red to-churrasco-orange flex items-center justify-center shadow-lg">
               <span className="text-white text-sm font-bold">U</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">Usuário</p>
-              <p className="text-xs text-muted-foreground truncate">Administrador</p>
+              <p className="text-sm font-medium text-sidebar-foreground truncate">Usuário</p>
+              <p className="text-xs text-sidebar-foreground/60 truncate">Administrador</p>
             </div>
           </div>
         </div>

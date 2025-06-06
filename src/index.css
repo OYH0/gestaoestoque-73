@@ -7,82 +7,89 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 44 21% 97%;
+    --foreground: 25 25% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 44 21% 97%;
+    --card-foreground: 25 25% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 44 21% 97%;
+    --popover-foreground: 25 25% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 14 85% 45%;
+    --primary-foreground: 44 21% 97%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 33 45% 90%;
+    --secondary-foreground: 25 25% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 33 35% 92%;
+    --muted-foreground: 25 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 14 85% 45%;
+    --accent-foreground: 44 21% 97%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 33 25% 85%;
+    --input: 33 25% 85%;
+    --ring: 14 85% 45%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 25 35% 8%;
+    --sidebar-foreground: 33 45% 88%;
+    --sidebar-primary: 14 85% 45%;
+    --sidebar-primary-foreground: 44 21% 97%;
+    --sidebar-accent: 25 30% 15%;
+    --sidebar-accent-foreground: 33 45% 88%;
+    --sidebar-border: 25 25% 20%;
+    --sidebar-ring: 14 85% 45%;
+
+    /* Companhia do Churrasco custom colors */
+    --churrasco-brown: 25 45% 25%;
+    --churrasco-red: 14 85% 45%;
+    --churrasco-orange: 25 85% 55%;
+    --churrasco-cream: 44 35% 95%;
+    --churrasco-dark: 25 35% 8%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 25 35% 8%;
+    --foreground: 33 45% 88%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 25 35% 8%;
+    --card-foreground: 33 45% 88%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 25 35% 8%;
+    --popover-foreground: 33 45% 88%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 14 85% 45%;
+    --primary-foreground: 44 21% 97%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 25 30% 15%;
+    --secondary-foreground: 33 45% 88%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 25 30% 15%;
+    --muted-foreground: 33 25% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 25 30% 15%;
+    --accent-foreground: 33 45% 88%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 25 25% 20%;
+    --input: 25 25% 20%;
+    --ring: 14 85% 45%;
+    --sidebar-background: 25 35% 8%;
+    --sidebar-foreground: 33 45% 88%;
+    --sidebar-primary: 14 85% 45%;
+    --sidebar-primary-foreground: 44 21% 97%;
+    --sidebar-accent: 25 30% 15%;
+    --sidebar-accent-foreground: 33 45% 88%;
+    --sidebar-border: 25 25% 20%;
+    --sidebar-ring: 14 85% 45%;
   }
 }
 
@@ -99,8 +106,28 @@
 @layer utilities {
   .bg-grid-pattern {
     background-image: 
-      linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+      linear-gradient(rgba(139, 69, 19, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139, 69, 19, 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
+  }
+
+  .bg-churrasco-gradient {
+    background: linear-gradient(135deg, hsl(var(--churrasco-brown)), hsl(var(--churrasco-red)));
+  }
+
+  .text-churrasco-red {
+    color: hsl(var(--churrasco-red));
+  }
+
+  .text-churrasco-brown {
+    color: hsl(var(--churrasco-brown));
+  }
+
+  .bg-churrasco-red {
+    background-color: hsl(var(--churrasco-red));
+  }
+
+  .bg-churrasco-brown {
+    background-color: hsl(var(--churrasco-brown));
   }
 }

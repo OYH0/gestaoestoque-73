@@ -17,7 +17,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 
@@ -30,29 +29,25 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { isMobile } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
-  const isCollapsed = state === 'collapsed';
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/40">
+    <Sidebar collapsible={isMobile ? "offcanvas" : "none"} className="border-r border-border/40">
       <div className="flex h-full flex-col bg-gradient-to-b from-background to-muted/20">
         <div className="flex items-center justify-between p-4 border-b border-border/40">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg">
               <Snowflake className="h-5 w-5 text-white" />
             </div>
-            {!isCollapsed && (
-              <div>
-                <h2 className="font-bold text-lg bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
-                  ChurrasControl
-                </h2>
-                <p className="text-xs text-muted-foreground">Gestão de Estoque</p>
-              </div>
-            )}
+            <div>
+              <h2 className="font-bold text-lg bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
+                ChurrasControl
+              </h2>
+              <p className="text-xs text-muted-foreground">Gestão de Estoque</p>
+            </div>
           </div>
-          <SidebarTrigger className="h-8 w-8" />
         </div>
 
         <SidebarContent className="flex-1 px-3 py-4">
@@ -79,12 +74,10 @@ export function AppSidebar() {
                         <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
                           currentPath === item.url ? 'scale-110' : 'group-hover:scale-105'
                         }`} />
-                        {!isCollapsed && (
-                          <span className="font-medium text-sm truncate">
-                            {item.title}
-                          </span>
-                        )}
-                        {currentPath === item.url && !isCollapsed && (
+                        <span className="font-medium text-sm truncate">
+                          {item.title}
+                        </span>
+                        {currentPath === item.url && (
                           <div className="absolute right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                         )}
                       </NavLink>
@@ -97,18 +90,14 @@ export function AppSidebar() {
         </SidebarContent>
 
         <div className="p-4 border-t border-border/40">
-          <div className={`flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 ${
-            isCollapsed ? 'justify-center' : ''
-          }`}>
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30">
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
               <span className="text-white text-sm font-bold">U</span>
             </div>
-            {!isCollapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">Usuário</p>
-                <p className="text-xs text-muted-foreground truncate">Administrador</p>
-              </div>
-            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">Usuário</p>
+              <p className="text-xs text-muted-foreground truncate">Administrador</p>
+            </div>
           </div>
         </div>
       </div>

@@ -4,14 +4,17 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Bell, Settings, User, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useSidebar } from '@/components/ui/sidebar';
 
 export function Header() {
+  const { isMobile } = useSidebar();
+
   return (
     <header className="h-16 bg-gradient-to-r from-background via-background to-muted/20 border-b border-border/40 backdrop-blur-sm">
       <div className="flex items-center justify-between h-full px-4 md:px-6">
         <div className="flex items-center gap-4">
-          <SidebarTrigger className="md:hidden h-8 w-8" />
-          <div className="hidden md:block">
+          {isMobile && <SidebarTrigger className="h-8 w-8" />}
+          <div className={isMobile ? "hidden" : "block"}>
             <h1 className="text-xl font-bold bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
               ChurrasControl
             </h1>

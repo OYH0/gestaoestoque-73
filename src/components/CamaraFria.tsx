@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -116,6 +115,7 @@ export function CamaraFria() {
                   <SelectContent>
                     <SelectItem value="kg">Quilogramas (kg)</SelectItem>
                     <SelectItem value="pacotes">Pacotes</SelectItem>
+                    <SelectItem value="peças">Peças</SelectItem>
                   </SelectContent>
                 </Select>
                 <div className="flex gap-2 justify-end">

@@ -14,6 +14,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 
@@ -26,12 +27,13 @@ const items = [
 ];
 
 export function AppSidebar() {
+  const { isMobile } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
 
   return (
-    <Sidebar collapsible="none" className="border-r-0 w-80 min-w-80 max-w-80">
-      <div className="flex h-full flex-col bg-gradient-to-b from-churrasco-red via-churrasco-red/90 to-churrasco-brown relative overflow-hidden w-80">
+    <Sidebar collapsible={isMobile ? "offcanvas" : "none"} className="border-r-0">
+      <div className="flex h-full flex-col bg-gradient-to-b from-churrasco-red via-churrasco-red/90 to-churrasco-brown relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-churrasco-orange/10 via-transparent to-churrasco-brown/20 pointer-events-none" />
         <div className="absolute top-0 right-0 w-32 h-32 bg-churrasco-orange/10 rounded-full blur-xl transform translate-x-16 -translate-y-16" />

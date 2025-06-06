@@ -1,9 +1,27 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Snowflake, Thermometer, Package, Trash2, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+
+// Dados de movimentação mensal das carnes da Câmara Fria
+const monthlyMeatData = [
+  { month: 'Jan', coracaoFrango: 45, costelaBovina: 30, picanhaSuina: 25, capaFile: 40, coxaoMole: 15, coxaSobrecoxa: 35 },
+  { month: 'Fev', coracaoFrango: 38, costelaBovina: 25, picanhaSuina: 20, capaFile: 35, coxaoMole: 12, coxaSobrecoxa: 28 },
+  { month: 'Mar', coracaoFrango: 42, costelaBovina: 28, picanhaSuina: 22, capaFile: 38, coxaoMole: 18, coxaSobrecoxa: 32 },
+  { month: 'Abr', coracaoFrango: 40, costelaBovina: 32, picanhaSuina: 18, capaFile: 42, coxaoMole: 20, coxaSobrecoxa: 30 },
+  { month: 'Mai', coracaoFrango: 44, costelaBovina: 35, picanhaSuina: 24, capaFile: 45, coxaoMole: 16, coxaSobrecoxa: 33 },
+  { month: 'Jun', coracaoFrango: 38, costelaBovina: 13, picanhaSuina: 0, capaFile: 30, coxaoMole: 2, coxaSobrecoxa: 7 },
+];
+
+// Top 5 carnes mais utilizadas
+const topMeatsData = [
+  { name: 'Coração de Frango', value: 247, color: '#3b82f6' },
+  { name: 'Capa de Filé', value: 230, color: '#10b981' },
+  { name: 'Coxa e Sobrecoxa', value: 165, color: '#f59e0b' },
+  { name: 'Costela Bovina', value: 163, color: '#ef4444' },
+  { name: 'Picanha Suína', value: 109, color: '#8b5cf6' },
+];
 
 const stockData = [
   { name: 'Câmara Fria', value: 85, color: '#3b82f6' },
@@ -122,23 +140,25 @@ export function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-blue-500" />
-              Movimentação Mensal
+              Quantidade de Carnes - Câmara Fria
             </CardTitle>
             <CardDescription>
-              Entrada e saída de produtos por categoria
+              Quantidade mensal de cada tipo de carne (kg)
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData}>
+                <BarChart data={monthlyMeatData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="month" stroke="#888" />
                   <YAxis stroke="#888" />
-                  <Bar dataKey="camaraFria" fill="#3b82f6" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="camaraRef" fill="#10b981" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="estoqueSeco" fill="#f59e0b" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="descartaveis" fill="#ef4444" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="coracaoFrango" fill="#3b82f6" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="costelaBovina" fill="#10b981" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="picanhaSuina" fill="#f59e0b" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="capaFile" fill="#ef4444" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="coxaoMole" fill="#8b5cf6" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="coxaSobrecoxa" fill="#06b6d4" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -149,10 +169,10 @@ export function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="w-5 h-5 text-green-500" />
-              Distribuição do Estoque
+              Top 5 Carnes Mais Utilizadas
             </CardTitle>
             <CardDescription>
-              Percentual de ocupação por área
+              Carnes com maior movimentação (kg total)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -161,7 +181,7 @@ export function Dashboard() {
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie
-                      data={stockData}
+                      data={topMeatsData}
                       cx="50%"
                       cy="50%"
                       innerRadius={40}
@@ -169,7 +189,7 @@ export function Dashboard() {
                       paddingAngle={5}
                       dataKey="value"
                     >
-                      {stockData.map((entry, index) => (
+                      {topMeatsData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -177,7 +197,7 @@ export function Dashboard() {
                 </ResponsiveContainer>
               </div>
               <div className="w-1/2 space-y-3">
-                {stockData.map((item, index) => (
+                {topMeatsData.map((item, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <div 
                       className="w-3 h-3 rounded-full" 
@@ -185,7 +205,7 @@ export function Dashboard() {
                     />
                     <div className="flex-1">
                       <div className="text-sm font-medium">{item.name}</div>
-                      <div className="text-xs text-muted-foreground">{item.value}%</div>
+                      <div className="text-xs text-muted-foreground">{item.value}kg</div>
                     </div>
                   </div>
                 ))}

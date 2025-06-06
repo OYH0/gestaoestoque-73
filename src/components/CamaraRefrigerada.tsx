@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,6 +43,9 @@ export function CamaraRefrigerada() {
     });
   };
 
+  // Ordenar itens alfabeticamente
+  const sortedItems = [...items].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -57,7 +59,7 @@ export function CamaraRefrigerada() {
           </div>
         </div>
         <Badge variant="secondary" className="bg-green-100 text-green-800">
-          {items.length} itens descongelando
+          {sortedItems.length} itens descongelando
         </Badge>
       </div>
 
@@ -96,7 +98,7 @@ export function CamaraRefrigerada() {
 
       {/* Lista de itens */}
       <div className="grid gap-4">
-        {items.map((item) => (
+        {sortedItems.map((item) => (
           <Card 
             key={item.id} 
             className={`${

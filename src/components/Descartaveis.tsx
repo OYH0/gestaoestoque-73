@@ -71,6 +71,9 @@ export function Descartaveis() {
     ? items 
     : items.filter(item => item.categoria === categoriaFiltro);
 
+  // Ordenar itens filtrados alfabeticamente
+  const sortedFilteredItems = [...filteredItems].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+
   const itemsBaixoEstoque = items.filter(item => item.quantidade <= item.minimo);
   const totalItens = items.reduce((acc, item) => acc + item.quantidade, 0);
 
@@ -221,7 +224,7 @@ export function Descartaveis() {
 
       {/* Lista de itens */}
       <div className="grid gap-4">
-        {filteredItems.map((item) => (
+        {sortedFilteredItems.map((item) => (
           <Card 
             key={item.id} 
             className={`${

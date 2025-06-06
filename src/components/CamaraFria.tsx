@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -118,6 +117,9 @@ export function CamaraFria() {
     });
   };
 
+  // Ordenar itens alfabeticamente
+  const sortedItems = [...items].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -230,7 +232,7 @@ export function CamaraFria() {
 
       {/* Lista de itens */}
       <div className="grid gap-4">
-        {items.map((item) => {
+        {sortedItems.map((item) => {
           const isEditing = editingQuantities.hasOwnProperty(item.id);
           const editValue = editingQuantities[item.id] || item.quantidade;
 

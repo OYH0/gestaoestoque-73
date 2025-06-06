@@ -15,9 +15,9 @@ const Index = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-churrasco-cream via-background to-churrasco-cream/50">
         <AppSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <Header />
-          <main className="flex-1 p-4 md:p-6 relative">
+          <main className="flex-1 p-4 md:p-6 relative overflow-auto">
             <div className="absolute inset-0 bg-grid-pattern opacity-30 pointer-events-none" />
             <div className="relative z-10">
               <Routes>

@@ -8,18 +8,15 @@ import {
   Trash2, 
   BarChart3,
   Beef,
+  LogOut,
+  User,
 } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
 
 const items = [
   { title: 'Dashboard', url: '/', icon: BarChart3 },
@@ -35,71 +32,75 @@ export function AppSidebar() {
   const currentPath = location.pathname;
 
   return (
-    <Sidebar collapsible={isMobile ? "offcanvas" : "none"} className="border-r border-sidebar-border bg-churrasco-gradient">
-      <div className="flex h-full flex-col bg-churrasco-dark/95 backdrop-blur-sm">
-        <div className="flex items-center justify-between p-6 border-b border-sidebar-border/30">
+    <Sidebar collapsible={isMobile ? "offcanvas" : "none"} className="border-r-0">
+      <div className="flex h-full flex-col bg-gradient-to-b from-churrasco-red via-churrasco-red/90 to-churrasco-brown relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-churrasco-orange/10 via-transparent to-churrasco-brown/20 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-churrasco-orange/10 rounded-full blur-xl transform translate-x-16 -translate-y-16" />
+        <div className="absolute bottom-20 left-0 w-24 h-24 bg-churrasco-cream/10 rounded-full blur-lg transform -translate-x-12" />
+        
+        {/* Header */}
+        <div className="relative z-10 p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-churrasco-red to-churrasco-orange shadow-lg">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-lg border border-white/30">
               <Beef className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="font-bold text-xl bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent">
-                ChurrasControl
+              <h2 className="font-bold text-xl text-white">
+                Gestão de Estoque
               </h2>
-              <p className="text-xs text-sidebar-foreground/70">Companhia do Churrasco</p>
+              <p className="text-xs text-white/70">Companhia do Churrasco</p>
             </div>
           </div>
         </div>
 
-        <SidebarContent className="flex-1 px-4 py-6">
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3 px-2">
-              Gestão de Estoque
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-2">
-                {items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink 
-                        to={item.url} 
-                        end
-                        className={({ isActive }) =>
-                          `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden ${
-                            isActive 
-                              ? 'bg-gradient-to-r from-churrasco-red/20 to-churrasco-orange/20 text-churrasco-orange shadow-lg border-l-4 border-churrasco-red backdrop-blur-sm' 
-                              : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/30 hover:text-sidebar-foreground hover:shadow-md'
-                          }`
-                        }
-                      >
-                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
-                          currentPath === item.url ? 'scale-110 text-churrasco-orange' : 'group-hover:scale-105'
-                        }`} />
-                        <span className="font-medium text-sm truncate">
-                          {item.title}
-                        </span>
-                        {currentPath === item.url && (
-                          <div className="absolute right-3 w-2 h-2 bg-churrasco-red rounded-full animate-pulse shadow-lg" />
-                        )}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
+        {/* Menu Items */}
+        <div className="relative z-10 flex-1 p-4 space-y-2 overflow-y-auto">
+          {items.map((item) => {
+            const isActive = currentPath === item.url;
+            return (
+              <NavLink 
+                key={item.title}
+                to={item.url} 
+                end
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden ${
+                  isActive 
+                    ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30' 
+                    : 'text-white/80 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'
+                }`}
+              >
+                <item.icon className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
+                  isActive ? 'scale-110' : 'group-hover:scale-105'
+                }`} />
+                <span className="font-medium text-sm">
+                  {item.title}
+                </span>
+                {isActive && (
+                  <div className="absolute right-3 w-2 h-2 bg-white rounded-full animate-pulse shadow-lg" />
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
 
-        <div className="p-4 border-t border-sidebar-border/30">
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-sidebar-accent/20 to-churrasco-brown/20 backdrop-blur-sm">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-churrasco-red to-churrasco-orange flex items-center justify-center shadow-lg">
-              <span className="text-white text-sm font-bold">U</span>
+        {/* User Section */}
+        <div className="relative z-10 p-4 border-t border-white/10">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 mb-3">
+            <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center shadow-lg border border-white/30">
+              <User className="h-5 w-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">Usuário</p>
-              <p className="text-xs text-sidebar-foreground/60 truncate">Administrador</p>
+              <p className="text-sm font-medium text-white truncate">oyh013@gmail.com</p>
             </div>
           </div>
+          
+          <Button 
+            variant="ghost" 
+            className="w-full justify-center gap-2 text-white/80 hover:text-white hover:bg-white/10 border border-white/20 rounded-xl py-3 transition-all duration-300"
+          >
+            <LogOut className="h-4 w-4" />
+            Sair
+          </Button>
         </div>
       </div>
     </Sidebar>

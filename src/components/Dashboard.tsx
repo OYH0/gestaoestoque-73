@@ -12,6 +12,8 @@ const meatTypesData = [
   { tipo: 'Capa de Filé', quantidade: 40 },
   { tipo: 'Coxão Mole', quantidade: 15 },
   { tipo: 'Coxa e Sobrecoxa', quantidade: 35 },
+  { tipo: 'Alcatra com Maminha', quantidade: 4 },
+  { tipo: 'Filé de Peito', quantidade: 22 },
 ];
 
 // Top 5 carnes mais utilizadas

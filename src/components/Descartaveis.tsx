@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Trash2, Plus, Minus, Package2, AlertCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Trash2, Plus, Minus, Package2, AlertCircle, Check, X, History } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const initialItems = [
@@ -24,6 +24,16 @@ const initialItems = [
 
 const categorias = ['Todos', 'Utensílios', 'Higiene', 'Limpeza', 'Embalagens'];
 
+interface HistoricoItem {
+  id: number;
+  itemName: string;
+  tipo: 'entrada' | 'saida';
+  quantidade: number;
+  unidade: string;
+  data: string;
+  hora: string;
+}
+
 export function Descartaveis() {
   const [items, setItems] = useState(initialItems);
   const [newItem, setNewItem] = useState({ 
@@ -35,6 +45,63 @@ export function Descartaveis() {
   });
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [historicoOpen, setHistoricoOpen] = useState(false);
+  const [editingQuantities, setEditingQuantities] = useState<{ [key: number]: number }>({});
+  const [historico, setHistorico] = useState<HistoricoItem[]>([]);
+
+  const startEditingQuantity = (id: number, currentQuantity: number) => {
+    setEditingQuantities({ ...editingQuantities, [id]: currentQuantity });
+  };
+
+  const updateEditingQuantity = (id: number, delta: number) => {
+    const currentEditValue = editingQuantities[id] || 0;
+    const newValue = Math.max(0, currentEditValue + delta);
+    setEditingQuantities({ ...editingQuantities, [id]: newValue });
+  };
+
+  const confirmQuantityChange = (id: number) => {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+
+    const newQuantity = editingQuantities[id];
+    const oldQuantity = item.quantidade;
+    const difference = newQuantity - oldQuantity;
+
+    // Atualizar o item
+    setItems(items.map(i => 
+      i.id === id ? { ...i, quantidade: newQuantity } : i
+    ));
+
+    // Adicionar ao histórico
+    const now = new Date();
+    const novoHistorico: HistoricoItem = {
+      id: Date.now(),
+      itemName: item.name,
+      tipo: difference > 0 ? 'entrada' : 'saida',
+      quantidade: Math.abs(difference),
+      unidade: item.unidade,
+      data: now.toLocaleDateString('pt-BR'),
+      hora: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setHistorico([novoHistorico, ...historico]);
+
+    // Limpar edição
+    const newEditingQuantities = { ...editingQuantities };
+    delete newEditingQuantities[id];
+    setEditingQuantities(newEditingQuantities);
+
+    toast({
+      title: difference > 0 ? "Item adicionado" : "Item retirado",
+      description: `${Math.abs(difference)} ${item.unidade} de ${item.name}`,
+    });
+  };
+
+  const cancelQuantityEdit = (id: number) => {
+    const newEditingQuantities = { ...editingQuantities };
+    delete newEditingQuantities[id];
+    setEditingQuantities(newEditingQuantities);
+  };
 
   const updateQuantity = (id: number, delta: number) => {
     setItems(items.map(item => 
@@ -101,6 +168,46 @@ export function Descartaveis() {
               {itemsBaixoEstoque.length} baixo estoque
             </Badge>
           )}
+
+          <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="border-gray-300">
+                <History className="w-4 h-4 mr-2" />
+                Histórico
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Histórico de Movimentações</DialogTitle>
+                <DialogDescription>
+                  Registro de entradas e saídas de descartáveis
+                </DialogDescription>
+              </DialogHeader>
+              <div className="max-h-96 overflow-y-auto space-y-2">
+                {historico.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">Nenhuma movimentação registrada</p>
+                ) : (
+                  historico.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${item.tipo === 'entrada' ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <div>
+                          <p className="font-medium">{item.itemName}</p>
+                          <p className="text-sm text-gray-600">
+                            {item.tipo === 'entrada' ? 'Entrada' : 'Saída'} de {item.quantidade} {item.unidade}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">{item.data}</p>
+                        <p className="text-sm text-gray-600">{item.hora}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
           
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -224,60 +331,98 @@ export function Descartaveis() {
 
       {/* Lista de itens */}
       <div className="grid gap-4">
-        {sortedFilteredItems.map((item) => (
-          <Card 
-            key={item.id} 
-            className={`${
-              item.quantidade <= item.minimo 
-                ? 'border-red-200 bg-red-50' 
-                : 'border-gray-200'
-            }`}
-          >
-            <CardContent className="p-4">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                    <Badge variant="outline" className="text-xs">
-                      {item.categoria}
-                    </Badge>
-                    {item.quantidade <= item.minimo && (
-                      <Badge variant="destructive" className="text-xs">
-                        Baixo Estoque
+        {sortedFilteredItems.map((item) => {
+          const isEditing = editingQuantities.hasOwnProperty(item.id);
+          const editValue = editingQuantities[item.id] || item.quantidade;
+
+          return (
+            <Card 
+              key={item.id} 
+              className={`${
+                item.quantidade <= item.minimo 
+                  ? 'border-red-200 bg-red-50' 
+                  : 'border-gray-200'
+              }`}
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                      <Badge variant="outline" className="text-xs">
+                        {item.categoria}
                       </Badge>
+                      {item.quantidade <= item.minimo && (
+                        <Badge variant="destructive" className="text-xs">
+                          Baixo Estoque
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo} {item.unidade}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    {isEditing ? (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+                          onClick={() => updateEditingQuantity(item.id, -1)}
+                          disabled={editValue === 0}
+                        >
+                          <Minus className="w-3 h-3" />
+                        </Button>
+                        
+                        <span className="w-16 text-center font-medium border rounded px-2 py-1">
+                          {editValue}
+                        </span>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100"
+                          onClick={() => updateEditingQuantity(item.id, 1)}
+                        >
+                          <Plus className="w-3 h-3" />
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100"
+                          onClick={() => confirmQuantityChange(item.id)}
+                        >
+                          <Check className="w-3 h-3" />
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                          onClick={() => cancelQuantityEdit(item.id)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => startEditingQuantity(item.id, item.quantidade)}
+                        className="bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100"
+                      >
+                        Editar Quantidade
+                      </Button>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {item.quantidade} {item.unidade} • Mínimo: {item.minimo} {item.unidade}
-                  </p>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => updateQuantity(item.id, -1)}
-                    disabled={item.quantidade === 0}
-                  >
-                    <Minus className="w-3 h-3" />
-                  </Button>
-                  
-                  <span className="w-16 text-center font-medium">
-                    {item.quantidade}
-                  </span>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => updateQuantity(item.id, 1)}
-                  >
-                    <Plus className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

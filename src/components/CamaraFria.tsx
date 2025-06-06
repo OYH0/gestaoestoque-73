@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Snowflake, Plus, Minus, Edit3, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Snowflake, Plus, Minus, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const initialItems = [
@@ -21,6 +22,7 @@ const initialItems = [
 export function CamaraFria() {
   const [items, setItems] = useState(initialItems);
   const [newItem, setNewItem] = useState({ name: '', quantidade: 0 });
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const updateQuantity = (id: number, delta: number) => {
     setItems(items.map(item => 
@@ -44,6 +46,7 @@ export function CamaraFria() {
         unidade: 'kg' 
       }]);
       setNewItem({ name: '', quantidade: 0 });
+      setDialogOpen(false);
       toast({
         title: "Item adicionado",
         description: `${newItem.name} foi adicionado ao estoque!`,
@@ -71,40 +74,47 @@ export function CamaraFria() {
             <p className="text-gray-600">Carnes congeladas para churrasco</p>
           </div>
         </div>
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-          {items.length} tipos de carne
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+            {items.length} tipos de carne
+          </Badge>
+          
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-500 hover:bg-blue-600">
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Nova Carne
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Adicionar Nova Carne</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input
+                  placeholder="Nome da carne"
+                  value={newItem.name}
+                  onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                />
+                <Input
+                  type="number"
+                  placeholder="Quantidade (kg)"
+                  value={newItem.quantidade}
+                  onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={addNewItem} className="bg-blue-500 hover:bg-blue-600">
+                    Adicionar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-
-      {/* Adicionar novo item */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            Adicionar Nova Carne
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-3">
-            <Input
-              placeholder="Nome da carne"
-              value={newItem.name}
-              onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-              className="flex-1"
-            />
-            <Input
-              type="number"
-              placeholder="Quantidade (kg)"
-              value={newItem.quantidade}
-              onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
-              className="w-full md:w-32"
-            />
-            <Button onClick={addNewItem} className="bg-blue-500 hover:bg-blue-600">
-              Adicionar
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Lista de itens */}
       <div className="grid gap-4">

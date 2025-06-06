@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Snowflake, Plus, Minus, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -21,7 +22,7 @@ const initialItems = [
 
 export function CamaraFria() {
   const [items, setItems] = useState(initialItems);
-  const [newItem, setNewItem] = useState({ name: '', quantidade: 0 });
+  const [newItem, setNewItem] = useState({ name: '', quantidade: 0, unidade: 'kg' });
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const updateQuantity = (id: number, delta: number) => {
@@ -43,9 +44,9 @@ export function CamaraFria() {
         id, 
         name: newItem.name, 
         quantidade: newItem.quantidade, 
-        unidade: 'kg' 
+        unidade: newItem.unidade 
       }]);
-      setNewItem({ name: '', quantidade: 0 });
+      setNewItem({ name: '', quantidade: 0, unidade: 'kg' });
       setDialogOpen(false);
       toast({
         title: "Item adicionado",
@@ -89,6 +90,9 @@ export function CamaraFria() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Adicionar Nova Carne</DialogTitle>
+                <DialogDescription>
+                  Preencha os dados da nova carne para adicionar ao estoque
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <Input
@@ -98,10 +102,22 @@ export function CamaraFria() {
                 />
                 <Input
                   type="number"
-                  placeholder="Quantidade (kg)"
+                  placeholder="Quantidade"
                   value={newItem.quantidade}
                   onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
                 />
+                <Select 
+                  value={newItem.unidade} 
+                  onValueChange={(value) => setNewItem({...newItem, unidade: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a unidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kg">Quilogramas (kg)</SelectItem>
+                    <SelectItem value="pacotes">Pacotes</SelectItem>
+                  </SelectContent>
+                </Select>
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancelar

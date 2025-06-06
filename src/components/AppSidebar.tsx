@@ -7,7 +7,6 @@ import {
   Package, 
   Trash2, 
   BarChart3,
-  Menu
 } from 'lucide-react';
 import {
   Sidebar,
@@ -31,59 +30,88 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { collapsed } = useSidebar();
+  const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
-
-  const isActive = (path: string) => currentPath === path;
+  const isCollapsed = state === 'collapsed';
 
   return (
-    <Sidebar className={collapsed ? "w-14" : "w-60"} collapsible>
-      <SidebarTrigger className="m-2 self-end" />
-      
-      <SidebarContent className="bg-white border-r">
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
-              <Snowflake className="w-4 h-4 text-white" />
+    <Sidebar collapsible="icon" className="border-r border-border/40">
+      <div className="flex h-full flex-col bg-gradient-to-b from-background to-muted/20">
+        <div className="flex items-center justify-between p-4 border-b border-border/40">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg">
+              <Snowflake className="h-5 w-5 text-white" />
             </div>
-            {!collapsed && (
+            {!isCollapsed && (
               <div>
-                <h2 className="font-bold text-gray-900">ChurrasControl</h2>
-                <p className="text-xs text-gray-500">Gestão de Estoque</p>
+                <h2 className="font-bold text-lg bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
+                  ChurrasControl
+                </h2>
+                <p className="text-xs text-muted-foreground">Gestão de Estoque</p>
+              </div>
+            )}
+          </div>
+          <SidebarTrigger className="h-8 w-8" />
+        </div>
+
+        <SidebarContent className="flex-1 px-3 py-4">
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              Menu Principal
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-1">
+                {items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink 
+                        to={item.url} 
+                        end
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${
+                            isActive 
+                              ? 'bg-gradient-to-r from-red-50 to-red-100 text-red-600 shadow-sm border-l-4 border-red-500' 
+                              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                          }`
+                        }
+                      >
+                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
+                          currentPath === item.url ? 'scale-110' : 'group-hover:scale-105'
+                        }`} />
+                        {!isCollapsed && (
+                          <span className="font-medium text-sm truncate">
+                            {item.title}
+                          </span>
+                        )}
+                        {currentPath === item.url && !isCollapsed && (
+                          <div className="absolute right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+
+        <div className="p-4 border-t border-border/40">
+          <div className={`flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 ${
+            isCollapsed ? 'justify-center' : ''
+          }`}>
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+              <span className="text-white text-sm font-bold">U</span>
+            </div>
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">Usuário</p>
+                <p className="text-xs text-muted-foreground truncate">Administrador</p>
               </div>
             )}
           </div>
         </div>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      end
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                          isActive 
-                            ? 'bg-red-50 text-red-600 border-r-2 border-red-500' 
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`
-                      }
-                    >
-                      <item.icon className="w-4 h-4 flex-shrink-0" />
-                      {!collapsed && <span className="truncate">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+      </div>
     </Sidebar>
   );
 }

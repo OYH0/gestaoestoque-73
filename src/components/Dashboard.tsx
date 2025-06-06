@@ -4,14 +4,14 @@ import { Progress } from '@/components/ui/progress';
 import { Snowflake, Thermometer, Package, Trash2, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-// Dados de movimentação mensal das carnes da Câmara Fria
-const monthlyMeatData = [
-  { month: 'Jan', coracaoFrango: 45, costelaBovina: 30, picanhaSuina: 25, capaFile: 40, coxaoMole: 15, coxaSobrecoxa: 35 },
-  { month: 'Fev', coracaoFrango: 38, costelaBovina: 25, picanhaSuina: 20, capaFile: 35, coxaoMole: 12, coxaSobrecoxa: 28 },
-  { month: 'Mar', coracaoFrango: 42, costelaBovina: 28, picanhaSuina: 22, capaFile: 38, coxaoMole: 18, coxaSobrecoxa: 32 },
-  { month: 'Abr', coracaoFrango: 40, costelaBovina: 32, picanhaSuina: 18, capaFile: 42, coxaoMole: 20, coxaSobrecoxa: 30 },
-  { month: 'Mai', coracaoFrango: 44, costelaBovina: 35, picanhaSuina: 24, capaFile: 45, coxaoMole: 16, coxaSobrecoxa: 33 },
-  { month: 'Jun', coracaoFrango: 38, costelaBovina: 13, picanhaSuina: 0, capaFile: 30, coxaoMole: 2, coxaSobrecoxa: 7 },
+// Dados de quantidade por tipo de carne da Câmara Fria
+const meatTypesData = [
+  { tipo: 'Coração de Frango', quantidade: 45 },
+  { tipo: 'Costela Bovina', quantidade: 30 },
+  { tipo: 'Picanha Suína', quantidade: 25 },
+  { tipo: 'Capa de Filé', quantidade: 40 },
+  { tipo: 'Coxão Mole', quantidade: 15 },
+  { tipo: 'Coxa e Sobrecoxa', quantidade: 35 },
 ];
 
 // Top 5 carnes mais utilizadas
@@ -140,25 +140,27 @@ export function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-blue-500" />
-              Quantidade de Carnes - Câmara Fria
+              Quantidade por Tipo de Carne - Câmara Fria
             </CardTitle>
             <CardDescription>
-              Quantidade mensal de cada tipo de carne (kg)
+              Quantidade atual de cada tipo de carne (kg)
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyMeatData}>
+                <BarChart data={meatTypesData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" stroke="#888" />
+                  <XAxis 
+                    dataKey="tipo" 
+                    stroke="#888" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    fontSize={10}
+                  />
                   <YAxis stroke="#888" />
-                  <Bar dataKey="coracaoFrango" fill="#3b82f6" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="costelaBovina" fill="#10b981" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="picanhaSuina" fill="#f59e0b" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="capaFile" fill="#ef4444" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="coxaoMole" fill="#8b5cf6" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="coxaSobrecoxa" fill="#06b6d4" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="quantidade" fill="#3b82f6" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

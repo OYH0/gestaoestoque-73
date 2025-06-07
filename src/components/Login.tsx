@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,12 +38,14 @@ export function Login() {
       
       <Card className="w-full max-w-md relative z-10 shadow-2xl border-border/40 bg-card/90 backdrop-blur-md">
         <CardHeader className="text-center space-y-4 pb-8">
-          <div className="flex justify-center mb-4">
-            <img 
-              src="/lovable-uploads/0cfde751-402e-4f75-b55d-7dba3c3b5780.png" 
-              alt="Logo da Empresa" 
-              className="w-32 h-auto"
-            />
+          <div className="flex flex-col items-center mb-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-churrasco-red mb-1">COMPANHIA</div>
+              <div className="w-32 h-px bg-churrasco-red mb-1"></div>
+              <div className="text-lg font-semibold text-churrasco-brown mb-1">DO</div>
+              <div className="w-32 h-px bg-churrasco-red mb-1"></div>
+              <div className="text-2xl font-bold text-churrasco-red">CHURRASCO</div>
+            </div>
           </div>
           <CardTitle className="text-2xl font-semibold text-foreground">
             Faça seu login

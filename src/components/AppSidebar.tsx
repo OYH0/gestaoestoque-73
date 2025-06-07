@@ -32,7 +32,7 @@ export function AppSidebar() {
   const currentPath = location.pathname;
 
   const sidebarContent = (
-    <div className="flex h-full flex-col bg-churrasco-red">
+    <div className="flex h-full flex-col bg-churrasco-gradient">
       {/* Header */}
       <div className="p-6 border-b border-white/15">
         <div className="flex items-center gap-3">

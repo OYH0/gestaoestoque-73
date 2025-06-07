@@ -22,10 +22,22 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-churrasco-cream via-background to-churrasco-cream/50 flex items-center justify-center p-4">
+    <div className="min-h-screen relative flex items-center justify-center p-4">
+      {/* Background wallpaper */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1544025162-d76694265947?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80')`
+        }}
+      />
+      
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/50" />
+      
+      {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
       
-      <Card className="w-full max-w-md relative z-10 shadow-2xl border-border/40 bg-card/80 backdrop-blur-sm">
+      <Card className="w-full max-w-md relative z-10 shadow-2xl border-border/40 bg-card/90 backdrop-blur-md">
         <CardHeader className="text-center space-y-6 pb-8">
           {/* Logo da Companhia do Churrasco */}
           <div className="flex items-center justify-center space-x-3">

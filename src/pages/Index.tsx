@@ -22,7 +22,7 @@ const Index = () => {
         <SidebarProvider>
           <div className="min-h-screen flex w-full bg-gradient-to-br from-churrasco-cream via-background to-churrasco-cream/50 overflow-hidden">
             <AppSidebar />
-            <div className={`flex-1 flex flex-col min-w-0 ${isMobile ? '' : 'ml-80'}`}>
+            <div className={`flex-1 flex flex-col min-w-0 ${isMobile ? '' : 'ml-64'}`}>
               <Header />
               <main className="flex-1 p-4 md:p-6 relative overflow-auto">
                 <div className="absolute inset-0 bg-grid-pattern opacity-30 pointer-events-none" />

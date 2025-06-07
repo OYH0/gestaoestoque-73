@@ -36,18 +36,14 @@ export function Login() {
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
       
-      {/* Logo da Companhia do Churrasco - Centralizada e acima de tudo */}
+      {/* Nova Logo */}
       <div className="relative z-10 mb-8 flex flex-col items-center">
-        <div className="flex items-center gap-4 bg-gradient-to-br from-churrasco-red to-churrasco-orange p-6 rounded-full shadow-2xl">
+        <div className="bg-white p-4 rounded-lg shadow-2xl">
           <img 
-            src="/lovable-uploads/6fa9e138-f1e8-44f3-a4d4-1cdc8ae06146.png" 
-            alt="Companhia do Churrasco" 
-            className="w-20 h-20"
+            src="/lovable-uploads/eb8e406f-5f0e-4eaa-93cd-77f66e6ffe4d.png" 
+            alt="Logo da Empresa" 
+            className="w-32 h-auto"
           />
-          <div className="text-white">
-            <h1 className="text-2xl font-bold">Companhia do</h1>
-            <h2 className="text-xl font-bold -mt-1">Churrasco</h2>
-          </div>
         </div>
       </div>
       

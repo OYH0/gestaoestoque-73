@@ -37,19 +37,15 @@ export function Login() {
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
       
-      {/* Logo Principal */}
-      <div className="relative z-10 mb-12 flex flex-col items-center">
-        <div className="bg-gradient-to-r from-churrasco-red to-churrasco-orange backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-white/20">
-          <img 
-            src="/lovable-uploads/eb8e406f-5f0e-4eaa-93cd-77f66e6ffe4d.png" 
-            alt="Logo da Empresa" 
-            className="w-48 h-auto max-w-full"
-          />
-        </div>
-      </div>
-      
       <Card className="w-full max-w-md relative z-10 shadow-2xl border-border/40 bg-card/90 backdrop-blur-md">
         <CardHeader className="text-center space-y-4 pb-8">
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/lovable-uploads/eb8e406f-5f0e-4eaa-93cd-77f66e6ffe4d.png" 
+              alt="Logo da Empresa" 
+              className="w-32 h-auto filter invert"
+            />
+          </div>
           <CardTitle className="text-2xl font-semibold text-foreground">
             Faça seu login
           </CardTitle>

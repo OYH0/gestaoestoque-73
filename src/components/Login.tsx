@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Flame, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function Login() {
@@ -42,7 +42,11 @@ export function Login() {
           {/* Logo da Companhia do Churrasco */}
           <div className="flex items-center justify-center space-x-3">
             <div className="bg-gradient-to-br from-churrasco-red to-churrasco-orange p-3 rounded-full">
-              <Flame className="w-8 h-8 text-white" />
+              <img 
+                src="/lovable-uploads/fa82ef55-e1ff-491f-8240-ce800d8c3e85.png" 
+                alt="Companhia do Churrasco" 
+                className="w-8 h-8 filter invert"
+              />
             </div>
             <div className="text-left">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent">

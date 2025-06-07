@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { Package, Plus, Minus, ShoppingCart, Check, X, History, FileText } from 'lucide-react';
+import { Package, Plus, Minus, Check, X, History, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
+import { EstoqueSecoFilters } from '@/components/estoque-seco/EstoqueSecoFilters';
+import { EstoqueSecoAlerts } from '@/components/estoque-seco/EstoqueSecoAlerts';
 
 const initialItems = [
   { id: 1, name: 'Arroz Branco', quantidade: 25, unidade: 'kg', categoria: 'Grãos', minimo: 10 },
@@ -131,40 +133,44 @@ export function EstoqueSeco() {
   const itemsBaixoEstoque = items.filter(item => item.quantidade <= item.minimo);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-            <Package className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+            <Package className="w-4 h-4 md:w-5 md:h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Estoque Seco</h2>
-            <p className="text-gray-600">Produtos não perecíveis</p>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Estoque Seco</h2>
+            <p className="text-sm md:text-base text-gray-600">Produtos não perecíveis</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+        
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
             {items.length} itens
           </Badge>
           {itemsBaixoEstoque.length > 0 && (
-            <Badge variant="destructive">
+            <Badge variant="destructive" className="text-xs">
               {itemsBaixoEstoque.length} baixo estoque
             </Badge>
           )}
+        </div>
 
+        <div className="flex flex-wrap gap-2">
           <Button 
             variant="outline" 
-            className="border-gray-300"
+            size="sm"
+            className="border-gray-300 text-xs md:text-sm"
             onClick={handlePrintPDF}
           >
-            <FileText className="w-4 h-4 mr-2" />
-            Imprimir PDF
+            <FileText className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            PDF
           </Button>
 
           <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="border-gray-300">
-                <History className="w-4 h-4 mr-2" />
+              <Button variant="outline" size="sm" className="border-gray-300 text-xs md:text-sm">
+                <History className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                 Histórico
               </Button>
             </DialogTrigger>
@@ -203,9 +209,9 @@ export function EstoqueSeco() {
           
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-orange-500 hover:bg-orange-600">
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Produto
+              <Button className="bg-orange-500 hover:bg-orange-600 text-xs md:text-sm" size="sm">
+                <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                Adicionar
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -263,49 +269,15 @@ export function EstoqueSeco() {
         </div>
       </div>
 
-      {/* Alertas de baixo estoque */}
-      {itemsBaixoEstoque.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-800 flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5" />
-              Itens com Baixo Estoque
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {itemsBaixoEstoque.map((item) => (
-                <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded border">
-                  <span className="font-medium">{item.name}</span>
-                  <span className="text-red-600">{item.quantidade} {item.unidade}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <EstoqueSecoAlerts itemsBaixoEstoque={itemsBaixoEstoque} />
 
-      {/* Filtros */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-2">
-            {categorias.map((categoria) => (
-              <Button
-                key={categoria}
-                variant={categoriaFiltro === categoria ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCategoriaFiltro(categoria)}
-                className={categoriaFiltro === categoria ? "bg-orange-500 hover:bg-orange-600" : ""}
-              >
-                {categoria}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <EstoqueSecoFilters 
+        categorias={categorias}
+        categoriaFiltro={categoriaFiltro}
+        setCategoriaFiltro={setCategoriaFiltro}
+      />
 
-      {/* Lista de itens */}
-      <div className="grid gap-4">
+      <div className="grid gap-3 md:gap-4">
         {sortedFilteredItems.map((item) => {
           const isEditing = editingQuantities.hasOwnProperty(item.id);
           const editValue = editingQuantities[item.id] || item.quantidade;
@@ -319,11 +291,11 @@ export function EstoqueSeco() {
                   : 'border-gray-200'
               }`}
             >
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <CardContent className="p-3 md:p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.name}</h3>
                       <Badge variant="outline" className="text-xs">
                         {item.categoria}
                       </Badge>
@@ -333,32 +305,32 @@ export function EstoqueSeco() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-xs md:text-sm text-gray-600 mt-1">
                       {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo} {item.unidade}
                     </p>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 md:gap-2">
                     {isEditing ? (
                       <>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+                          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 p-1 md:p-2"
                           onClick={() => updateEditingQuantity(item.id, -1)}
                           disabled={editValue === 0}
                         >
                           <Minus className="w-3 h-3" />
                         </Button>
                         
-                        <span className="w-16 text-center font-medium border rounded px-2 py-1">
+                        <span className="w-12 md:w-16 text-center font-medium border rounded px-1 md:px-2 py-1 text-sm">
                           {editValue}
                         </span>
                         
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100"
+                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 p-1 md:p-2"
                           onClick={() => updateEditingQuantity(item.id, 1)}
                         >
                           <Plus className="w-3 h-3" />
@@ -367,7 +339,7 @@ export function EstoqueSeco() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100"
+                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 p-1 md:p-2"
                           onClick={() => confirmQuantityChange(item.id)}
                         >
                           <Check className="w-3 h-3" />
@@ -376,7 +348,7 @@ export function EstoqueSeco() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                          className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 p-1 md:p-2"
                           onClick={() => cancelQuantityEdit(item.id)}
                         >
                           <X className="w-3 h-3" />
@@ -387,9 +359,9 @@ export function EstoqueSeco() {
                         variant="outline"
                         size="sm"
                         onClick={() => startEditingQuantity(item.id, item.quantidade)}
-                        className="bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100"
+                        className="bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100 text-xs md:text-sm px-2 md:px-3"
                       >
-                        Editar Quantidade
+                        Editar
                       </Button>
                     )}
                   </div>

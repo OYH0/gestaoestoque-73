@@ -4,16 +4,16 @@ import { Progress } from '@/components/ui/progress';
 import { Snowflake, Thermometer, Package, Trash2, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-// Dados de quantidade por tipo de carne da Câmara Fria
+// Dados de quantidade por tipo de carne da Câmara Fria - ordenados da maior para menor quantidade
 const meatTypesData = [
-  { tipo: 'Coração de Frango', quantidade: 45 },
-  { tipo: 'Costela Bovina', quantidade: 30 },
-  { tipo: 'Picanha Suína', quantidade: 25 },
-  { tipo: 'Capa de Filé', quantidade: 40 },
-  { tipo: 'Coxão Mole', quantidade: 15 },
-  { tipo: 'Coxa e Sobrecoxa', quantidade: 35 },
-  { tipo: 'Alcatra com Maminha', quantidade: 4 },
-  { tipo: 'Filé de Peito', quantidade: 22 },
+  { tipo: 'Coração de Frango', quantidade: 45, color: '#3b82f6' },
+  { tipo: 'Capa de Filé', quantidade: 40, color: '#10b981' },
+  { tipo: 'Coxa e Sobrecoxa', quantidade: 35, color: '#f59e0b' },
+  { tipo: 'Costela Bovina', quantidade: 30, color: '#ef4444' },
+  { tipo: 'Picanha Suína', quantidade: 25, color: '#8b5cf6' },
+  { tipo: 'Filé de Peito', quantidade: 22, color: '#06b6d4' },
+  { tipo: 'Coxão Mole', quantidade: 15, color: '#84cc16' },
+  { tipo: 'Alcatra com Maminha', quantidade: 4, color: '#f97316' },
 ];
 
 // Top 5 carnes mais utilizadas
@@ -193,7 +193,11 @@ export function Dashboard() {
                     fontSize={10}
                   />
                   <YAxis stroke="#888" />
-                  <Bar dataKey="quantidade" fill="#3b82f6" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="quantidade" radius={[2, 2, 0, 0]}>
+                    {meatTypesData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>

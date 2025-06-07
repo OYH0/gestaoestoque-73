@@ -40,15 +40,11 @@ export const generateInventoryPDF = (
   
   yPosition += 20;
   
-  // Cabeçalho da tabela - Estoque Atual
-  pdf.setFont(undefined, 'bold');
-  pdf.text('ESTOQUE ATUAL', margin, yPosition);
-  yPosition += 10;
-  
   // Cabeçalhos das colunas
+  pdf.setFont(undefined, 'bold');
   pdf.text('Item', margin, yPosition);
-  pdf.text('Quantidade', margin + 120, yPosition);
-  pdf.text('Categoria', margin + 160, yPosition);
+  pdf.text('Qtd. Atual', margin + 90, yPosition);
+  pdf.text('Qtd. a Comprar', margin + 140, yPosition);
   
   yPosition += 5;
   pdf.line(margin, yPosition, pageWidth - margin, yPosition); // Linha horizontal
@@ -59,53 +55,53 @@ export const generateInventoryPDF = (
   
   pdf.setFont(undefined, 'normal');
   
-  // Listar itens do estoque atual
+  // Listar itens
   sortedItems.forEach((item) => {
     if (yPosition > 250) { // Nova página se necessário
       pdf.addPage();
       yPosition = 30;
+      
+      // Repetir cabeçalhos na nova página
+      pdf.setFont(undefined, 'bold');
+      pdf.text('Item', margin, yPosition);
+      pdf.text('Qtd. Atual', margin + 90, yPosition);
+      pdf.text('Qtd. a Comprar', margin + 140, yPosition);
+      
+      yPosition += 5;
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 8;
+      pdf.setFont(undefined, 'normal');
     }
     
+    // Nome do item
     pdf.text(item.name, margin, yPosition);
-    pdf.text(`${item.quantidade} ${item.unidade}`, margin + 120, yPosition);
-    pdf.text(item.categoria, margin + 160, yPosition);
-    yPosition += 8;
+    
+    // Quantidade atual
+    pdf.text(`${item.quantidade} ${item.unidade}`, margin + 90, yPosition);
+    
+    // Linha para preenchimento manual da quantidade a comprar
+    pdf.line(margin + 140, yPosition + 2, pageWidth - margin - 10, yPosition + 2);
+    
+    yPosition += 12;
   });
   
-  yPosition += 15;
-  
-  // Seção para compras
-  if (yPosition > 200) {
-    pdf.addPage();
-    yPosition = 30;
-  }
-  
-  pdf.setFont(undefined, 'bold');
-  pdf.text('LISTA DE COMPRAS (Para preenchimento manual)', margin, yPosition);
-  yPosition += 15;
-  
-  // Cabeçalhos para lista de compras
-  pdf.text('Item', margin, yPosition);
-  pdf.text('Quantidade', margin + 120, yPosition);
-  pdf.text('Observações', margin + 160, yPosition);
-  
-  yPosition += 5;
-  pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+  // Adicionar algumas linhas extras em branco para novos itens
   yPosition += 10;
-  
+  pdf.setFont(undefined, 'bold');
+  pdf.text('Novos itens:', margin, yPosition);
+  yPosition += 10;
   pdf.setFont(undefined, 'normal');
   
-  // Criar linhas em branco para preenchimento manual
-  for (let i = 0; i < 15; i++) {
-    if (yPosition > 270) {
+  for (let i = 0; i < 10; i++) {
+    if (yPosition > 250) {
       pdf.addPage();
       yPosition = 30;
     }
     
-    // Linhas para preenchimento
-    pdf.line(margin, yPosition + 3, margin + 110, yPosition + 3); // Linha do item
-    pdf.line(margin + 120, yPosition + 3, margin + 150, yPosition + 3); // Linha da quantidade
-    pdf.line(margin + 160, yPosition + 3, pageWidth - margin, yPosition + 3); // Linha das observações
+    // Linhas para preenchimento manual de novos itens
+    pdf.line(margin, yPosition + 2, margin + 80, yPosition + 2); // Linha do item
+    pdf.line(margin + 90, yPosition + 2, margin + 130, yPosition + 2); // Linha da quantidade atual
+    pdf.line(margin + 140, yPosition + 2, pageWidth - margin - 10, yPosition + 2); // Linha da quantidade a comprar
     
     yPosition += 15;
   }

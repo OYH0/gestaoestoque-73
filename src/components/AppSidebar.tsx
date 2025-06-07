@@ -27,14 +27,20 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { isMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
 
+  const handleNavClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   const sidebarContent = (
-    <div className="flex h-full flex-col bg-churrasco-gradient">
+    <div className="flex h-full flex-col bg-churrasco-gradient overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-white/15">
+      <div className="p-6 border-b border-white/15 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-lg border border-white/30">
             <Beef className="h-6 w-6 text-white drop-shadow-sm" />
@@ -57,6 +63,7 @@ export function AppSidebar() {
               key={item.title}
               to={item.url} 
               end
+              onClick={handleNavClick}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden ${
                 isActive 
                   ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30' 
@@ -78,7 +85,7 @@ export function AppSidebar() {
       </div>
 
       {/* User Section */}
-      <div className="p-4 border-t border-white/15">
+      <div className="p-4 border-t border-white/15 flex-shrink-0">
         <div className="flex items-center gap-3 p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/25 mb-3">
           <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center shadow-lg border border-white/30">
             <User className="h-5 w-5 text-white drop-shadow-sm" />
@@ -105,15 +112,19 @@ export function AppSidebar() {
         collapsible="offcanvas" 
         className="border-r-0"
       >
-        {sidebarContent}
+        <SidebarContent>
+          {sidebarContent}
+        </SidebarContent>
       </Sidebar>
     );
   }
 
-  // Desktop: sidebar fixa
+  // Desktop: sidebar fixa com largura controlada
   return (
-    <div className="w-80 h-screen fixed left-0 top-0 z-50">
-      {sidebarContent}
+    <div className="w-80 h-screen fixed left-0 top-0 z-50 border-r-0">
+      <SidebarContent>
+        {sidebarContent}
+      </SidebarContent>
     </div>
   );
 }

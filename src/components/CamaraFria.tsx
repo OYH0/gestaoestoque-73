@@ -1,23 +1,31 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Snowflake, Plus, Minus, Trash2, Check, X, History } from 'lucide-react';
+import { Snowflake, Plus, Minus, AlertCircle, Check, X, History, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { generateInventoryPDF } from '@/utils/pdfGenerator';
 
 const initialItems = [
-  { id: 1, name: 'Coração de Frango', quantidade: 38, unidade: 'kg' },
-  { id: 2, name: 'Costela Bovina', quantidade: 13, unidade: 'kg' },
-  { id: 3, name: 'Picanha Suína', quantidade: 0, unidade: 'kg' },
-  { id: 4, name: 'Capa de Filé', quantidade: 30, unidade: 'kg' },
-  { id: 5, name: 'Coxão Mole', quantidade: 2, unidade: 'kg' },
-  { id: 6, name: 'Coxa e Sobrecoxa', quantidade: 7, unidade: 'kg' },
-  { id: 7, name: 'Alcatra com Maminha', quantidade: 4, unidade: 'kg' },
-  { id: 8, name: 'Filé de Peito', quantidade: 22, unidade: 'kg' },
+  { id: 1, name: 'Picanha', quantidade: 15, unidade: 'kg', categoria: 'Bovina', minimo: 5 },
+  { id: 2, name: 'Alcatra', quantidade: 20, unidade: 'kg', categoria: 'Bovina', minimo: 8 },
+  { id: 3, name: 'Costela Bovina', quantidade: 25, unidade: 'kg', categoria: 'Bovina', minimo: 10 },
+  { id: 4, name: 'Fraldinha', quantidade: 12, unidade: 'kg', categoria: 'Bovina', minimo: 6 },
+  { id: 5, name: 'Maminha', quantidade: 18, unidade: 'kg', categoria: 'Bovina', minimo: 8 },
+  { id: 6, name: 'Costela Suína', quantidade: 22, unidade: 'kg', categoria: 'Suína', minimo: 10 },
+  { id: 7, name: 'Lombo Suíno', quantidade: 14, unidade: 'kg', categoria: 'Suína', minimo: 6 },
+  { id: 8, name: 'Pernil Suíno', quantidade: 16, unidade: 'kg', categoria: 'Suína', minimo: 8 },
+  { id: 9, name: 'Coxa de Frango', quantidade: 30, unidade: 'kg', categoria: 'Aves', minimo: 15 },
+  { id: 10, name: 'Sobrecoxa de Frango', quantidade: 25, unidade: 'kg', categoria: 'Aves', minimo: 12 },
+  { id: 11, name: 'Peito de Frango', quantidade: 20, unidade: 'kg', categoria: 'Aves', minimo: 10 },
+  { id: 12, name: 'Linguiça Calabresa', quantidade: 8, unidade: 'kg', categoria: 'Embutidos', minimo: 4 },
+  { id: 13, name: 'Linguiça Toscana', quantidade: 6, unidade: 'kg', categoria: 'Embutidos', minimo: 3 },
 ];
+
+const categorias = ['Todos', 'Bovina', 'Suína', 'Aves', 'Embutidos'];
 
 interface HistoricoItem {
   id: number;
@@ -31,7 +39,14 @@ interface HistoricoItem {
 
 export function CamaraFria() {
   const [items, setItems] = useState(initialItems);
-  const [newItem, setNewItem] = useState({ name: '', quantidade: 0, unidade: 'kg' });
+  const [newItem, setNewItem] = useState({ 
+    name: '', 
+    quantidade: 0, 
+    unidade: 'kg', 
+    categoria: 'Bovina', 
+    minimo: 5 
+  });
+  const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const [editingQuantities, setEditingQuantities] = useState<{ [key: number]: number }>({});
@@ -80,7 +95,7 @@ export function CamaraFria() {
     setEditingQuantities(newEditingQuantities);
 
     toast({
-      title: difference > 0 ? "Carne adicionada" : "Carne retirada",
+      title: difference > 0 ? "Item adicionado" : "Item retirado",
       description: `${Math.abs(difference)} ${item.unidade} de ${item.name}`,
     });
   };
@@ -94,13 +109,14 @@ export function CamaraFria() {
   const addNewItem = () => {
     if (newItem.name && newItem.quantidade >= 0) {
       const id = Math.max(...items.map(i => i.id)) + 1;
-      setItems([...items, { 
-        id, 
-        name: newItem.name, 
-        quantidade: newItem.quantidade, 
-        unidade: newItem.unidade 
-      }]);
-      setNewItem({ name: '', quantidade: 0, unidade: 'kg' });
+      setItems([...items, { id, ...newItem }]);
+      setNewItem({ 
+        name: '', 
+        quantidade: 0, 
+        unidade: 'kg', 
+        categoria: 'Bovina', 
+        minimo: 5 
+      });
       setDialogOpen(false);
       toast({
         title: "Item adicionado",
@@ -109,16 +125,24 @@ export function CamaraFria() {
     }
   };
 
-  const removeItem = (id: number) => {
-    setItems(items.filter(item => item.id !== id));
+  const handlePrintPDF = () => {
+    generateInventoryPDF(
+      items,
+      'Inventário de Câmara Fria',
+      'Carnes e produtos congelados'
+    );
     toast({
-      title: "Item removido",
-      description: "O item foi removido do estoque!",
+      title: "PDF gerado",
+      description: "O relatório foi baixado com sucesso!",
     });
   };
 
-  // Ordenar itens alfabeticamente
-  const sortedItems = [...items].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  const filteredItems = categoriaFiltro === 'Todos' 
+    ? items 
+    : items.filter(item => item.categoria === categoriaFiltro);
+
+  const sortedFilteredItems = [...filteredItems].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  const itemsBaixoEstoque = items.filter(item => item.quantidade <= item.minimo);
 
   return (
     <div className="space-y-6">
@@ -129,13 +153,27 @@ export function CamaraFria() {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Câmara Fria</h2>
-            <p className="text-gray-600">Carnes congeladas para churrasco</p>
+            <p className="text-gray-600">Carnes e produtos congelados</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex gap-2">
           <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-            {items.length} tipos de carne
+            {items.length} tipos
           </Badge>
+          {itemsBaixoEstoque.length > 0 && (
+            <Badge variant="destructive">
+              {itemsBaixoEstoque.length} baixo estoque
+            </Badge>
+          )}
+
+          <Button 
+            variant="outline" 
+            className="border-gray-300"
+            onClick={handlePrintPDF}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Imprimir PDF
+          </Button>
 
           <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
             <DialogTrigger asChild>
@@ -181,15 +219,12 @@ export function CamaraFria() {
             <DialogTrigger asChild>
               <Button className="bg-blue-500 hover:bg-blue-600">
                 <Plus className="w-4 h-4 mr-2" />
-                Adicionar Nova Carne
+                Adicionar Carne
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Adicionar Nova Carne</DialogTitle>
-                <DialogDescription>
-                  Preencha os dados da nova carne para adicionar ao estoque
-                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <Input
@@ -203,19 +238,30 @@ export function CamaraFria() {
                   value={newItem.quantidade}
                   onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
                 />
-                <Select 
-                  value={newItem.unidade} 
-                  onValueChange={(value) => setNewItem({...newItem, unidade: value})}
+                <select 
+                  className="px-3 py-2 border border-gray-300 rounded-md w-full"
+                  value={newItem.unidade}
+                  onChange={(e) => setNewItem({...newItem, unidade: e.target.value})}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a unidade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kg">Quilogramas (kg)</SelectItem>
-                    <SelectItem value="pacotes">Pacotes</SelectItem>
-                    <SelectItem value="peças">Peças</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <option value="kg">kg</option>
+                  <option value="unidades">unidades</option>
+                  <option value="pacotes">pacotes</option>
+                </select>
+                <select 
+                  className="px-3 py-2 border border-gray-300 rounded-md w-full"
+                  value={newItem.categoria}
+                  onChange={(e) => setNewItem({...newItem, categoria: e.target.value})}
+                >
+                  {categorias.slice(1).map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <Input
+                  type="number"
+                  placeholder="Quantidade mínima"
+                  value={newItem.minimo}
+                  onChange={(e) => setNewItem({...newItem, minimo: Number(e.target.value)})}
+                />
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancelar
@@ -230,23 +276,78 @@ export function CamaraFria() {
         </div>
       </div>
 
+      {/* Alertas de baixo estoque */}
+      {itemsBaixoEstoque.length > 0 && (
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <CardTitle className="text-red-800 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              Itens com Baixo Estoque
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {itemsBaixoEstoque.map((item) => (
+                <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded border">
+                  <span className="font-medium text-sm">{item.name}</span>
+                  <span className="text-red-600 font-medium">{item.quantidade} {item.unidade}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Filtros */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-2">
+            {categorias.map((categoria) => (
+              <Button
+                key={categoria}
+                variant={categoriaFiltro === categoria ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCategoriaFiltro(categoria)}
+                className={categoriaFiltro === categoria ? "bg-blue-500 hover:bg-blue-600" : ""}
+              >
+                {categoria}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Lista de itens */}
       <div className="grid gap-4">
-        {sortedItems.map((item) => {
+        {sortedFilteredItems.map((item) => {
           const isEditing = editingQuantities.hasOwnProperty(item.id);
           const editValue = editingQuantities[item.id] || item.quantidade;
 
           return (
-            <Card key={item.id} className={`${item.quantidade === 0 ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
+            <Card 
+              key={item.id} 
+              className={`${
+                item.quantidade <= item.minimo 
+                  ? 'border-red-200 bg-red-50' 
+                  : 'border-gray-200'
+              }`}
+            >
               <CardContent className="p-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {isEditing ? editValue : item.quantidade} {item.unidade}
-                      {item.quantidade === 0 && !isEditing && (
-                        <span className="ml-2 text-red-600 font-medium">Sem estoque</span>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                      <Badge variant="outline" className="text-xs">
+                        {item.categoria}
+                      </Badge>
+                      {item.quantidade <= item.minimo && (
+                        <Badge variant="destructive" className="text-xs">
+                          Baixo Estoque
+                        </Badge>
                       )}
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo} {item.unidade}
                     </p>
                   </div>
                   
@@ -295,25 +396,14 @@ export function CamaraFria() {
                         </Button>
                       </>
                     ) : (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => startEditingQuantity(item.id, item.quantidade)}
-                          className="bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100"
-                        >
-                          Editar Quantidade
-                        </Button>
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                          onClick={() => removeItem(item.id)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => startEditingQuantity(item.id, item.quantidade)}
+                        className="bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100"
+                      >
+                        Editar Quantidade
+                      </Button>
                     )}
                   </div>
                 </div>

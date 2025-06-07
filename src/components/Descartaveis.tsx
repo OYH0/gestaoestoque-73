@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { Trash2, Plus, Minus, Package2, AlertCircle, Check, X, History } from 'lucide-react';
+import { Trash2, Plus, Minus, Package2, AlertCircle, Check, X, History, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { generateInventoryPDF } from '@/utils/pdfGenerator';
 
 const initialItems = [
   { id: 1, name: 'Pratos Descartáveis', quantidade: 200, unidade: 'unidades', categoria: 'Utensílios', minimo: 50 },
@@ -134,6 +135,18 @@ export function Descartaveis() {
     }
   };
 
+  const handlePrintPDF = () => {
+    generateInventoryPDF(
+      items,
+      'Inventário de Descartáveis',
+      'Utensílios e materiais descartáveis'
+    );
+    toast({
+      title: "PDF gerado",
+      description: "O relatório foi baixado com sucesso!",
+    });
+  };
+
   const filteredItems = categoriaFiltro === 'Todos' 
     ? items 
     : items.filter(item => item.categoria === categoriaFiltro);
@@ -168,6 +181,15 @@ export function Descartaveis() {
               {itemsBaixoEstoque.length} baixo estoque
             </Badge>
           )}
+
+          <Button 
+            variant="outline" 
+            className="border-gray-300"
+            onClick={handlePrintPDF}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Imprimir PDF
+          </Button>
 
           <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
             <DialogTrigger asChild>

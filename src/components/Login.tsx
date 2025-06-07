@@ -38,21 +38,13 @@ export function Login() {
       <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
       
       {/* Logo da Companhia do Churrasco - Centralizada e acima de tudo */}
-      <div className="relative z-10 mb-8 flex flex-col items-center space-y-4">
+      <div className="relative z-10 mb-8 flex flex-col items-center">
         <div className="bg-gradient-to-br from-churrasco-red to-churrasco-orange p-6 rounded-full shadow-2xl">
           <img 
             src="/lovable-uploads/fa82ef55-e1ff-491f-8240-ce800d8c3e85.png" 
             alt="Companhia do Churrasco" 
             className="w-20 h-20 filter invert"
           />
-        </div>
-        <div className="text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent drop-shadow-lg">
-            Companhia do
-          </h1>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent -mt-1 drop-shadow-lg">
-            Churrasco
-          </h2>
         </div>
       </div>
       
@@ -61,6 +53,14 @@ export function Login() {
           <CardTitle className="text-2xl font-semibold text-foreground">
             Faça seu login
           </CardTitle>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent drop-shadow-lg">
+              Companhia do
+            </h1>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent -mt-1 drop-shadow-lg">
+              Churrasco
+            </h2>
+          </div>
           <p className="text-muted-foreground">
             Acesse o sistema de gestão de estoque
           </p>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Snowflake, Thermometer, Package, Trash2, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Dados de quantidade por tipo de carne da Câmara Fria - ordenados da maior para menor quantidade
 const meatTypesData = [
@@ -110,6 +111,8 @@ const statsCards = [
 ];
 
 export function Dashboard() {
+  const isMobile = useIsMobile();
+  
   // Filtrar itens com baixo estoque
   const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= item.minimo);
   const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= item.minimo);
@@ -131,41 +134,43 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {statsCards.map((card, index) => (
-          <Card key={index} className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 group">
-            <div className={`absolute inset-0 bg-gradient-to-br ${card.bgColor} opacity-50`} />
-            <CardHeader className="relative pb-2">
-              <div className="flex items-center justify-between">
-                <div className={`p-2 rounded-xl bg-gradient-to-br ${card.color} shadow-lg`}>
-                  <card.icon className="w-5 h-5 text-white" />
-                </div>
-                <div className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  card.trend.startsWith('+') ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'
-                }`}>
-                  {card.trend}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="relative">
-              <div className="space-y-3">
-                <div>
-                  <div className="text-2xl font-bold text-foreground">{card.value}</div>
-                  <p className="text-sm text-muted-foreground">{card.description}</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span>Capacidade</span>
-                    <span>{card.progress}%</span>
+      {/* Cards de Estatísticas - Hidden on mobile */}
+      {!isMobile && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {statsCards.map((card, index) => (
+            <Card key={index} className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 group">
+              <div className={`absolute inset-0 bg-gradient-to-br ${card.bgColor} opacity-50`} />
+              <CardHeader className="relative pb-2">
+                <div className="flex items-center justify-between">
+                  <div className={`p-2 rounded-xl bg-gradient-to-br ${card.color} shadow-lg`}>
+                    <card.icon className="w-5 h-5 text-white" />
                   </div>
-                  <Progress value={card.progress} className="h-2" />
+                  <div className={`text-sm font-medium px-2 py-1 rounded-full ${
+                    card.trend.startsWith('+') ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'
+                  }`}>
+                    {card.trend}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardHeader>
+              <CardContent className="relative">
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">{card.value}</div>
+                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span>Capacidade</span>
+                      <span>{card.progress}%</span>
+                    </div>
+                    <Progress value={card.progress} className="h-2" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

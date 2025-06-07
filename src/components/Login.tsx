@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,9 +40,9 @@ export function Login() {
       <div className="relative z-10 mb-8 flex flex-col items-center">
         <div className="bg-gradient-to-br from-churrasco-red to-churrasco-orange p-6 rounded-full shadow-2xl">
           <img 
-            src="/lovable-uploads/fa82ef55-e1ff-491f-8240-ce800d8c3e85.png" 
+            src="/lovable-uploads/6fa9e138-f1e8-44f3-a4d4-1cdc8ae06146.png" 
             alt="Companhia do Churrasco" 
-            className="w-20 h-20 filter invert"
+            className="w-20 h-20"
           />
         </div>
       </div>

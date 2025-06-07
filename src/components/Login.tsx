@@ -41,9 +41,9 @@ export function Login() {
         <CardHeader className="text-center space-y-4 pb-8">
           <div className="flex justify-center mb-4">
             <img 
-              src="/lovable-uploads/eb8e406f-5f0e-4eaa-93cd-77f66e6ffe4d.png" 
+              src="/lovable-uploads/0cfde751-402e-4f75-b55d-7dba3c3b5780.png" 
               alt="Logo da Empresa" 
-              className="w-32 h-auto filter invert"
+              className="w-32 h-auto"
             />
           </div>
           <CardTitle className="text-2xl font-semibold text-foreground">

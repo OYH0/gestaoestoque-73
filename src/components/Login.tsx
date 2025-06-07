@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function Login() {
@@ -14,69 +15,56 @@ export function Login() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Aqui você pode implementar a lógica de autenticação
     console.log('Login attempt:', { email, password });
-    // Por enquanto, apenas redireciona para o dashboard
     navigate('/');
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center justify-center p-4">
-      {/* Background wallpaper */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1544025162-d76694265947?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80')`
-        }}
-      />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-cyan-400/20 rounded-full blur-3xl"></div>
+      </div>
       
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/50" />
-      
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
-      
-      <Card className="w-full max-w-md relative z-10 shadow-2xl border-border/40 bg-card/90 backdrop-blur-md">
-        <CardHeader className="text-center space-y-4 pb-8">
-          <div className="flex flex-col items-center mb-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-churrasco-red mb-1">COMPANHIA</div>
-              <div className="w-32 h-px bg-churrasco-red mb-1"></div>
-              <div className="text-lg font-semibold text-churrasco-brown mb-1">DO</div>
-              <div className="w-32 h-px bg-churrasco-red mb-1"></div>
-              <div className="text-2xl font-bold text-churrasco-red">CHURRASCO</div>
-            </div>
+      <Card className="w-full max-w-md relative z-10 shadow-2xl border-0 bg-white/80 backdrop-blur-xl">
+        <CardHeader className="text-center space-y-6 pb-8">
+          <div className="space-y-2">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Bem-vindo!
+            </CardTitle>
+            <p className="text-slate-600 text-sm">
+              Faça login para acessar sua conta
+            </p>
           </div>
-          <CardTitle className="text-2xl font-semibold text-foreground">
-            Faça seu login
-          </CardTitle>
-          <p className="text-muted-foreground">
-            Acesse o sistema de gestão de estoque
-          </p>
         </CardHeader>
         
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
+              <Label htmlFor="email" className="text-sm font-medium text-slate-700">
                 E-mail
               </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="transition-all duration-200 focus:border-churrasco-red/50 focus:ring-churrasco-red/20"
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="pl-10 h-12 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200"
+                />
+              </div>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">
+              <Label htmlFor="password" className="text-sm font-medium text-slate-700">
                 Senha
               </Label>
               <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -84,39 +72,89 @@ export function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pr-10 transition-all duration-200 focus:border-churrasco-red/50 focus:ring-churrasco-red/20"
+                  className="pl-10 pr-12 h-12 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-100"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="w-4 h-4 text-muted-foreground" />
+                    <EyeOff className="w-4 h-4 text-slate-400" />
                   ) : (
-                    <Eye className="w-4 h-4 text-muted-foreground" />
+                    <Eye className="w-4 h-4 text-slate-400" />
                   )}
                 </Button>
               </div>
             </div>
             
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                <span className="text-slate-600">Lembrar de mim</span>
+              </label>
+              <Button 
+                variant="link" 
+                className="text-blue-600 hover:text-blue-700 text-sm p-0 h-auto"
+                onClick={() => console.log('Forgot password clicked')}
+              >
+                Esqueceu a senha?
+              </Button>
+            </div>
+            
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-churrasco-red to-churrasco-orange hover:from-churrasco-red/90 hover:to-churrasco-orange/90 text-white font-medium py-3 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               Entrar
             </Button>
           </form>
           
-          <div className="mt-6 text-center">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-slate-500">Ou continue com</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              className="h-12 border-slate-200 hover:bg-slate-50 transition-all duration-200"
+              onClick={() => console.log('Google login')}
+            >
+              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Google
+            </Button>
+            <Button
+              variant="outline"
+              className="h-12 border-slate-200 hover:bg-slate-50 transition-all duration-200"
+              onClick={() => console.log('GitHub login')}
+            >
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+              GitHub
+            </Button>
+          </div>
+          
+          <div className="text-center text-sm text-slate-600">
+            Não tem uma conta?{' '}
             <Button 
               variant="link" 
-              className="text-churrasco-red hover:text-churrasco-red/80 text-sm"
-              onClick={() => console.log('Forgot password clicked')}
+              className="text-blue-600 hover:text-blue-700 p-0 h-auto font-medium"
+              onClick={() => console.log('Sign up clicked')}
             >
-              Esqueceu sua senha?
+              Criar conta
             </Button>
           </div>
         </CardContent>

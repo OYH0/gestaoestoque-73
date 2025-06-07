@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,13 +37,13 @@ export function Login() {
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
       
-      {/* Nova Logo */}
-      <div className="relative z-10 mb-8 flex flex-col items-center">
-        <div className="bg-white p-4 rounded-lg shadow-2xl">
+      {/* Logo Principal */}
+      <div className="relative z-10 mb-12 flex flex-col items-center">
+        <div className="bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-white/20">
           <img 
             src="/lovable-uploads/eb8e406f-5f0e-4eaa-93cd-77f66e6ffe4d.png" 
             alt="Logo da Empresa" 
-            className="w-32 h-auto"
+            className="w-48 h-auto max-w-full"
           />
         </div>
       </div>

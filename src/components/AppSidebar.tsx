@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 const items = [
   { title: 'Dashboard', url: '/', icon: BarChart3 },
   { title: 'Câmara Fria', url: '/camara-fria', icon: Snowflake },
-  { title: 'Câmara Refrigerada', url: '/camara-refrigerada', icon: Thermometer },
+  { title: 'Câm. Refrig.', url: '/camara-refrigerada', icon: Thermometer }, // Abreviado para mobile
   { title: 'Estoque Seco', url: '/estoque-seco', icon: Package },
   { title: 'Descartáveis', url: '/descartaveis', icon: Trash2 },
 ];
@@ -64,7 +64,7 @@ export function AppSidebar() {
               to={item.url} 
               end
               onClick={handleNavClick}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 group relative overflow-hidden ${
+              className={`flex items-center gap-2 px-2 py-2 rounded-lg transition-all duration-300 group relative overflow-hidden ${
                 isActive 
                   ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30' 
                   : 'text-white/80 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm hover:border hover:border-white/15'
@@ -73,7 +73,7 @@ export function AppSidebar() {
               <item.icon className={`h-4 w-4 flex-shrink-0 transition-all duration-300 drop-shadow-sm ${
                 isActive ? 'scale-110 text-white' : 'group-hover:scale-105'
               }`} />
-              <span className="font-medium text-sm drop-shadow-sm">
+              <span className={`font-medium drop-shadow-sm ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 {item.title}
               </span>
               {isActive && (
@@ -91,13 +91,15 @@ export function AppSidebar() {
             <User className="h-3 w-3 text-white drop-shadow-sm" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-white truncate drop-shadow-sm">oyh013@gmail.com</p>
+            <p className={`font-medium text-white truncate drop-shadow-sm ${isMobile ? 'text-xs' : 'text-xs'}`}>
+              oyh013@gmail.com
+            </p>
           </div>
         </div>
         
         <Button 
           variant="ghost" 
-          className="w-full justify-center gap-2 text-white/80 hover:text-white hover:bg-white/10 border border-white/25 rounded-lg py-1.5 text-sm transition-all duration-300 hover:border-white/30"
+          className={`w-full justify-center gap-2 text-white/80 hover:text-white hover:bg-white/10 border border-white/25 rounded-lg py-1.5 transition-all duration-300 hover:border-white/30 ${isMobile ? 'text-xs' : 'text-sm'}`}
         >
           <LogOut className="h-3 w-3 drop-shadow-sm" />
           <span className="drop-shadow-sm">Sair</span>

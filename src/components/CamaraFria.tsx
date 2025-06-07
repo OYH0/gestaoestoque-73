@@ -1,14 +1,11 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { Snowflake, Plus, Minus, AlertCircle, Check, X, History, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { CamaraFriaHeader } from './camara-fria/CamaraFriaHeader';
+import { CamaraFriaAlerts } from './camara-fria/CamaraFriaAlerts';
+import { CamaraFriaFilters } from './camara-fria/CamaraFriaFilters';
+import { CamaraFriaItemCard } from './camara-fria/CamaraFriaItemCard';
 
 const initialItems = [
   { id: 1, name: 'Picanha', quantidade: 15, unidade: 'kg', categoria: 'Bovina', minimo: 5 },
@@ -39,7 +36,6 @@ interface HistoricoItem {
 }
 
 export function CamaraFria() {
-  const isMobile = useIsMobile();
   const [items, setItems] = useState(initialItems);
   const [newItem, setNewItem] = useState({ 
     name: '', 
@@ -72,12 +68,10 @@ export function CamaraFria() {
     const oldQuantity = item.quantidade;
     const difference = newQuantity - oldQuantity;
 
-    // Atualizar o item
     setItems(items.map(i => 
       i.id === id ? { ...i, quantidade: newQuantity } : i
     ));
 
-    // Adicionar ao histórico
     const now = new Date();
     const novoHistorico: HistoricoItem = {
       id: Date.now(),
@@ -91,7 +85,6 @@ export function CamaraFria() {
 
     setHistorico([novoHistorico, ...historico]);
 
-    // Limpar edição
     const newEditingQuantities = { ...editingQuantities };
     delete newEditingQuantities[id];
     setEditingQuantities(newEditingQuantities);
@@ -148,280 +141,45 @@ export function CamaraFria() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-            <Snowflake className="w-4 h-4 md:w-5 md:h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Câmara Fria</h2>
-            <p className="text-sm md:text-base text-gray-600">Carnes e produtos congelados</p>
-          </div>
-        </div>
-        
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-            {items.length} tipos
-          </Badge>
-          {itemsBaixoEstoque.length > 0 && (
-            <Badge variant="destructive" className="text-xs">
-              {itemsBaixoEstoque.length} baixo estoque
-            </Badge>
-          )}
-        </div>
+      <CamaraFriaHeader
+        itemsCount={items.length}
+        lowStockCount={itemsBaixoEstoque.length}
+        onPrintPDF={handlePrintPDF}
+        historicoOpen={historicoOpen}
+        setHistoricoOpen={setHistoricoOpen}
+        historico={historico}
+        dialogOpen={dialogOpen}
+        setDialogOpen={setDialogOpen}
+        newItem={newItem}
+        setNewItem={setNewItem}
+        onAddNewItem={addNewItem}
+        categorias={categorias}
+      />
 
-        <div className="flex flex-wrap gap-2">
-          <Button 
-            variant="outline" 
-            size={isMobile ? "sm" : "default"}
-            className="border-gray-300"
-            onClick={handlePrintPDF}
-          >
-            <FileText className="w-4 h-4 mr-1 md:mr-2" />
-            <span className={isMobile ? "text-xs" : "text-sm"}>PDF</span>
-          </Button>
+      <CamaraFriaAlerts itemsBaixoEstoque={itemsBaixoEstoque} />
 
-          <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size={isMobile ? "sm" : "default"}
-                className="border-gray-300"
-              >
-                <History className="w-4 h-4 mr-1 md:mr-2" />
-                <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Histórico de Movimentações</DialogTitle>
-                <DialogDescription>
-                  Registro de entradas e saídas de carnes
-                </DialogDescription>
-              </DialogHeader>
-              <div className="max-h-96 overflow-y-auto space-y-2">
-                {historico.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">Nenhuma movimentação registrada</p>
-                ) : (
-                  historico.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${item.tipo === 'entrada' ? 'bg-green-500' : 'bg-red-500'}`} />
-                        <div>
-                          <p className="font-medium">{item.itemName}</p>
-                          <p className="text-sm text-gray-600">
-                            {item.tipo === 'entrada' ? 'Entrada' : 'Saída'} de {item.quantidade} {item.unidade}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">{item.data}</p>
-                        <p className="text-sm text-gray-600">{item.hora}</p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
-          
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                size={isMobile ? "sm" : "default"}
-                className="bg-blue-500 hover:bg-blue-600"
-              >
-                <Plus className="w-4 h-4 mr-1 md:mr-2" />
-                <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Adicionar Nova Carne</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <Input
-                  placeholder="Nome da carne"
-                  value={newItem.name}
-                  onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                />
-                <Input
-                  type="number"
-                  placeholder="Quantidade"
-                  value={newItem.quantidade}
-                  onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
-                />
-                <select 
-                  className="px-3 py-2 border border-gray-300 rounded-md w-full"
-                  value={newItem.unidade}
-                  onChange={(e) => setNewItem({...newItem, unidade: e.target.value})}
-                >
-                  <option value="kg">kg</option>
-                  <option value="unidades">unidades</option>
-                  <option value="pacotes">pacotes</option>
-                </select>
-                <select 
-                  className="px-3 py-2 border border-gray-300 rounded-md w-full"
-                  value={newItem.categoria}
-                  onChange={(e) => setNewItem({...newItem, categoria: e.target.value})}
-                >
-                  {categorias.slice(1).map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-                <Input
-                  type="number"
-                  placeholder="Quantidade mínima"
-                  value={newItem.minimo}
-                  onChange={(e) => setNewItem({...newItem, minimo: Number(e.target.value)})}
-                />
-                <div className="flex gap-2 justify-end">
-                  <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button onClick={addNewItem} className="bg-blue-500 hover:bg-blue-600">
-                    Adicionar
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+      <CamaraFriaFilters 
+        categorias={categorias}
+        categoriaFiltro={categoriaFiltro}
+        setCategoriaFiltro={setCategoriaFiltro}
+      />
 
-      {/* Alertas de baixo estoque */}
-      {itemsBaixoEstoque.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-red-800 flex items-center gap-2 text-base md:text-lg">
-              <AlertCircle className="w-4 h-4 md:w-5 md:h-5" />
-              Itens com Baixo Estoque
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-1 gap-2">
-              {itemsBaixoEstoque.map((item) => (
-                <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded border">
-                  <span className="font-medium text-sm">{item.name}</span>
-                  <span className="text-red-600 font-medium text-sm">{item.quantidade} {item.unidade}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Filtros */}
-      <Card>
-        <CardContent className="p-3 md:p-4">
-          <div className="flex flex-wrap gap-1 md:gap-2">
-            {categorias.map((categoria) => (
-              <Button
-                key={categoria}
-                variant={categoriaFiltro === categoria ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCategoriaFiltro(categoria)}
-                className={`text-xs md:text-sm ${categoriaFiltro === categoria ? "bg-blue-500 hover:bg-blue-600" : ""}`}
-              >
-                {categoria}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Lista de itens */}
       <div className="grid gap-3 md:gap-4">
         {sortedFilteredItems.map((item) => {
           const isEditing = editingQuantities.hasOwnProperty(item.id);
           const editValue = editingQuantities[item.id] || item.quantidade;
 
           return (
-            <Card 
-              key={item.id} 
-              className={`${
-                item.quantidade <= item.minimo 
-                  ? 'border-red-200 bg-red-50' 
-                  : 'border-gray-200'
-              }`}
-            >
-              <CardContent className="p-3 md:p-4">
-                <div className="space-y-3">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.name}</h3>
-                      <Badge variant="outline" className="text-xs">
-                        {item.categoria}
-                      </Badge>
-                      {item.quantidade <= item.minimo && (
-                        <Badge variant="destructive" className="text-xs">
-                          Baixo Estoque
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs md:text-sm text-gray-600">
-                      {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo} {item.unidade}
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 justify-end">
-                    {isEditing ? (
-                      <div className="flex items-center gap-1 md:gap-2 flex-wrap">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 h-8 w-8 md:h-9 md:w-9 p-0"
-                          onClick={() => updateEditingQuantity(item.id, -1)}
-                          disabled={editValue === 0}
-                        >
-                          <Minus className="w-3 h-3" />
-                        </Button>
-                        
-                        <span className="w-12 md:w-16 text-center font-medium border rounded px-1 md:px-2 py-1 text-sm">
-                          {editValue}
-                        </span>
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
-                          onClick={() => updateEditingQuantity(item.id, 1)}
-                        >
-                          <Plus className="w-3 h-3" />
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
-                          onClick={() => confirmQuantityChange(item.id)}
-                        >
-                          <Check className="w-3 h-3" />
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9 p-0"
-                          onClick={() => cancelQuantityEdit(item.id)}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => startEditingQuantity(item.id, item.quantidade)}
-                        className="bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 text-xs md:text-sm"
-                      >
-                        Editar Quantidade
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <CamaraFriaItemCard
+              key={item.id}
+              item={item}
+              isEditing={isEditing}
+              editValue={editValue}
+              onStartEdit={startEditingQuantity}
+              onUpdateEdit={updateEditingQuantity}
+              onConfirmChange={confirmQuantityChange}
+              onCancelEdit={cancelQuantityEdit}
+            />
           );
         })}
       </div>

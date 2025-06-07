@@ -1,0 +1,122 @@
+
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Plus, Minus, Check, X } from 'lucide-react';
+
+interface Item {
+  id: number;
+  name: string;
+  quantidade: number;
+  unidade: string;
+  categoria: string;
+  minimo: number;
+}
+
+interface CamaraFriaItemCardProps {
+  item: Item;
+  isEditing: boolean;
+  editValue: number;
+  onStartEdit: (id: number, currentQuantity: number) => void;
+  onUpdateEdit: (id: number, delta: number) => void;
+  onConfirmChange: (id: number) => void;
+  onCancelEdit: (id: number) => void;
+}
+
+export function CamaraFriaItemCard({
+  item,
+  isEditing,
+  editValue,
+  onStartEdit,
+  onUpdateEdit,
+  onConfirmChange,
+  onCancelEdit
+}: CamaraFriaItemCardProps) {
+  return (
+    <Card 
+      className={`${
+        item.quantidade <= item.minimo 
+          ? 'border-red-200 bg-red-50' 
+          : 'border-gray-200'
+      }`}
+    >
+      <CardContent className="p-3 md:p-4">
+        <div className="space-y-3">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.name}</h3>
+              <Badge variant="outline" className="text-xs">
+                {item.categoria}
+              </Badge>
+              {item.quantidade <= item.minimo && (
+                <Badge variant="destructive" className="text-xs">
+                  Baixo Estoque
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs md:text-sm text-gray-600">
+              {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo} {item.unidade}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2 justify-end">
+            {isEditing ? (
+              <div className="flex items-center gap-1 md:gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  onClick={() => onUpdateEdit(item.id, -1)}
+                  disabled={editValue === 0}
+                >
+                  <Minus className="w-3 h-3" />
+                </Button>
+                
+                <span className="w-12 md:w-16 text-center font-medium border rounded px-1 md:px-2 py-1 text-sm">
+                  {editValue}
+                </span>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  onClick={() => onUpdateEdit(item.id, 1)}
+                >
+                  <Plus className="w-3 h-3" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  onClick={() => onConfirmChange(item.id)}
+                >
+                  <Check className="w-3 h-3" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  onClick={() => onCancelEdit(item.id)}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onStartEdit(item.id, item.quantidade)}
+                className="bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 text-xs md:text-sm"
+              >
+                Editar Quantidade
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

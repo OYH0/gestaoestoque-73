@@ -38,12 +38,16 @@ export function Login() {
       
       {/* Logo da Companhia do Churrasco - Centralizada e acima de tudo */}
       <div className="relative z-10 mb-8 flex flex-col items-center">
-        <div className="bg-gradient-to-br from-churrasco-red to-churrasco-orange p-6 rounded-full shadow-2xl">
+        <div className="flex items-center gap-4 bg-gradient-to-br from-churrasco-red to-churrasco-orange p-6 rounded-full shadow-2xl">
           <img 
             src="/lovable-uploads/6fa9e138-f1e8-44f3-a4d4-1cdc8ae06146.png" 
             alt="Companhia do Churrasco" 
             className="w-20 h-20"
           />
+          <div className="text-white">
+            <h1 className="text-2xl font-bold">Companhia do</h1>
+            <h2 className="text-xl font-bold -mt-1">Churrasco</h2>
+          </div>
         </div>
       </div>
       
@@ -52,14 +56,6 @@ export function Login() {
           <CardTitle className="text-2xl font-semibold text-foreground">
             Faça seu login
           </CardTitle>
-          <div className="text-center">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent drop-shadow-lg">
-              Companhia do
-            </h1>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent -mt-1 drop-shadow-lg">
-              Churrasco
-            </h2>
-          </div>
           <p className="text-muted-foreground">
             Acesse o sistema de gestão de estoque
           </p>

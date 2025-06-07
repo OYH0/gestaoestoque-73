@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Snowflake, Plus, Minus, AlertCircle, Check, X, History, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const initialItems = [
   { id: 1, name: 'Picanha', quantidade: 15, unidade: 'kg', categoria: 'Bovina', minimo: 5 },
@@ -38,6 +39,7 @@ interface HistoricoItem {
 }
 
 export function CamaraFria() {
+  const isMobile = useIsMobile();
   const [items, setItems] = useState(initialItems);
   const [newItem, setNewItem] = useState({ 
     name: '', 
@@ -145,41 +147,49 @@ export function CamaraFria() {
   const itemsBaixoEstoque = items.filter(item => item.quantidade <= item.minimo);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-            <Snowflake className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+            <Snowflake className="w-4 h-4 md:w-5 md:h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Câmara Fria</h2>
-            <p className="text-gray-600">Carnes e produtos congelados</p>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Câmara Fria</h2>
+            <p className="text-sm md:text-base text-gray-600">Carnes e produtos congelados</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+        
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
             {items.length} tipos
           </Badge>
           {itemsBaixoEstoque.length > 0 && (
-            <Badge variant="destructive">
+            <Badge variant="destructive" className="text-xs">
               {itemsBaixoEstoque.length} baixo estoque
             </Badge>
           )}
+        </div>
 
+        <div className="flex flex-wrap gap-2">
           <Button 
             variant="outline" 
+            size={isMobile ? "sm" : "default"}
             className="border-gray-300"
             onClick={handlePrintPDF}
           >
-            <FileText className="w-4 h-4 mr-2" />
-            Imprimir PDF
+            <FileText className="w-4 h-4 mr-1 md:mr-2" />
+            <span className={isMobile ? "text-xs" : "text-sm"}>PDF</span>
           </Button>
 
           <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="border-gray-300">
-                <History className="w-4 h-4 mr-2" />
-                Histórico
+              <Button 
+                variant="outline" 
+                size={isMobile ? "sm" : "default"}
+                className="border-gray-300"
+              >
+                <History className="w-4 h-4 mr-1 md:mr-2" />
+                <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
@@ -217,9 +227,12 @@ export function CamaraFria() {
           
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-500 hover:bg-blue-600">
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Carne
+              <Button 
+                size={isMobile ? "sm" : "default"}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                <Plus className="w-4 h-4 mr-1 md:mr-2" />
+                <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -279,18 +292,18 @@ export function CamaraFria() {
       {/* Alertas de baixo estoque */}
       {itemsBaixoEstoque.length > 0 && (
         <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-800 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
+          <CardHeader className="pb-3">
+            <CardTitle className="text-red-800 flex items-center gap-2 text-base md:text-lg">
+              <AlertCircle className="w-4 h-4 md:w-5 md:h-5" />
               Itens com Baixo Estoque
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 gap-2">
               {itemsBaixoEstoque.map((item) => (
                 <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded border">
                   <span className="font-medium text-sm">{item.name}</span>
-                  <span className="text-red-600 font-medium">{item.quantidade} {item.unidade}</span>
+                  <span className="text-red-600 font-medium text-sm">{item.quantidade} {item.unidade}</span>
                 </div>
               ))}
             </div>
@@ -300,15 +313,15 @@ export function CamaraFria() {
 
       {/* Filtros */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-2">
+        <CardContent className="p-3 md:p-4">
+          <div className="flex flex-wrap gap-1 md:gap-2">
             {categorias.map((categoria) => (
               <Button
                 key={categoria}
                 variant={categoriaFiltro === categoria ? "default" : "outline"}
                 size="sm"
                 onClick={() => setCategoriaFiltro(categoria)}
-                className={categoriaFiltro === categoria ? "bg-blue-500 hover:bg-blue-600" : ""}
+                className={`text-xs md:text-sm ${categoriaFiltro === categoria ? "bg-blue-500 hover:bg-blue-600" : ""}`}
               >
                 {categoria}
               </Button>
@@ -318,7 +331,7 @@ export function CamaraFria() {
       </Card>
 
       {/* Lista de itens */}
-      <div className="grid gap-4">
+      <div className="grid gap-3 md:gap-4">
         {sortedFilteredItems.map((item) => {
           const isEditing = editingQuantities.hasOwnProperty(item.id);
           const editValue = editingQuantities[item.id] || item.quantidade;
@@ -332,11 +345,11 @@ export function CamaraFria() {
                   : 'border-gray-200'
               }`}
             >
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <h3 className="font-semibold text-gray-900">{item.name}</h3>
+              <CardContent className="p-3 md:p-4">
+                <div className="space-y-3">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.name}</h3>
                       <Badge variant="outline" className="text-xs">
                         {item.categoria}
                       </Badge>
@@ -346,32 +359,32 @@ export function CamaraFria() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-xs md:text-sm text-gray-600">
                       {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo} {item.unidade}
                     </p>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 justify-end">
                     {isEditing ? (
-                      <>
+                      <div className="flex items-center gap-1 md:gap-2 flex-wrap">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+                          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 h-8 w-8 md:h-9 md:w-9 p-0"
                           onClick={() => updateEditingQuantity(item.id, -1)}
                           disabled={editValue === 0}
                         >
                           <Minus className="w-3 h-3" />
                         </Button>
                         
-                        <span className="w-16 text-center font-medium border rounded px-2 py-1">
+                        <span className="w-12 md:w-16 text-center font-medium border rounded px-1 md:px-2 py-1 text-sm">
                           {editValue}
                         </span>
                         
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100"
+                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
                           onClick={() => updateEditingQuantity(item.id, 1)}
                         >
                           <Plus className="w-3 h-3" />
@@ -380,7 +393,7 @@ export function CamaraFria() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100"
+                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
                           onClick={() => confirmQuantityChange(item.id)}
                         >
                           <Check className="w-3 h-3" />
@@ -389,18 +402,18 @@ export function CamaraFria() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                          className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9 p-0"
                           onClick={() => cancelQuantityEdit(item.id)}
                         >
                           <X className="w-3 h-3" />
                         </Button>
-                      </>
+                      </div>
                     ) : (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => startEditingQuantity(item.id, item.quantidade)}
-                        className="bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100"
+                        className="bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 text-xs md:text-sm"
                       >
                         Editar Quantidade
                       </Button>

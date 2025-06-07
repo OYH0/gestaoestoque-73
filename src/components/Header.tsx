@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Bell, Settings, User, Search, LogOut, Shield, Palette, Database, HelpCircle, UserCircle, Mail, Phone } from 'lucide-react';
+import { Bell, Settings, User, Search, LogOut, Shield, Palette, Database, HelpCircle, UserCircle, Mail, Phone, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';

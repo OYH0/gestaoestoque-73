@@ -39,7 +39,7 @@ export function Login() {
       
       {/* Logo Principal */}
       <div className="relative z-10 mb-12 flex flex-col items-center">
-        <div className="bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-white/20">
+        <div className="bg-gradient-to-r from-churrasco-red to-churrasco-orange backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-white/20">
           <img 
             src="/lovable-uploads/eb8e406f-5f0e-4eaa-93cd-77f66e6ffe4d.png" 
             alt="Logo da Empresa" 

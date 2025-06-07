@@ -22,7 +22,7 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4">
+    <div className="min-h-screen relative flex flex-col items-center justify-center p-4">
       {/* Background wallpaper */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -37,27 +37,27 @@ export function Login() {
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
       
+      {/* Logo da Companhia do Churrasco - Centralizada e acima de tudo */}
+      <div className="relative z-10 mb-8 flex flex-col items-center space-y-4">
+        <div className="bg-gradient-to-br from-churrasco-red to-churrasco-orange p-6 rounded-full shadow-2xl">
+          <img 
+            src="/lovable-uploads/fa82ef55-e1ff-491f-8240-ce800d8c3e85.png" 
+            alt="Companhia do Churrasco" 
+            className="w-20 h-20 filter invert"
+          />
+        </div>
+        <div className="text-center">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent drop-shadow-lg">
+            Companhia do
+          </h1>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent -mt-1 drop-shadow-lg">
+            Churrasco
+          </h2>
+        </div>
+      </div>
+      
       <Card className="w-full max-w-md relative z-10 shadow-2xl border-border/40 bg-card/90 backdrop-blur-md">
-        <CardHeader className="text-center space-y-6 pb-8">
-          {/* Logo da Companhia do Churrasco */}
-          <div className="flex items-center justify-center space-x-3">
-            <div className="bg-gradient-to-br from-churrasco-red to-churrasco-orange p-3 rounded-full">
-              <img 
-                src="/lovable-uploads/fa82ef55-e1ff-491f-8240-ce800d8c3e85.png" 
-                alt="Companhia do Churrasco" 
-                className="w-8 h-8 filter invert"
-              />
-            </div>
-            <div className="text-left">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent">
-                Companhia do
-              </h1>
-              <h2 className="text-xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent -mt-1">
-                Churrasco
-              </h2>
-            </div>
-          </div>
-          
+        <CardHeader className="text-center space-y-4 pb-8">
           <CardTitle className="text-2xl font-semibold text-foreground">
             Faça seu login
           </CardTitle>

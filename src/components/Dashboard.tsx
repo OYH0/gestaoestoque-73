@@ -1,123 +1,95 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Snowflake, Thermometer, Package, Trash2, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip, Legend } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-// Dados de quantidade por tipo de carne da Câmara Fria - ordenados da maior para menor quantidade
-const meatTypesData = [
-  { tipo: 'Coração de Frango', quantidade: 45, color: '#3b82f6' },
-  { tipo: 'Capa de Filé', quantidade: 40, color: '#10b981' },
-  { tipo: 'Coxa e Sobrecoxa', quantidade: 35, color: '#f59e0b' },
-  { tipo: 'Costela Bovina', quantidade: 30, color: '#ef4444' },
-  { tipo: 'Picanha Suína', quantidade: 25, color: '#8b5cf6' },
-  { tipo: 'Filé de Peito', quantidade: 22, color: '#06b6d4' },
-  { tipo: 'Coxão Mole', quantidade: 15, color: '#84cc16' },
-  { tipo: 'Alcatra com Maminha', quantidade: 4, color: '#f97316' },
-];
-
-// Top 5 carnes mais utilizadas
-const topMeatsData = [
-  { name: 'Coração de Frango', value: 247, color: '#3b82f6' },
-  { name: 'Capa de Filé', value: 230, color: '#10b981' },
-  { name: 'Coxa e Sobrecoxa', value: 165, color: '#f59e0b' },
-  { name: 'Costela Bovina', value: 163, color: '#ef4444' },
-  { name: 'Picanha Suína', value: 109, color: '#8b5cf6' },
-];
-
-// Dados para alertas de baixo estoque
-const camaraFriaItems = [
-  { name: 'Coração de Frango', quantidade: 38, minimo: 40 },
-  { name: 'Costela Bovina', quantidade: 13, minimo: 30 },
-  { name: 'Picanha Suína', quantidade: 0, minimo: 25 },
-  { name: 'Capa de Filé', quantidade: 30, minimo: 40 },
-  { name: 'Coxão Mole', quantidade: 2, minimo: 15 },
-  { name: 'Coxa e Sobrecoxa', quantidade: 7, minimo: 35 },
-  { name: 'Alcatra com Maminha', quantidade: 4, minimo: 10 },
-  { name: 'Filé de Peito', quantidade: 22, minimo: 25 },
-];
-
-const estoqueSecoItems = [
-  { name: 'Arroz Branco', quantidade: 25, minimo: 10 },
-  { name: 'Feijão Preto', quantidade: 15, minimo: 8 },
-  { name: 'Feijão Carioca', quantidade: 12, minimo: 8 },
-  { name: 'Farinha de Mandioca', quantidade: 8, minimo: 5 },
-  { name: 'Farinha de Trigo', quantidade: 5, minimo: 3 },
-  { name: 'Macarrão Espaguete', quantidade: 10, minimo: 5 },
-  { name: 'Macarrão Penne', quantidade: 8, minimo: 5 },
-  { name: 'Sal Grosso', quantidade: 20, minimo: 10 },
-  { name: 'Açúcar Cristal', quantidade: 18, minimo: 8 },
-  { name: 'Óleo de Soja', quantidade: 6, minimo: 4 },
-];
-
-const stockData = [
-  { name: 'Câmara Fria', value: 85, color: '#3b82f6' },
-  { name: 'Câmara Refrigerada', value: 65, color: '#10b981' },
-  { name: 'Estoque Seco', value: 45, color: '#f59e0b' },
-  { name: 'Descartáveis', value: 70, color: '#ef4444' },
-];
-
-const monthlyData = [
-  { month: 'Jan', camaraFria: 400, camaraRef: 240, estoqueSeco: 200, descartaveis: 150 },
-  { month: 'Fev', camaraFria: 300, camaraRef: 139, estoqueSeco: 180, descartaveis: 120 },
-  { month: 'Mar', camaraFria: 200, camaraRef: 980, estoqueSeco: 220, descartaveis: 200 },
-  { month: 'Abr', camaraFria: 278, camaraRef: 390, estoqueSeco: 250, descartaveis: 180 },
-  { month: 'Mai', camaraFria: 189, camaraRef: 480, estoqueSeco: 210, descartaveis: 160 },
-  { month: 'Jun', camaraFria: 239, camaraRef: 380, estoqueSeco: 190, descartaveis: 140 },
-];
-
-const statsCards = [
-  {
-    title: 'Câmara Fria',
-    value: '24',
-    description: 'Produtos armazenados',
-    icon: Snowflake,
-    progress: 85,
-    trend: '+12%',
-    color: 'from-blue-500 to-blue-600',
-    bgColor: 'from-blue-50 to-blue-100',
-  },
-  {
-    title: 'Câmara Refrigerada',
-    value: '18',
-    description: 'Em descongelamento',
-    icon: Thermometer,
-    progress: 65,
-    trend: '+8%',
-    color: 'from-green-500 to-green-600',
-    bgColor: 'from-green-50 to-green-100',
-  },
-  {
-    title: 'Estoque Seco',
-    value: '156',
-    description: 'Itens diversos',
-    icon: Package,
-    progress: 45,
-    trend: '-3%',
-    color: 'from-orange-500 to-orange-600',
-    bgColor: 'from-orange-50 to-orange-100',
-  },
-  {
-    title: 'Descartáveis',
-    value: '89',
-    description: 'Unidades disponíveis',
-    icon: Trash2,
-    progress: 70,
-    trend: '+15%',
-    color: 'from-red-500 to-red-600',
-    bgColor: 'from-red-50 to-red-100',
-  },
-];
+import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
+import { useEstoqueSecoData } from '@/hooks/useEstoqueSecoData';
+import { useDescartaveisData } from '@/hooks/useDescartaveisData';
 
 export function Dashboard() {
   const isMobile = useIsMobile();
-  
-  // Filtrar itens com baixo estoque
-  const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= item.minimo);
-  const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= item.minimo);
+  const { items: camaraFriaItems } = useCamaraFriaData();
+  const { items: estoqueSecoItems } = useEstoqueSecoData();
+  const { items: descartaveisItems } = useDescartaveisData();
+
+  // Processar dados para gráficos
+  const meatTypesData = camaraFriaItems
+    .reduce((acc, item) => {
+      const existing = acc.find(a => a.tipo === item.nome);
+      if (existing) {
+        existing.quantidade += item.quantidade;
+      } else {
+        acc.push({ 
+          tipo: item.nome, 
+          quantidade: item.quantidade,
+          color: '#' + Math.floor(Math.random()*16777215).toString(16)
+        });
+      }
+      return acc;
+    }, [] as any[])
+    .sort((a, b) => b.quantidade - a.quantidade)
+    .slice(0, 8);
+
+  const topMeatsData = meatTypesData.slice(0, 5);
+
+  // Dados para alertas de baixo estoque
+  const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5));
+  const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5));
   
   const temAlertas = carnesBaixoEstoque.length > 0 || estoqueBaixo.length > 0;
+
+  // Dados de estoque por categoria
+  const stockData = [
+    { name: 'Câmara Fria', value: Math.min(100, (camaraFriaItems.length / 20) * 100), color: '#3b82f6' },
+    { name: 'Estoque Seco', value: Math.min(100, (estoqueSecoItems.length / 15) * 100), color: '#f59e0b' },
+    { name: 'Descartáveis', value: Math.min(100, (descartaveisItems.length / 10) * 100), color: '#ef4444' },
+  ];
+
+  // Dados mensais simulados baseados nos dados reais
+  const monthlyData = [
+    { month: 'Jan', camaraFria: camaraFriaItems.length * 15, estoqueSeco: estoqueSecoItems.length * 8, descartaveis: descartaveisItems.length * 5 },
+    { month: 'Fev', camaraFria: camaraFriaItems.length * 12, estoqueSeco: estoqueSecoItems.length * 6, descartaveis: descartaveisItems.length * 4 },
+    { month: 'Mar', camaraFria: camaraFriaItems.length * 18, estoqueSeco: estoqueSecoItems.length * 10, descartaveis: descartaveisItems.length * 7 },
+    { month: 'Abr', camaraFria: camaraFriaItems.length * 14, estoqueSeco: estoqueSecoItems.length * 9, descartaveis: descartaveisItems.length * 6 },
+    { month: 'Mai', camaraFria: camaraFriaItems.length * 16, estoqueSeco: estoqueSecoItems.length * 7, descartaveis: descartaveisItems.length * 5 },
+    { month: 'Jun', camaraFria: camaraFriaItems.length * 20, estoqueSeco: estoqueSecoItems.length * 11, descartaveis: descartaveisItems.length * 8 },
+  ];
+
+  const statsCards = [
+    {
+      title: 'Câmara Fria',
+      value: camaraFriaItems.length.toString(),
+      description: 'Produtos armazenados',
+      icon: Snowflake,
+      progress: Math.min(100, (camaraFriaItems.length / 20) * 100),
+      trend: '+12%',
+      color: 'from-blue-500 to-blue-600',
+      bgColor: 'from-blue-50 to-blue-100',
+    },
+    {
+      title: 'Estoque Seco',
+      value: estoqueSecoItems.length.toString(),
+      description: 'Itens diversos',
+      icon: Package,
+      progress: Math.min(100, (estoqueSecoItems.length / 15) * 100),
+      trend: '-3%',
+      color: 'from-orange-500 to-orange-600',
+      bgColor: 'from-orange-50 to-orange-100',
+    },
+    {
+      title: 'Descartáveis',
+      value: descartaveisItems.length.toString(),
+      description: 'Unidades disponíveis',
+      icon: Trash2,
+      progress: Math.min(100, (descartaveisItems.length / 10) * 100),
+      trend: '+15%',
+      color: 'from-red-500 to-red-600',
+      bgColor: 'from-red-50 to-red-100',
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -134,9 +106,9 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Cards de Estatísticas - Hidden on mobile */}
+      {/* Cards de Estatísticas */}
       {!isMobile && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {statsCards.map((card, index) => (
             <Card key={index} className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 group">
               <div className={`absolute inset-0 bg-gradient-to-br ${card.bgColor} opacity-50`} />
@@ -161,7 +133,7 @@ export function Dashboard() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs">
                       <span>Capacidade</span>
-                      <span>{card.progress}%</span>
+                      <span>{Math.round(card.progress)}%</span>
                     </div>
                     <Progress value={card.progress} className="h-2" />
                   </div>
@@ -174,86 +146,149 @@ export function Dashboard() {
 
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="shadow-md border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
-              Quantidade por Tipo de Carne - Câmara Fria
-            </CardTitle>
-            <CardDescription>
-              Quantidade atual de cada tipo de carne (kg)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={meatTypesData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="tipo" 
-                    stroke="#888" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                    fontSize={10}
-                  />
-                  <YAxis stroke="#888" />
-                  <Bar dataKey="quantidade" radius={[2, 2, 0, 0]}>
-                    {meatTypesData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        {meatTypesData.length > 0 && (
+          <Card className="shadow-md border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-500" />
+                Quantidade por Tipo de Carne - Câmara Fria
+              </CardTitle>
+              <CardDescription>
+                Quantidade atual de cada tipo de carne (kg)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={meatTypesData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="tipo" 
+                      stroke="#888" 
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      fontSize={10}
+                    />
+                    <YAxis stroke="#888" />
+                    <Tooltip />
+                    <Bar dataKey="quantidade" radius={[2, 2, 0, 0]}>
+                      {meatTypesData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="shadow-md border-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="w-5 h-5 text-green-500" />
-              Top 5 Carnes Mais Utilizadas
+              Evolução Mensal do Estoque
             </CardTitle>
             <CardDescription>
-              Carnes com maior movimentação (kg total)
+              Movimentação de produtos ao longo dos meses
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80 flex items-center">
-              <div className="w-1/2">
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={topMeatsData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={40}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {topMeatsData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="w-1/2 space-y-3">
-                {topMeatsData.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">{item.name}</div>
-                      <div className="text-xs text-muted-foreground">{item.value}kg</div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="camaraFria" stroke="#3b82f6" name="Câmara Fria" />
+                  <Line type="monotone" dataKey="estoqueSeco" stroke="#f59e0b" name="Estoque Seco" />
+                  <Line type="monotone" dataKey="descartaveis" stroke="#ef4444" name="Descartáveis" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {topMeatsData.length > 0 && (
+          <Card className="shadow-md border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="w-5 h-5 text-green-500" />
+                Distribuição por Categoria
+              </CardTitle>
+              <CardDescription>
+                Categorias com maior quantidade em estoque
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80 flex items-center">
+                <div className="w-1/2">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={topMeatsData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="quantidade"
+                      >
+                        {topMeatsData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="w-1/2 space-y-3">
+                  {topMeatsData.map((item, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">{item.tipo}</div>
+                        <div className="text-xs text-muted-foreground">{item.quantidade}kg</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="shadow-md border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-purple-500" />
+              Nível de Estoque por Setor
+            </CardTitle>
+            <CardDescription>
+              Percentual de ocupação de cada setor
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stockData} layout="horizontal">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" domain={[0, 100]} />
+                  <YAxis dataKey="name" type="category" width={100} />
+                  <Tooltip formatter={(value) => [`${value}%`, 'Ocupação']} />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    {stockData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
@@ -278,9 +313,9 @@ export function Dashboard() {
                       <div key={index} className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
                         <AlertTriangle className="w-4 h-4 text-red-500" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">{item.name}</p>
+                          <p className="text-sm font-medium">{item.nome}</p>
                           <p className="text-xs text-muted-foreground">
-                            Estoque atual: {item.quantidade}kg | Mínimo: {item.minimo}kg
+                            Estoque atual: {item.quantidade}{item.unidade} | Mínimo: {item.minimo || 5}{item.unidade}
                           </p>
                         </div>
                       </div>
@@ -297,9 +332,9 @@ export function Dashboard() {
                       <div key={index} className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
                         <AlertTriangle className="w-4 h-4 text-orange-500" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">{item.name}</p>
+                          <p className="text-sm font-medium">{item.nome}</p>
                           <p className="text-xs text-muted-foreground">
-                            Estoque atual: {item.quantidade} | Mínimo: {item.minimo}
+                            Estoque atual: {item.quantidade} | Mínimo: {item.minimo || 5}
                           </p>
                         </div>
                       </div>

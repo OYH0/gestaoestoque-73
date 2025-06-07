@@ -1,27 +1,16 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { Package, Plus, Minus, Check, X, History, FileText } from 'lucide-react';
+import { Package, Plus, Minus, Check, X, History, FileText, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
 import { EstoqueSecoFilters } from '@/components/estoque-seco/EstoqueSecoFilters';
 import { EstoqueSecoAlerts } from '@/components/estoque-seco/EstoqueSecoAlerts';
-
-const initialItems = [
-  { id: 1, name: 'Arroz Branco', quantidade: 25, unidade: 'kg', categoria: 'Grãos', minimo: 10 },
-  { id: 2, name: 'Feijão Preto', quantidade: 15, unidade: 'kg', categoria: 'Grãos', minimo: 8 },
-  { id: 3, name: 'Feijão Carioca', quantidade: 12, unidade: 'kg', categoria: 'Grãos', minimo: 8 },
-  { id: 4, name: 'Farinha de Mandioca', quantidade: 8, unidade: 'kg', categoria: 'Farináceos', minimo: 5 },
-  { id: 5, name: 'Farinha de Trigo', quantidade: 5, unidade: 'kg', categoria: 'Farináceos', minimo: 3 },
-  { id: 6, name: 'Macarrão Espaguete', quantidade: 10, unidade: 'pacotes', categoria: 'Massas', minimo: 5 },
-  { id: 7, name: 'Macarrão Penne', quantidade: 8, unidade: 'pacotes', categoria: 'Massas', minimo: 5 },
-  { id: 8, name: 'Sal Grosso', quantidade: 20, unidade: 'kg', categoria: 'Temperos', minimo: 10 },
-  { id: 9, name: 'Açúcar Cristal', quantidade: 18, unidade: 'kg', categoria: 'Outros', minimo: 8 },
-  { id: 10, name: 'Óleo de Soja', quantidade: 6, unidade: 'litros', categoria: 'Outros', minimo: 4 },
-];
+import { useEstoqueSecoData } from '@/hooks/useEstoqueSecoData';
 
 const categorias = ['Todos', 'Grãos', 'Farináceos', 'Massas', 'Temperos', 'Outros'];
 
@@ -36,25 +25,25 @@ interface HistoricoItem {
 }
 
 export function EstoqueSeco() {
-  const [items, setItems] = useState(initialItems);
-  const [newItem, setNewItem] = useState({ name: '', quantidade: 0, unidade: 'kg', categoria: 'Outros', minimo: 5 });
+  const { items, loading, addItem, updateItemQuantity, deleteItem } = useEstoqueSecoData();
+  const [newItem, setNewItem] = useState({ nome: '', quantidade: 0, unidade: 'kg', categoria: 'Outros', minimo: 5 });
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historicoOpen, setHistoricoOpen] = useState(false);
-  const [editingQuantities, setEditingQuantities] = useState<{ [key: number]: number }>({});
+  const [editingQuantities, setEditingQuantities] = useState<{ [key: string]: number }>({});
   const [historico, setHistorico] = useState<HistoricoItem[]>([]);
 
-  const startEditingQuantity = (id: number, currentQuantity: number) => {
+  const startEditingQuantity = (id: string, currentQuantity: number) => {
     setEditingQuantities({ ...editingQuantities, [id]: currentQuantity });
   };
 
-  const updateEditingQuantity = (id: number, delta: number) => {
+  const updateEditingQuantity = (id: string, delta: number) => {
     const currentEditValue = editingQuantities[id] || 0;
     const newValue = Math.max(0, currentEditValue + delta);
     setEditingQuantities({ ...editingQuantities, [id]: newValue });
   };
 
-  const confirmQuantityChange = (id: number) => {
+  const confirmQuantityChange = async (id: string) => {
     const item = items.find(i => i.id === id);
     if (!item) return;
 
@@ -62,16 +51,12 @@ export function EstoqueSeco() {
     const oldQuantity = item.quantidade;
     const difference = newQuantity - oldQuantity;
 
-    // Atualizar o item
-    setItems(items.map(i => 
-      i.id === id ? { ...i, quantidade: newQuantity } : i
-    ));
+    await updateItemQuantity(id, newQuantity);
 
-    // Adicionar ao histórico
     const now = new Date();
     const novoHistorico: HistoricoItem = {
       id: Date.now(),
-      itemName: item.name,
+      itemName: item.nome,
       tipo: difference > 0 ? 'entrada' : 'saida',
       quantidade: Math.abs(difference),
       unidade: item.unidade,
@@ -81,33 +66,30 @@ export function EstoqueSeco() {
 
     setHistorico([novoHistorico, ...historico]);
 
-    // Limpar edição
     const newEditingQuantities = { ...editingQuantities };
     delete newEditingQuantities[id];
     setEditingQuantities(newEditingQuantities);
 
     toast({
       title: difference > 0 ? "Item adicionado" : "Item retirado",
-      description: `${Math.abs(difference)} ${item.unidade} de ${item.name}`,
+      description: `${Math.abs(difference)} ${item.unidade} de ${item.nome}`,
     });
   };
 
-  const cancelQuantityEdit = (id: number) => {
+  const cancelQuantityEdit = (id: string) => {
     const newEditingQuantities = { ...editingQuantities };
     delete newEditingQuantities[id];
     setEditingQuantities(newEditingQuantities);
   };
 
-  const addNewItem = () => {
-    if (newItem.name && newItem.quantidade >= 0) {
-      const id = Math.max(...items.map(i => i.id)) + 1;
-      setItems([...items, { id, ...newItem }]);
-      setNewItem({ name: '', quantidade: 0, unidade: 'kg', categoria: 'Outros', minimo: 5 });
-      setDialogOpen(false);
-      toast({
-        title: "Item adicionado",
-        description: `${newItem.name} foi adicionado ao estoque!`,
+  const addNewItem = async () => {
+    if (newItem.nome && newItem.quantidade >= 0) {
+      await addItem({
+        ...newItem,
+        minimo: newItem.minimo
       });
+      setNewItem({ nome: '', quantidade: 0, unidade: 'kg', categoria: 'Outros', minimo: 5 });
+      setDialogOpen(false);
     }
   };
 
@@ -123,14 +105,25 @@ export function EstoqueSeco() {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex items-center justify-center p-6">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <span>Carregando dados...</span>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const filteredItems = categoriaFiltro === 'Todos' 
     ? items 
     : items.filter(item => item.categoria === categoriaFiltro);
 
-  // Ordenar itens filtrados alfabeticamente
-  const sortedFilteredItems = [...filteredItems].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
-
-  const itemsBaixoEstoque = items.filter(item => item.quantidade <= item.minimo);
+  const sortedFilteredItems = [...filteredItems].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  const itemsBaixoEstoque = items.filter(item => item.quantidade <= (item.minimo || 5));
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -221,8 +214,8 @@ export function EstoqueSeco() {
               <div className="space-y-4">
                 <Input
                   placeholder="Nome do produto"
-                  value={newItem.name}
-                  onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                  value={newItem.nome}
+                  onChange={(e) => setNewItem({...newItem, nome: e.target.value})}
                 />
                 <Input
                   type="number"
@@ -286,7 +279,7 @@ export function EstoqueSeco() {
             <Card 
               key={item.id} 
               className={`${
-                item.quantidade <= item.minimo 
+                item.quantidade <= (item.minimo || 5)
                   ? 'border-red-200 bg-red-50' 
                   : 'border-gray-200'
               }`}
@@ -295,18 +288,18 @@ export function EstoqueSeco() {
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.name}</h3>
+                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.nome}</h3>
                       <Badge variant="outline" className="text-xs">
                         {item.categoria}
                       </Badge>
-                      {item.quantidade <= item.minimo && (
+                      {item.quantidade <= (item.minimo || 5) && (
                         <Badge variant="destructive" className="text-xs">
                           Baixo Estoque
                         </Badge>
                       )}
                     </div>
                     <p className="text-xs md:text-sm text-gray-600 mt-1">
-                      {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo} {item.unidade}
+                      {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo || 5} {item.unidade}
                     </p>
                   </div>
                   

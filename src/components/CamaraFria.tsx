@@ -6,22 +6,9 @@ import { CamaraFriaHeader } from './camara-fria/CamaraFriaHeader';
 import { CamaraFriaAlerts } from './camara-fria/CamaraFriaAlerts';
 import { CamaraFriaFilters } from './camara-fria/CamaraFriaFilters';
 import { CamaraFriaItemCard } from './camara-fria/CamaraFriaItemCard';
-
-const initialItems = [
-  { id: 1, name: 'Picanha', quantidade: 15, unidade: 'kg', categoria: 'Bovina', minimo: 5 },
-  { id: 2, name: 'Alcatra', quantidade: 20, unidade: 'kg', categoria: 'Bovina', minimo: 8 },
-  { id: 3, name: 'Costela Bovina', quantidade: 25, unidade: 'kg', categoria: 'Bovina', minimo: 10 },
-  { id: 4, name: 'Fraldinha', quantidade: 12, unidade: 'kg', categoria: 'Bovina', minimo: 6 },
-  { id: 5, name: 'Maminha', quantidade: 18, unidade: 'kg', categoria: 'Bovina', minimo: 8 },
-  { id: 6, name: 'Costela Suína', quantidade: 22, unidade: 'kg', categoria: 'Suína', minimo: 10 },
-  { id: 7, name: 'Lombo Suíno', quantidade: 14, unidade: 'kg', categoria: 'Suína', minimo: 6 },
-  { id: 8, name: 'Pernil Suíno', quantidade: 16, unidade: 'kg', categoria: 'Suína', minimo: 8 },
-  { id: 9, name: 'Coxa de Frango', quantidade: 30, unidade: 'kg', categoria: 'Aves', minimo: 15 },
-  { id: 10, name: 'Sobrecoxa de Frango', quantidade: 25, unidade: 'kg', categoria: 'Aves', minimo: 12 },
-  { id: 11, name: 'Peito de Frango', quantidade: 20, unidade: 'kg', categoria: 'Aves', minimo: 10 },
-  { id: 12, name: 'Linguiça Calabresa', quantidade: 8, unidade: 'kg', categoria: 'Embutidos', minimo: 4 },
-  { id: 13, name: 'Linguiça Toscana', quantidade: 6, unidade: 'kg', categoria: 'Embutidos', minimo: 3 },
-];
+import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 const categorias = ['Todos', 'Bovina', 'Suína', 'Aves', 'Embutidos'];
 
@@ -36,9 +23,9 @@ interface HistoricoItem {
 }
 
 export function CamaraFria() {
-  const [items, setItems] = useState(initialItems);
+  const { items, loading, addItem, updateItemQuantity, deleteItem } = useCamaraFriaData();
   const [newItem, setNewItem] = useState({ 
-    name: '', 
+    nome: '', 
     quantidade: 0, 
     unidade: 'kg', 
     categoria: 'Bovina', 
@@ -47,20 +34,20 @@ export function CamaraFria() {
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historicoOpen, setHistoricoOpen] = useState(false);
-  const [editingQuantities, setEditingQuantities] = useState<{ [key: number]: number }>({});
+  const [editingQuantities, setEditingQuantities] = useState<{ [key: string]: number }>({});
   const [historico, setHistorico] = useState<HistoricoItem[]>([]);
 
-  const startEditingQuantity = (id: number, currentQuantity: number) => {
+  const startEditingQuantity = (id: string, currentQuantity: number) => {
     setEditingQuantities({ ...editingQuantities, [id]: currentQuantity });
   };
 
-  const updateEditingQuantity = (id: number, delta: number) => {
+  const updateEditingQuantity = (id: string, delta: number) => {
     const currentEditValue = editingQuantities[id] || 0;
     const newValue = Math.max(0, currentEditValue + delta);
     setEditingQuantities({ ...editingQuantities, [id]: newValue });
   };
 
-  const confirmQuantityChange = (id: number) => {
+  const confirmQuantityChange = async (id: string) => {
     const item = items.find(i => i.id === id);
     if (!item) return;
 
@@ -68,14 +55,12 @@ export function CamaraFria() {
     const oldQuantity = item.quantidade;
     const difference = newQuantity - oldQuantity;
 
-    setItems(items.map(i => 
-      i.id === id ? { ...i, quantidade: newQuantity } : i
-    ));
+    await updateItemQuantity(id, newQuantity);
 
     const now = new Date();
     const novoHistorico: HistoricoItem = {
       id: Date.now(),
-      itemName: item.name,
+      itemName: item.nome,
       tipo: difference > 0 ? 'entrada' : 'saida',
       quantidade: Math.abs(difference),
       unidade: item.unidade,
@@ -91,32 +76,30 @@ export function CamaraFria() {
 
     toast({
       title: difference > 0 ? "Item adicionado" : "Item retirado",
-      description: `${Math.abs(difference)} ${item.unidade} de ${item.name}`,
+      description: `${Math.abs(difference)} ${item.unidade} de ${item.nome}`,
     });
   };
 
-  const cancelQuantityEdit = (id: number) => {
+  const cancelQuantityEdit = (id: string) => {
     const newEditingQuantities = { ...editingQuantities };
     delete newEditingQuantities[id];
     setEditingQuantities(newEditingQuantities);
   };
 
-  const addNewItem = () => {
-    if (newItem.name && newItem.quantidade >= 0) {
-      const id = Math.max(...items.map(i => i.id)) + 1;
-      setItems([...items, { id, ...newItem }]);
+  const addNewItem = async () => {
+    if (newItem.nome && newItem.quantidade >= 0) {
+      await addItem({
+        ...newItem,
+        minimo: newItem.minimo
+      });
       setNewItem({ 
-        name: '', 
+        nome: '', 
         quantidade: 0, 
         unidade: 'kg', 
         categoria: 'Bovina', 
         minimo: 5 
       });
       setDialogOpen(false);
-      toast({
-        title: "Item adicionado",
-        description: `${newItem.name} foi adicionado ao estoque!`,
-      });
     }
   };
 
@@ -132,12 +115,25 @@ export function CamaraFria() {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex items-center justify-center p-6">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <span>Carregando dados...</span>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const filteredItems = categoriaFiltro === 'Todos' 
     ? items 
     : items.filter(item => item.categoria === categoriaFiltro);
 
-  const sortedFilteredItems = [...filteredItems].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
-  const itemsBaixoEstoque = items.filter(item => item.quantidade <= item.minimo);
+  const sortedFilteredItems = [...filteredItems].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  const itemsBaixoEstoque = items.filter(item => item.quantidade <= (item.minimo || 5));
 
   return (
     <div className="space-y-4 md:space-y-6">

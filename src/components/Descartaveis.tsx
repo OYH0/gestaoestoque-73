@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,21 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
 import { DescartaveisFilters } from '@/components/descartaveis/DescartaveisFilters';
 import { DescartaveisAlerts } from '@/components/descartaveis/DescartaveisAlerts';
-
-const initialItems = [
-  { id: 1, name: 'Pratos Descartáveis', quantidade: 200, unidade: 'unidades', categoria: 'Utensílios', minimo: 50 },
-  { id: 2, name: 'Copos Descartáveis 200ml', quantidade: 150, unidade: 'unidades', categoria: 'Utensílios', minimo: 100 },
-  { id: 3, name: 'Copos Descartáveis 300ml', quantidade: 80, unidade: 'unidades', categoria: 'Utensílios', minimo: 50 },
-  { id: 4, name: 'Garfos Descartáveis', quantidade: 120, unidade: 'unidades', categoria: 'Utensílios', minimo: 80 },
-  { id: 5, name: 'Facas Descartáveis', quantidade: 90, unidade: 'unidades', categoria: 'Utensílios', minimo: 60 },
-  { id: 6, name: 'Guardanapos', quantidade: 500, unidade: 'unidades', categoria: 'Higiene', minimo: 200 },
-  { id: 7, name: 'Papel Toalha', quantidade: 12, unidade: 'rolos', categoria: 'Higiene', minimo: 6 },
-  { id: 8, name: 'Saco de Lixo 50L', quantidade: 25, unidade: 'unidades', categoria: 'Limpeza', minimo: 15 },
-  { id: 9, name: 'Saco de Lixo 100L', quantidade: 18, unidade: 'unidades', categoria: 'Limpeza', minimo: 10 },
-  { id: 10, name: 'Detergente', quantidade: 8, unidade: 'unidades', categoria: 'Limpeza', minimo: 5 },
-  { id: 11, name: 'Papel Alumínio', quantidade: 4, unidade: 'rolos', categoria: 'Embalagens', minimo: 3 },
-  { id: 12, name: 'Papel Filme', quantidade: 3, unidade: 'rolos', categoria: 'Embalagens', minimo: 2 },
-];
+import { useDescartaveisData } from '@/hooks/useDescartaveisData';
 
 const categorias = ['Todos', 'Utensílios', 'Higiene', 'Limpeza', 'Embalagens'];
 
@@ -38,9 +25,9 @@ interface HistoricoItem {
 }
 
 export function Descartaveis() {
-  const [items, setItems] = useState(initialItems);
+  const { items, loading, addItem, updateItemQuantity, deleteItem } = useDescartaveisData();
   const [newItem, setNewItem] = useState({ 
-    name: '', 
+    nome: '', 
     quantidade: 0, 
     unidade: 'unidades', 
     categoria: 'Utensílios', 
@@ -49,20 +36,20 @@ export function Descartaveis() {
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historicoOpen, setHistoricoOpen] = useState(false);
-  const [editingQuantities, setEditingQuantities] = useState<{ [key: number]: number }>({});
+  const [editingQuantities, setEditingQuantities] = useState<{ [key: string]: number }>({});
   const [historico, setHistorico] = useState<HistoricoItem[]>([]);
 
-  const startEditingQuantity = (id: number, currentQuantity: number) => {
+  const startEditingQuantity = (id: string, currentQuantity: number) => {
     setEditingQuantities({ ...editingQuantities, [id]: currentQuantity });
   };
 
-  const updateEditingQuantity = (id: number, delta: number) => {
+  const updateEditingQuantity = (id: string, delta: number) => {
     const currentEditValue = editingQuantities[id] || 0;
     const newValue = Math.max(0, currentEditValue + delta);
     setEditingQuantities({ ...editingQuantities, [id]: newValue });
   };
 
-  const confirmQuantityChange = (id: number) => {
+  const confirmQuantityChange = async (id: string) => {
     const item = items.find(i => i.id === id);
     if (!item) return;
 
@@ -70,16 +57,14 @@ export function Descartaveis() {
     const oldQuantity = item.quantidade;
     const difference = newQuantity - oldQuantity;
 
-    // Atualizar o item
-    setItems(items.map(i => 
-      i.id === id ? { ...i, quantidade: newQuantity } : i
-    ));
+    // Atualizar o item no banco
+    await updateItemQuantity(id, newQuantity);
 
     // Adicionar ao histórico
     const now = new Date();
     const novoHistorico: HistoricoItem = {
       id: Date.now(),
-      itemName: item.name,
+      itemName: item.nome,
       tipo: difference > 0 ? 'entrada' : 'saida',
       quantidade: Math.abs(difference),
       unidade: item.unidade,
@@ -96,44 +81,27 @@ export function Descartaveis() {
 
     toast({
       title: difference > 0 ? "Item adicionado" : "Item retirado",
-      description: `${Math.abs(difference)} ${item.unidade} de ${item.name}`,
+      description: `${Math.abs(difference)} ${item.unidade} de ${item.nome}`,
     });
   };
 
-  const cancelQuantityEdit = (id: number) => {
+  const cancelQuantityEdit = (id: string) => {
     const newEditingQuantities = { ...editingQuantities };
     delete newEditingQuantities[id];
     setEditingQuantities(newEditingQuantities);
   };
 
-  const updateQuantity = (id: number, delta: number) => {
-    setItems(items.map(item => 
-      item.id === id 
-        ? { ...item, quantidade: Math.max(0, item.quantidade + delta) }
-        : item
-    ));
-    toast({
-      title: "Quantidade atualizada",
-      description: "O estoque foi atualizado com sucesso!",
-    });
-  };
-
-  const addNewItem = () => {
-    if (newItem.name && newItem.quantidade >= 0) {
-      const id = Math.max(...items.map(i => i.id)) + 1;
-      setItems([...items, { id, ...newItem }]);
+  const addNewItem = async () => {
+    if (newItem.nome && newItem.quantidade >= 0) {
+      await addItem(newItem);
       setNewItem({ 
-        name: '', 
+        nome: '', 
         quantidade: 0, 
         unidade: 'unidades', 
         categoria: 'Utensílios', 
         minimo: 10 
       });
       setDialogOpen(false);
-      toast({
-        title: "Item adicionado",
-        description: `${newItem.name} foi adicionado ao estoque!`,
-      });
     }
   };
 
@@ -149,14 +117,25 @@ export function Descartaveis() {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando descartáveis...</p>
+        </div>
+      </div>
+    );
+  }
+
   const filteredItems = categoriaFiltro === 'Todos' 
     ? items 
     : items.filter(item => item.categoria === categoriaFiltro);
 
   // Ordenar itens filtrados alfabeticamente
-  const sortedFilteredItems = [...filteredItems].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  const sortedFilteredItems = [...filteredItems].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 
-  const itemsBaixoEstoque = items.filter(item => item.quantidade <= item.minimo);
+  const itemsBaixoEstoque = items.filter(item => item.minimo && item.quantidade <= item.minimo);
   const totalItens = items.reduce((acc, item) => acc + item.quantidade, 0);
 
   return (
@@ -251,8 +230,8 @@ export function Descartaveis() {
               <div className="space-y-4">
                 <Input
                   placeholder="Nome do item"
-                  value={newItem.name}
-                  onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                  value={newItem.nome}
+                  onChange={(e) => setNewItem({...newItem, nome: e.target.value})}
                 />
                 <Input
                   type="number"
@@ -327,12 +306,13 @@ export function Descartaveis() {
         {sortedFilteredItems.map((item) => {
           const isEditing = editingQuantities.hasOwnProperty(item.id);
           const editValue = editingQuantities[item.id] || item.quantidade;
+          const minimo = item.minimo || 0;
 
           return (
             <Card 
               key={item.id} 
               className={`${
-                item.quantidade <= item.minimo 
+                item.quantidade <= minimo 
                   ? 'border-red-200 bg-red-50' 
                   : 'border-gray-200'
               }`}
@@ -341,18 +321,18 @@ export function Descartaveis() {
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.name}</h3>
+                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.nome}</h3>
                       <Badge variant="outline" className="text-xs">
                         {item.categoria}
                       </Badge>
-                      {item.quantidade <= item.minimo && (
+                      {item.quantidade <= minimo && (
                         <Badge variant="destructive" className="text-xs">
                           Baixo Estoque
                         </Badge>
                       )}
                     </div>
                     <p className="text-xs md:text-sm text-gray-600 mt-1">
-                      {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo} {item.unidade}
+                      {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {minimo} {item.unidade}
                     </p>
                   </div>
                   

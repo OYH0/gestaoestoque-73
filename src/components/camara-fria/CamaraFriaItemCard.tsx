@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Minus, Check, X, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Minus, Plus, Check, X, Snowflake, Trash2 } from 'lucide-react';
 import { CamaraFriaItem } from '@/hooks/useCamaraFriaData';
 
 interface CamaraFriaItemCardProps {
@@ -16,10 +16,11 @@ interface CamaraFriaItemCardProps {
   onUpdateEdit: (id: string, delta: number) => void;
   onConfirmChange: (id: string) => void;
   onCancelEdit: (id: string) => void;
-  onStartThaw: (id: string, currentQuantity: number) => void;
+  onStartThaw: (id: string, quantity: number) => void;
   onUpdateThaw: (id: string, delta: number) => void;
   onConfirmThaw: (id: string) => void;
   onCancelThaw: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function CamaraFriaItemCard({
@@ -35,147 +36,144 @@ export function CamaraFriaItemCard({
   onStartThaw,
   onUpdateThaw,
   onConfirmThaw,
-  onCancelThaw
+  onCancelThaw,
+  onDelete
 }: CamaraFriaItemCardProps) {
+  const isLowStock = item.quantidade <= (item.minimo || 5);
+  
   return (
-    <Card 
-      className={`${
-        item.quantidade <= (item.minimo || 5)
-          ? 'border-red-200 bg-red-50' 
-          : 'border-gray-200'
-      }`}
-    >
-      <CardContent className="p-3 md:p-4">
-        <div className="space-y-3">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.nome}</h3>
-              <Badge variant="outline" className="text-xs">
+    <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-2">
+                <Snowflake className="w-4 h-4 text-blue-500" />
+                <h3 className="font-semibold text-lg">{item.nome}</h3>
+              </div>
+              <Badge variant={isLowStock ? "destructive" : "secondary"}>
                 {item.categoria}
               </Badge>
-              {item.quantidade <= (item.minimo || 5) && (
+              {isLowStock && (
                 <Badge variant="destructive" className="text-xs">
                   Baixo Estoque
                 </Badge>
               )}
             </div>
-            <p className="text-xs md:text-sm text-gray-600">
-              {item.quantidade} {item.unidade} • Mínimo: {item.minimo || 5} {item.unidade}
-            </p>
+            
+            <div className="space-y-1 text-sm text-gray-600">
+              <p>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></p>
+              {item.temperatura_ideal && (
+                <p>Temperatura ideal: <span className="font-medium">{item.temperatura_ideal}°C</span></p>
+              )}
+              {item.data_validade && (
+                <p>Validade: <span className="font-medium">{new Date(item.data_validade).toLocaleDateString('pt-BR')}</span></p>
+              )}
+              <p>Mínimo: <span className="font-medium">{item.minimo || 5} {item.unidade}</span></p>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-2 justify-end flex-wrap">
+
+          <div className="flex flex-col gap-2 ml-4">
             {isEditing ? (
-              <div className="flex items-center gap-1 md:gap-2 flex-wrap">
+              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg">
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  variant="outline"
                   onClick={() => onUpdateEdit(item.id, -1)}
-                  disabled={editValue === 0}
+                  disabled={editValue <= 0}
                 >
-                  <Minus className="w-3 h-3" />
+                  <Minus className="w-4 h-4" />
                 </Button>
-                
-                <span className="w-12 md:w-16 text-center font-medium border rounded px-1 md:px-2 py-1 text-sm">
-                  {editValue}
-                </span>
-                
+                <span className="font-medium min-w-12 text-center">{editValue}</span>
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  variant="outline"
                   onClick={() => onUpdateEdit(item.id, 1)}
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-4 h-4" />
                 </Button>
-
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
                   onClick={() => onConfirmChange(item.id)}
+                  className="bg-green-500 hover:bg-green-600"
                 >
-                  <Check className="w-3 h-3" />
+                  <Check className="w-4 h-4" />
                 </Button>
-
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  variant="outline"
                   onClick={() => onCancelEdit(item.id)}
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-4 h-4" />
                 </Button>
               </div>
             ) : isThawing ? (
-              <div className="flex items-center gap-1 md:gap-2 flex-wrap">
-                <span className="text-xs md:text-sm text-gray-600 mr-2">Descongelar:</span>
+              <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-lg">
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  variant="outline"
                   onClick={() => onUpdateThaw(item.id, -1)}
-                  disabled={thawValue === 1}
+                  disabled={thawValue <= 1}
                 >
-                  <Minus className="w-3 h-3" />
+                  <Minus className="w-4 h-4" />
                 </Button>
-                
-                <span className="w-12 md:w-16 text-center font-medium border rounded px-1 md:px-2 py-1 text-sm">
-                  {thawValue}
-                </span>
-                
+                <span className="font-medium min-w-12 text-center">{thawValue}</span>
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  variant="outline"
                   onClick={() => onUpdateThaw(item.id, 1)}
                   disabled={thawValue >= item.quantidade}
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-4 h-4" />
                 </Button>
-
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
                   onClick={() => onConfirmThaw(item.id)}
+                  className="bg-orange-500 hover:bg-orange-600"
                 >
-                  <Check className="w-3 h-3" />
+                  <Check className="w-4 h-4" />
                 </Button>
-
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  variant="outline"
                   onClick={() => onCancelThaw(item.id)}
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-4 h-4" />
                 </Button>
               </div>
             ) : (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onStartEdit(item.id, item.quantidade)}
-                  className="bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 text-xs md:text-sm"
-                >
-                  Editar Quantidade
-                </Button>
-                
-                {item.quantidade > 0 && (
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
                   <Button
-                    variant="outline"
                     size="sm"
-                    onClick={() => onStartThaw(item.id, 1)}
-                    className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 text-xs md:text-sm"
+                    variant="outline"
+                    onClick={() => onStartEdit(item.id, item.quantidade)}
+                    className="text-xs"
                   >
-                    <ArrowRight className="w-3 h-3 mr-1" />
-                    Descongelar
+                    Ajustar Estoque
+                  </Button>
+                  {item.quantidade > 0 && (
+                    <Button
+                      size="sm"
+                      onClick={() => onStartThaw(item.id, 1)}
+                      className="bg-orange-500 hover:bg-orange-600 text-xs"
+                    >
+                      Descongelar
+                    </Button>
+                  )}
+                </div>
+                {onDelete && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => onDelete(item.id)}
+                    className="text-xs"
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    Remover
                   </Button>
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>

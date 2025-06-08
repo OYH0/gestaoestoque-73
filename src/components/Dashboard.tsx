@@ -9,6 +9,16 @@ import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { useEstoqueSecoData } from '@/hooks/useEstoqueSecoData';
 import { useDescartaveisData } from '@/hooks/useDescartaveisData';
 
+// Cores fixas para os gráficos
+const CHART_COLORS = [
+  '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#8dd1e1',
+  '#d084d0', '#ffb347', '#87ceeb', '#dda0dd', '#98fb98'
+];
+
+const PIE_COLORS = [
+  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'
+];
+
 export function Dashboard() {
   const isMobile = useIsMobile();
   const { items: camaraFriaItems } = useCamaraFriaData();
@@ -24,8 +34,7 @@ export function Dashboard() {
       } else {
         acc.push({ 
           tipo: item.nome, 
-          quantidade: item.quantidade,
-          color: '#' + Math.floor(Math.random()*16777215).toString(16)
+          quantidade: item.quantidade
         });
       }
       return acc;
@@ -35,8 +44,7 @@ export function Dashboard() {
   // Top 5 carnes mais utilizadas para gráfico de pizza (simulando percentual de uso)
   const top5MeatUsage = meatTypesData.slice(0, 5).map((meat, index) => ({
     nome: meat.tipo,
-    percentualUso: Math.max(20, 90 - (index * 15) + Math.random() * 10), // Simular percentual de uso
-    color: meat.color
+    percentualUso: Math.max(20, 90 - (index * 15) + Math.random() * 10),
   })).sort((a, b) => b.percentualUso - a.percentualUso);
 
   // Dados para alertas de baixo estoque
@@ -165,7 +173,7 @@ export function Dashboard() {
                     />
                     <Bar dataKey="quantidade" radius={[4, 4, 0, 0]}>
                       {meatTypesData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -209,7 +217,7 @@ export function Dashboard() {
                       dataKey="percentualUso"
                     >
                       {top5MeatUsage.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip 

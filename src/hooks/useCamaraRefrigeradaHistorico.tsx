@@ -13,6 +13,7 @@ export interface CamaraRefrigeradaHistoricoItem {
   tipo: 'retirada' | 'volta_freezer';
   data_operacao: string;
   observacoes?: string;
+  estoque_tipo?: 'CF' | 'ES' | 'DESC';
 }
 
 export function useCamaraRefrigeradaHistorico() {
@@ -20,14 +21,21 @@ export function useCamaraRefrigeradaHistorico() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  const fetchHistorico = async () => {
+  const fetchHistorico = async (estoqueTipo?: 'CF' | 'ES' | 'DESC') => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('camara_refrigerada_historico')
         .select('*')
         .order('data_operacao', { ascending: false });
+
+      // Filtrar por tipo de estoque se especificado
+      if (estoqueTipo) {
+        query = query.eq('estoque_tipo', estoqueTipo);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -40,6 +48,7 @@ export function useCamaraRefrigeradaHistorico() {
         tipo: item.tipo as 'retirada' | 'volta_freezer',
         data_operacao: item.data_operacao,
         observacoes: item.observacoes,
+        estoque_tipo: item.estoque_tipo || 'CF',
       }));
       
       setHistorico(mappedHistorico);
@@ -47,7 +56,7 @@ export function useCamaraRefrigeradaHistorico() {
       console.error('Error fetching history:', error);
       toast({
         title: "Erro ao carregar histórico",
-        description: "Não foi possível carregar o histórico da câmara refrigerada.",
+        description: "Não foi possível carregar o histórico.",
         variant: "destructive",
       });
     } finally {
@@ -63,7 +72,8 @@ export function useCamaraRefrigeradaHistorico() {
         .from('camara_refrigerada_historico')
         .insert([{ 
           ...item, 
-          user_id: user.id
+          user_id: user.id,
+          estoque_tipo: item.estoque_tipo || 'CF'
         }])
         .select()
         .single();
@@ -79,6 +89,7 @@ export function useCamaraRefrigeradaHistorico() {
         tipo: data.tipo as 'retirada' | 'volta_freezer',
         data_operacao: data.data_operacao,
         observacoes: data.observacoes,
+        estoque_tipo: data.estoque_tipo || 'CF',
       };
       
       setHistorico(prev => [mappedItem, ...prev]);

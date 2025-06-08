@@ -36,86 +36,55 @@ export function useQRCodeScanner() {
       const itemIdPart = parts[1];
       
       let tableDisplayName: string;
+      let tableName: string;
       
       switch (tipo) {
         case 'CF':
           tableDisplayName = 'Câmara Fria';
+          tableName = 'camara_fria_items';
           break;
         case 'ES':
           tableDisplayName = 'Estoque Seco';
+          tableName = 'estoque_seco_items';
           break;
         case 'DESC':
           tableDisplayName = 'Descartáveis';
+          tableName = 'descartaveis_items';
           break;
         default:
           return { success: false, error: 'Tipo de estoque não reconhecido' };
       }
 
-      let items: any[] = [];
-      let searchError: any = null;
-
       console.log(`Buscando item do tipo ${tipo} com ID contendo: ${itemIdPart}`);
 
-      // Buscar item no banco de dados baseado no tipo
-      // Usar cast para text para evitar problemas com UUID
-      if (tipo === 'CF') {
-        const { data, error } = await supabase
-          .from('camara_fria_items')
-          .select('*')
-          .gt('quantidade', 0);
-        
-        // Filtrar localmente usando cast para string
-        items = data?.filter(item => {
-          const itemIdStr = String(item.id);
-          const nomeStr = String(item.nome).toLowerCase();
-          const searchStr = itemIdPart.toLowerCase();
-          
-          return itemIdStr.includes(itemIdPart) || nomeStr.includes(searchStr);
-        }) || [];
-        searchError = error;
-      } else if (tipo === 'ES') {
-        const { data, error } = await supabase
-          .from('estoque_seco_items')
-          .select('*')
-          .gt('quantidade', 0);
-        
-        items = data?.filter(item => {
-          const itemIdStr = String(item.id);
-          const nomeStr = String(item.nome).toLowerCase();
-          const searchStr = itemIdPart.toLowerCase();
-          
-          return itemIdStr.includes(itemIdPart) || nomeStr.includes(searchStr);
-        }) || [];
-        searchError = error;
-      } else if (tipo === 'DESC') {
-        const { data, error } = await supabase
-          .from('descartaveis_items')
-          .select('*')
-          .gt('quantidade', 0);
-        
-        items = data?.filter(item => {
-          const itemIdStr = String(item.id);
-          const nomeStr = String(item.nome).toLowerCase();
-          const searchStr = itemIdPart.toLowerCase();
-          
-          return itemIdStr.includes(itemIdPart) || nomeStr.includes(searchStr);
-        }) || [];
-        searchError = error;
-      }
+      // Buscar item no banco de dados
+      const { data: items, error: searchError } = await supabase
+        .from(tableName)
+        .select('*')
+        .gt('quantidade', 0);
 
       if (searchError) {
         console.error('Erro ao buscar item:', searchError);
         return { success: false, error: 'Erro ao buscar item no banco de dados' };
       }
 
-      console.log('Itens encontrados:', items.length);
+      // Filtrar localmente
+      const filteredItems = items?.filter(item => {
+        const itemIdStr = String(item.id);
+        const nomeStr = String(item.nome).toLowerCase();
+        const searchStr = itemIdPart.toLowerCase();
+        
+        return itemIdStr.includes(itemIdPart) || nomeStr.includes(searchStr);
+      }) || [];
 
-      if (!items || items.length === 0) {
+      console.log('Itens encontrados:', filteredItems.length);
+
+      if (filteredItems.length === 0) {
         return { success: false, error: 'Item não encontrado ou sem estoque' };
       }
 
-      // Se encontrou múltiplos itens, pegar o primeiro (mais provável)
-      const item = items[0];
+      // Se encontrou múltiplos itens, pegar o primeiro
+      const item = filteredItems[0];
       console.log('Item selecionado:', item.nome, 'Quantidade:', item.quantidade);
 
       // Verificar se há estoque disponível
@@ -126,37 +95,20 @@ export function useQRCodeScanner() {
       // Reduzir quantidade
       const newQuantity = item.quantidade - 1;
       
-      let updateError: any = null;
-
       console.log(`Atualizando quantidade de ${item.quantidade} para ${newQuantity}`);
 
-      // Atualizar quantidade baseado no tipo
-      if (tipo === 'CF') {
-        const { error } = await supabase
-          .from('camara_fria_items')
-          .update({ quantidade: newQuantity })
-          .eq('id', item.id);
-        updateError = error;
-      } else if (tipo === 'ES') {
-        const { error } = await supabase
-          .from('estoque_seco_items')
-          .update({ quantidade: newQuantity })
-          .eq('id', item.id);
-        updateError = error;
-      } else if (tipo === 'DESC') {
-        const { error } = await supabase
-          .from('descartaveis_items')
-          .update({ quantidade: newQuantity })
-          .eq('id', item.id);
-        updateError = error;
-      }
+      // Atualizar quantidade
+      const { error: updateError } = await supabase
+        .from(tableName)
+        .update({ quantidade: newQuantity })
+        .eq('id', item.id);
 
       if (updateError) {
         console.error('Erro ao atualizar quantidade:', updateError);
         return { success: false, error: 'Erro ao atualizar estoque' };
       }
 
-      // Registrar no histórico (se for câmara refrigerada)
+      // Registrar no histórico (apenas para câmara fria)
       if (tipo === 'CF') {
         const { error: historyError } = await supabase
           .from('camara_refrigerada_historico')

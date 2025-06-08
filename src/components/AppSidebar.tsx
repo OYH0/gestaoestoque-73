@@ -1,3 +1,4 @@
+
 import React from "react"
 import { Home, Snowflake, Thermometer, Package2, FileText, LogOut } from "lucide-react"
 import { NavLink } from "react-router-dom"
@@ -52,64 +53,66 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r-0 w-64 shadow-2xl bg-churrasco-gradient">
-      <SidebarContent className="bg-transparent flex flex-col h-full">
-        <div className="flex-1">
-          <SidebarGroup className="pt-8 px-4">
-            <SidebarGroupLabel className="text-white font-bold text-xl mb-8 px-0 text-center">
-              Gestão Financeira
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-2">
-                {items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild 
-                      className="w-full justify-start rounded-xl px-4 py-3 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 data-[active=true]:bg-white/20 data-[active=true]:text-white font-medium text-base h-auto shadow-lg hover:shadow-xl"
-                    >
-                      <NavLink 
-                        to={item.url} 
-                        className={({ isActive }) => 
-                          `flex items-center gap-4 w-full ${
-                            isActive 
-                              ? "bg-white/20 text-white rounded-xl shadow-lg" 
-                              : ""
-                          }`
-                        }
+    <Sidebar className="border-r-0 w-64 shadow-2xl">
+      <div className="bg-gradient-to-br from-orange-600 via-red-600 to-amber-600 h-full">
+        <SidebarContent className="bg-transparent flex flex-col h-full">
+          <div className="flex-1">
+            <SidebarGroup className="pt-8 px-4">
+              <SidebarGroupLabel className="text-white font-bold text-xl mb-8 px-0 text-center">
+                Gestão Financeira
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-2">
+                  {items.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton 
+                        asChild 
+                        className="w-full justify-start rounded-xl px-4 py-3 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 data-[active=true]:bg-white/20 data-[active=true]:text-white font-medium text-base h-auto shadow-lg hover:shadow-xl"
                       >
-                        <item.icon className="h-5 w-5 shrink-0" />
-                        <span className="text-base">{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </div>
-        
-        <SidebarFooter className="p-4 mt-auto">
-          <div className="flex items-center gap-3 mb-4 px-2">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-white/20 text-white text-xs">
-                {user?.email?.charAt(0).toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-white/90 text-sm truncate">
-              {user?.email || 'usuário'}
-            </span>
+                        <NavLink 
+                          to={item.url} 
+                          className={({ isActive }) => 
+                            `flex items-center gap-4 w-full ${
+                              isActive 
+                                ? "bg-white/20 text-white rounded-xl shadow-lg" 
+                                : ""
+                            }`
+                          }
+                        >
+                          <item.icon className="h-5 w-5 shrink-0" />
+                          <span className="text-base">{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           </div>
           
-          <Button 
-            onClick={handleSignOut}
-            variant="ghost"
-            className="w-full justify-start rounded-xl px-4 py-3 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium text-base h-auto shadow-lg hover:shadow-xl"
-          >
-            <LogOut className="h-5 w-5 shrink-0 mr-4" />
-            <span className="text-base">Sair</span>
-          </Button>
-        </SidebarFooter>
-      </SidebarContent>
+          <SidebarFooter className="p-4 mt-auto">
+            <div className="flex items-center gap-3 mb-4 px-2">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-white/20 text-white text-xs">
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-white/90 text-sm truncate">
+                {user?.email || 'usuário'}
+              </span>
+            </div>
+            
+            <Button 
+              onClick={handleSignOut}
+              variant="ghost"
+              className="w-full justify-start rounded-xl px-4 py-3 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium text-base h-auto shadow-lg hover:shadow-xl"
+            >
+              <LogOut className="h-5 w-5 shrink-0 mr-4" />
+              <span className="text-base">Sair</span>
+            </Button>
+          </SidebarFooter>
+        </SidebarContent>
+      </div>
     </Sidebar>
   )
 }

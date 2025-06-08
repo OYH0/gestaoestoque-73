@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
@@ -217,6 +216,12 @@ export function CamaraFria() {
     });
   };
 
+  const handleDeleteItem = async (id: string) => {
+    if (window.confirm('Tem certeza que deseja remover este item?')) {
+      await deleteItem(id);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -296,6 +301,7 @@ export function CamaraFria() {
               onUpdateThaw={updateThawingQuantity}
               onConfirmThaw={confirmThaw}
               onCancelThaw={cancelThaw}
+              onDelete={handleDeleteItem}
             />
           );
         })}
@@ -305,7 +311,6 @@ export function CamaraFria() {
         isOpen={showQRScanner}
         onClose={() => setShowQRScanner(false)}
         onSuccess={() => {
-          // Refresh items after successful scan
           window.location.reload();
         }}
       />

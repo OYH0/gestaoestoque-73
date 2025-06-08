@@ -72,6 +72,7 @@ export type Database = {
           observacoes: string | null
           preco_unitario: number | null
           quantidade: number
+          status: string
           temperatura_ideal: number | null
           unidade: string
           updated_at: string
@@ -88,6 +89,7 @@ export type Database = {
           observacoes?: string | null
           preco_unitario?: number | null
           quantidade?: number
+          status?: string
           temperatura_ideal?: number | null
           unidade?: string
           updated_at?: string
@@ -104,6 +106,7 @@ export type Database = {
           observacoes?: string | null
           preco_unitario?: number | null
           quantidade?: number
+          status?: string
           temperatura_ideal?: number | null
           unidade?: string
           updated_at?: string

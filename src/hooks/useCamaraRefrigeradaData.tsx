@@ -32,7 +32,21 @@ export function useCamaraRefrigeradaData() {
         .order('nome');
 
       if (error) throw error;
-      setItems(data || []);
+      
+      // Map the database data to our interface
+      const mappedItems: CamaraRefrigeradaItem[] = (data || []).map(item => ({
+        id: item.id,
+        nome: item.nome,
+        quantidade: item.quantidade,
+        unidade: item.unidade,
+        categoria: item.categoria,
+        status: item.status as 'descongelando' | 'pronto',
+        data_entrada: item.data_entrada,
+        temperatura_ideal: item.temperatura_ideal,
+        observacoes: item.observacoes,
+      }));
+      
+      setItems(mappedItems);
     } catch (error) {
       console.error('Error fetching items:', error);
       toast({
@@ -51,13 +65,30 @@ export function useCamaraRefrigeradaData() {
     try {
       const { data, error } = await supabase
         .from('camara_refrigerada_items')
-        .insert([{ ...newItem, user_id: user.id }])
+        .insert([{ 
+          ...newItem, 
+          user_id: user.id,
+          status: newItem.status || 'descongelando'
+        }])
         .select()
         .single();
 
       if (error) throw error;
       
-      setItems(prev => [...prev, data]);
+      // Map the returned data to our interface
+      const mappedItem: CamaraRefrigeradaItem = {
+        id: data.id,
+        nome: data.nome,
+        quantidade: data.quantidade,
+        unidade: data.unidade,
+        categoria: data.categoria,
+        status: data.status as 'descongelando' | 'pronto',
+        data_entrada: data.data_entrada,
+        temperatura_ideal: data.temperatura_ideal,
+        observacoes: data.observacoes,
+      };
+      
+      setItems(prev => [...prev, mappedItem]);
       toast({
         title: "Item adicionado à câmara refrigerada",
         description: `${newItem.nome} foi movido para descongelamento!`,

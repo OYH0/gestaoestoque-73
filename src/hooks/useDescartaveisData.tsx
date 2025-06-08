@@ -64,14 +64,22 @@ export function useDescartaveisData() {
       setItems(prev => [...prev, data]);
       setLastAddedItem(data);
       
-      // Gerar QR codes para o item
-      const qrCodesData = generateQRCodeData(data, 'DESC', newItem.quantidade);
-      setQrCodes(qrCodesData);
-      setShowQRGenerator(true);
+      // Gerar QR codes para o item apenas se quantidade > 0
+      if (newItem.quantidade > 0) {
+        const qrCodesData = generateQRCodeData(data, 'DESC', newItem.quantidade);
+        setQrCodes(qrCodesData);
+        
+        // Garantir que o diálogo apareça
+        setTimeout(() => {
+          setShowQRGenerator(true);
+        }, 100);
+      }
       
       toast({
         title: "Item adicionado",
-        description: `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`,
+        description: newItem.quantidade > 0 
+          ? `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`
+          : `${newItem.nome} foi adicionado ao estoque!`,
       });
     } catch (error) {
       console.error('Error adding item:', error);

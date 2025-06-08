@@ -89,6 +89,12 @@ export function Dashboard() {
     },
   ];
 
+  // Dados para alertas de baixo estoque
+  const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5));
+  const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5));
+  
+  const temAlertas = carnesBaixoEstoque.length > 0 || estoqueBaixo.length > 0;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -208,7 +214,10 @@ export function Dashboard() {
                     />
                     <YAxis stroke="#888" label={{ value: '% Utilização', angle: -90, position: 'insideLeft' }} />
                     <Tooltip 
-                      formatter={(value, name) => [`${value.toFixed(1)}%`, 'Percentual de Utilização']}
+                      formatter={(value, name) => {
+                        const numValue = typeof value === 'number' ? value : parseFloat(value as string);
+                        return [`${numValue.toFixed(1)}%`, 'Percentual de Utilização'];
+                      }}
                       labelFormatter={(label) => `Carne: ${label}`}
                     />
                     <Bar dataKey="percentualRetirada" radius={[2, 2, 0, 0]}>

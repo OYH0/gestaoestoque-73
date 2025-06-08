@@ -33,32 +33,51 @@ export function useQRCodeScanner() {
       const tipo = parts[0] as 'CF' | 'ES' | 'DESC';
       const itemIdPart = parts[1];
       
-      let tableName: string;
       let tableDisplayName: string;
       
       switch (tipo) {
         case 'CF':
-          tableName = 'camara_fria_items';
           tableDisplayName = 'Câmara Fria';
           break;
         case 'ES':
-          tableName = 'estoque_seco_items';
           tableDisplayName = 'Estoque Seco';
           break;
         case 'DESC':
-          tableName = 'descartaveis_items';
           tableDisplayName = 'Descartáveis';
           break;
         default:
           return { success: false, error: 'Tipo de estoque não reconhecido' };
       }
 
-      // Buscar item no banco de dados que contém o ID parcial
-      const { data: items, error: searchError } = await supabase
-        .from(tableName)
-        .select('*')
-        .ilike('id', `%${itemIdPart}%`)
-        .gt('quantidade', 0);
+      let items: any[] = [];
+      let searchError: any = null;
+
+      // Buscar item no banco de dados baseado no tipo
+      if (tipo === 'CF') {
+        const { data, error } = await supabase
+          .from('camara_fria_items')
+          .select('*')
+          .ilike('id', `%${itemIdPart}%`)
+          .gt('quantidade', 0);
+        items = data || [];
+        searchError = error;
+      } else if (tipo === 'ES') {
+        const { data, error } = await supabase
+          .from('estoque_seco_items')
+          .select('*')
+          .ilike('id', `%${itemIdPart}%`)
+          .gt('quantidade', 0);
+        items = data || [];
+        searchError = error;
+      } else if (tipo === 'DESC') {
+        const { data, error } = await supabase
+          .from('descartaveis_items')
+          .select('*')
+          .ilike('id', `%${itemIdPart}%`)
+          .gt('quantidade', 0);
+        items = data || [];
+        searchError = error;
+      }
 
       if (searchError) {
         console.error('Erro ao buscar item:', searchError);
@@ -80,10 +99,28 @@ export function useQRCodeScanner() {
       // Reduzir quantidade
       const newQuantity = item.quantidade - 1;
       
-      const { error: updateError } = await supabase
-        .from(tableName)
-        .update({ quantidade: newQuantity })
-        .eq('id', item.id);
+      let updateError: any = null;
+
+      // Atualizar quantidade baseado no tipo
+      if (tipo === 'CF') {
+        const { error } = await supabase
+          .from('camara_fria_items')
+          .update({ quantidade: newQuantity })
+          .eq('id', item.id);
+        updateError = error;
+      } else if (tipo === 'ES') {
+        const { error } = await supabase
+          .from('estoque_seco_items')
+          .update({ quantidade: newQuantity })
+          .eq('id', item.id);
+        updateError = error;
+      } else if (tipo === 'DESC') {
+        const { error } = await supabase
+          .from('descartaveis_items')
+          .update({ quantidade: newQuantity })
+          .eq('id', item.id);
+        updateError = error;
+      }
 
       if (updateError) {
         console.error('Erro ao atualizar quantidade:', updateError);

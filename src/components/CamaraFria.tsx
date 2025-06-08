@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
@@ -9,6 +8,7 @@ import { CamaraFriaItemCard } from './camara-fria/CamaraFriaItemCard';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
+import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
 
 const categorias = ['Todos', 'Bovina', 'Suína', 'Aves', 'Embutidos'];
 
@@ -24,6 +24,8 @@ interface HistoricoItem {
 
 export function CamaraFria() {
   const { items, loading, addItem, updateItemQuantity, deleteItem } = useCamaraFriaData();
+  const { addItem: addToRefrigerada } = useCamaraRefrigeradaData();
+  
   const [newItem, setNewItem] = useState({ 
     nome: '', 
     quantidade: 0, 
@@ -103,6 +105,62 @@ export function CamaraFria() {
     }
   };
 
+  const moveToRefrigerada = async (item: any, quantidade: number) => {
+    if (item.quantidade < quantidade) {
+      toast({
+        title: "Quantidade insuficiente",
+        description: "Não há quantidade suficiente disponível.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Calcular tempo de descongelamento baseado na quantidade
+    let tempoDescongelamento = "30m";
+    if (quantidade <= 2) {
+      tempoDescongelamento = "30-45m";
+    } else if (quantidade <= 5) {
+      tempoDescongelamento = "1h 30m";
+    } else {
+      tempoDescongelamento = "2-3h";
+    }
+
+    // Adicionar à câmara refrigerada
+    await addToRefrigerada({
+      nome: item.nome,
+      quantidade: quantidade,
+      unidade: item.unidade,
+      categoria: item.categoria,
+      tempo_descongelamento: tempoDescongelamento,
+      status: 'descongelando' as const,
+      temperatura_ideal: item.temperatura_ideal,
+      observacoes: `Movido da câmara fria em ${new Date().toLocaleDateString('pt-BR')}`
+    });
+
+    // Reduzir a quantidade na câmara fria
+    const newQuantity = item.quantidade - quantidade;
+    await updateItemQuantity(item.id, newQuantity);
+
+    // Adicionar ao histórico
+    const now = new Date();
+    const novoHistorico: HistoricoItem = {
+      id: Date.now(),
+      itemName: item.nome,
+      tipo: 'saida',
+      quantidade: quantidade,
+      unidade: item.unidade,
+      data: now.toLocaleDateString('pt-BR'),
+      hora: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setHistorico([novoHistorico, ...historico]);
+
+    toast({
+      title: "Item movido para descongelamento",
+      description: `${quantidade} ${item.unidade} de ${item.nome} foi movido para a câmara refrigerada!`,
+    });
+  };
+
   const handlePrintPDF = () => {
     generateInventoryPDF(
       items,
@@ -175,6 +233,7 @@ export function CamaraFria() {
               onUpdateEdit={updateEditingQuantity}
               onConfirmChange={confirmQuantityChange}
               onCancelEdit={cancelQuantityEdit}
+              onMoveToRefrigerada={moveToRefrigerada}
             />
           );
         })}

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Minus, Check, X } from 'lucide-react';
+import { Plus, Minus, Check, X, ArrowRight } from 'lucide-react';
 import { CamaraFriaItem } from '@/hooks/useCamaraFriaData';
 
 interface CamaraFriaItemCardProps {
@@ -14,6 +14,7 @@ interface CamaraFriaItemCardProps {
   onUpdateEdit: (id: string, delta: number) => void;
   onConfirmChange: (id: string) => void;
   onCancelEdit: (id: string) => void;
+  onMoveToRefrigerada?: (item: CamaraFriaItem, quantidade: number) => void;
 }
 
 export function CamaraFriaItemCard({
@@ -23,8 +24,15 @@ export function CamaraFriaItemCard({
   onStartEdit,
   onUpdateEdit,
   onConfirmChange,
-  onCancelEdit
+  onCancelEdit,
+  onMoveToRefrigerada
 }: CamaraFriaItemCardProps) {
+  const handleMoveToRefrigerada = () => {
+    if (onMoveToRefrigerada && item.quantidade > 0) {
+      onMoveToRefrigerada(item, 1);
+    }
+  };
+
   return (
     <Card 
       className={`${
@@ -52,7 +60,7 @@ export function CamaraFriaItemCard({
             </p>
           </div>
           
-          <div className="flex items-center gap-2 justify-end">
+          <div className="flex items-center gap-2 justify-end flex-wrap">
             {isEditing ? (
               <div className="flex items-center gap-1 md:gap-2 flex-wrap">
                 <Button
@@ -97,14 +105,28 @@ export function CamaraFriaItemCard({
                 </Button>
               </div>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onStartEdit(item.id, item.quantidade)}
-                className="bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 text-xs md:text-sm"
-              >
-                Editar Quantidade
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onStartEdit(item.id, item.quantidade)}
+                  className="bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 text-xs md:text-sm"
+                >
+                  Editar Quantidade
+                </Button>
+                
+                {onMoveToRefrigerada && item.quantidade > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleMoveToRefrigerada}
+                    className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 text-xs md:text-sm"
+                  >
+                    <ArrowRight className="w-3 h-3 mr-1" />
+                    Descongelar
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>

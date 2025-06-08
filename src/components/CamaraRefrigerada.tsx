@@ -1,50 +1,41 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Thermometer, Clock, ArrowRight, ArrowLeft } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-
-const initialItems = [
-  { id: 1, name: 'Picanha Bovina', quantidade: 5, tempoDescongelamento: '2h', status: 'descongelando' },
-  { id: 2, name: 'Fraldinha', quantidade: 3, tempoDescongelamento: '1h 30m', status: 'descongelando' },
-  { id: 3, name: 'Costela Suína', quantidade: 8, tempoDescongelamento: '45m', status: 'pronto' },
-  { id: 4, name: 'Coração de Frango', quantidade: 2, tempoDescongelamento: '30m', status: 'pronto' },
-];
+import { Thermometer, Clock, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
+import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
 
 export function CamaraRefrigerada() {
-  const [items, setItems] = useState(initialItems);
+  const { items, loading, updateItemStatus, deleteItem } = useCamaraRefrigeradaData();
 
-  const moveToReady = (id: number) => {
-    setItems(items.map(item => 
-      item.id === id 
-        ? { ...item, status: 'pronto', tempoDescongelamento: 'Pronto' }
-        : item
-    ));
-    toast({
-      title: "Item pronto",
-      description: "A carne está pronta para uso!",
-    });
+  const moveToReady = (id: string) => {
+    updateItemStatus(id, 'pronto');
   };
 
-  const moveToFreezer = (id: number) => {
-    setItems(items.filter(item => item.id !== id));
-    toast({
-      title: "Movido para câmara fria",
-      description: "Item foi movido de volta para a câmara fria!",
-    });
+  const moveToFreezer = (id: string) => {
+    deleteItem(id);
   };
 
-  const removeFromChamber = (id: number) => {
-    setItems(items.filter(item => item.id !== id));
-    toast({
-      title: "Item retirado",
-      description: "Item foi retirado da câmara refrigerada!",
-    });
+  const removeFromChamber = (id: string) => {
+    deleteItem(id);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex items-center justify-center p-6">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <span>Carregando dados...</span>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Ordenar itens alfabeticamente
-  const sortedItems = [...items].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  const sortedItems = [...items].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 
   return (
     <div className="space-y-6">
@@ -98,76 +89,90 @@ export function CamaraRefrigerada() {
 
       {/* Lista de itens */}
       <div className="grid gap-4">
-        {sortedItems.map((item) => (
-          <Card 
-            key={item.id} 
-            className={`${
-              item.status === 'pronto' 
-                ? 'border-green-200 bg-green-50' 
-                : 'border-orange-200 bg-orange-50'
-            }`}
-          >
-            <CardContent className="p-4">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                    <Badge 
-                      variant={item.status === 'pronto' ? 'default' : 'secondary'}
-                      className={
-                        item.status === 'pronto' 
-                          ? 'bg-green-500 text-white' 
-                          : 'bg-orange-500 text-white'
-                      }
-                    >
-                      {item.status === 'pronto' ? 'Pronto' : 'Descongelando'}
-                    </Badge>
-                  </div>
-                  <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">
-                    <span>{item.quantidade} kg</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {item.tempoDescongelamento}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  {item.status === 'descongelando' ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => moveToReady(item.id)}
-                      className="text-green-600 border-green-300 hover:bg-green-50"
-                    >
-                      <ArrowRight className="w-3 h-3 mr-1" />
-                      Marcar como Pronto
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeFromChamber(item.id)}
-                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                    >
-                      Retirar da Câmara
-                    </Button>
-                  )}
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => moveToFreezer(item.id)}
-                    className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                  >
-                    <ArrowLeft className="w-3 h-3 mr-1" />
-                    Voltar ao Freezer
-                  </Button>
-                </div>
+        {sortedItems.length === 0 ? (
+          <Card className="border-gray-200">
+            <CardContent className="p-6 text-center">
+              <div className="text-gray-500">
+                <Thermometer className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <h3 className="text-lg font-medium mb-2">Nenhum item na câmara refrigerada</h3>
+                <p className="text-sm">Os itens aparecerão aqui quando forem movidos da câmara fria para descongelamento.</p>
               </div>
             </CardContent>
           </Card>
-        ))}
+        ) : (
+          sortedItems.map((item) => (
+            <Card 
+              key={item.id} 
+              className={`${
+                item.status === 'pronto' 
+                  ? 'border-green-200 bg-green-50' 
+                  : 'border-orange-200 bg-orange-50'
+              }`}
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-semibold text-gray-900">{item.nome}</h3>
+                      <Badge 
+                        variant={item.status === 'pronto' ? 'default' : 'secondary'}
+                        className={
+                          item.status === 'pronto' 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-orange-500 text-white'
+                        }
+                      >
+                        {item.status === 'pronto' ? 'Pronto' : 'Descongelando'}
+                      </Badge>
+                    </div>
+                    <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">
+                      <span>{item.quantidade} {item.unidade}</span>
+                      {item.tempo_descongelamento && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {item.tempo_descongelamento}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    {item.status === 'descongelando' ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => moveToReady(item.id)}
+                        className="text-green-600 border-green-300 hover:bg-green-50"
+                      >
+                        <ArrowRight className="w-3 h-3 mr-1" />
+                        Marcar como Pronto
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeFromChamber(item.id)}
+                        className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                      >
+                        Retirar da Câmara
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => moveToFreezer(item.id)}
+                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                    >
+                      <ArrowLeft className="w-3 h-3 mr-1" />
+                      Voltar ao Freezer
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
       {/* Instruções */}
@@ -181,7 +186,7 @@ export function CamaraRefrigerada() {
             <li>• Sempre manter na temperatura de 2-4°C</li>
           </ul>
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

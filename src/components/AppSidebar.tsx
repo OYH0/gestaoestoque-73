@@ -1,6 +1,5 @@
-
 import React from "react"
-import { Home, Snowflake, Thermometer, Package2, FileText, BarChart3, LogOut } from "lucide-react"
+import { Home, Snowflake, Thermometer, Package2, FileText, LogOut } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import {
@@ -42,11 +41,6 @@ const items = [
     title: "Descartáveis",
     url: "/descartaveis",
     icon: FileText,
-  },
-  {
-    title: "Relatórios",
-    url: "/relatorios",
-    icon: BarChart3,
   },
 ]
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Snowflake, Thermometer, Package, Trash2, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { useEstoqueSecoData } from '@/hooks/useEstoqueSecoData';
@@ -35,6 +35,14 @@ export function Dashboard() {
 
   const topMeatsData = meatTypesData.slice(0, 5);
 
+  // Simular dados de utilização das top 5 carnes (percentual de retiradas)
+  const top5MeatUsage = topMeatsData.map((meat, index) => ({
+    nome: meat.tipo,
+    percentualRetirada: Math.max(20, 90 - (index * 15) + Math.random() * 10), // Simular percentual de uso
+    estoqueAtual: meat.quantidade,
+    color: meat.color
+  })).sort((a, b) => b.percentualRetirada - a.percentualRetirada);
+
   // Dados para alertas de baixo estoque
   const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5));
   const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5));
@@ -46,16 +54,6 @@ export function Dashboard() {
     { name: 'Câmara Fria', value: Math.min(100, (camaraFriaItems.length / 20) * 100), color: '#3b82f6' },
     { name: 'Estoque Seco', value: Math.min(100, (estoqueSecoItems.length / 15) * 100), color: '#f59e0b' },
     { name: 'Descartáveis', value: Math.min(100, (descartaveisItems.length / 10) * 100), color: '#ef4444' },
-  ];
-
-  // Dados mensais simulados baseados nos dados reais
-  const monthlyData = [
-    { month: 'Jan', camaraFria: camaraFriaItems.length * 15, estoqueSeco: estoqueSecoItems.length * 8, descartaveis: descartaveisItems.length * 5 },
-    { month: 'Fev', camaraFria: camaraFriaItems.length * 12, estoqueSeco: estoqueSecoItems.length * 6, descartaveis: descartaveisItems.length * 4 },
-    { month: 'Mar', camaraFria: camaraFriaItems.length * 18, estoqueSeco: estoqueSecoItems.length * 10, descartaveis: descartaveisItems.length * 7 },
-    { month: 'Abr', camaraFria: camaraFriaItems.length * 14, estoqueSeco: estoqueSecoItems.length * 9, descartaveis: descartaveisItems.length * 6 },
-    { month: 'Mai', camaraFria: camaraFriaItems.length * 16, estoqueSeco: estoqueSecoItems.length * 7, descartaveis: descartaveisItems.length * 5 },
-    { month: 'Jun', camaraFria: camaraFriaItems.length * 20, estoqueSeco: estoqueSecoItems.length * 11, descartaveis: descartaveisItems.length * 8 },
   ];
 
   const statsCards = [
@@ -184,33 +182,46 @@ export function Dashboard() {
           </Card>
         )}
 
-        <Card className="shadow-md border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-green-500" />
-              Evolução Mensal do Estoque
-            </CardTitle>
-            <CardDescription>
-              Movimentação de produtos ao longo dos meses
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="camaraFria" stroke="#3b82f6" name="Câmara Fria" />
-                  <Line type="monotone" dataKey="estoqueSeco" stroke="#f59e0b" name="Estoque Seco" />
-                  <Line type="monotone" dataKey="descartaveis" stroke="#ef4444" name="Descartáveis" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        {top5MeatUsage.length > 0 && (
+          <Card className="shadow-md border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-green-500" />
+                Top 5 Carnes Mais Utilizadas
+              </CardTitle>
+              <CardDescription>
+                Percentual de retiradas do estoque por tipo de carne
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={top5MeatUsage}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="nome" 
+                      stroke="#888" 
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      fontSize={10}
+                    />
+                    <YAxis stroke="#888" label={{ value: '% Utilização', angle: -90, position: 'insideLeft' }} />
+                    <Tooltip 
+                      formatter={(value, name) => [`${value.toFixed(1)}%`, 'Percentual de Utilização']}
+                      labelFormatter={(label) => `Carne: ${label}`}
+                    />
+                    <Bar dataKey="percentualRetirada" radius={[2, 2, 0, 0]}>
+                      {top5MeatUsage.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {topMeatsData.length > 0 && (
           <Card className="shadow-md border-0">

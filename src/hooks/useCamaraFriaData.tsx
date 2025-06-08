@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -66,14 +67,22 @@ export function useCamaraFriaData() {
       setItems(prev => [...prev, data]);
       setLastAddedItem(data);
       
-      // Gerar QR codes para o item
-      const qrCodesData = generateQRCodeData(data, 'CF', newItem.quantidade);
-      setQrCodes(qrCodesData);
-      setShowQRGenerator(true);
+      // Gerar QR codes para o item apenas se quantidade > 0
+      if (newItem.quantidade > 0) {
+        const qrCodesData = generateQRCodeData(data, 'CF', newItem.quantidade);
+        setQrCodes(qrCodesData);
+        
+        // Garantir que o diálogo apareça
+        setTimeout(() => {
+          setShowQRGenerator(true);
+        }, 100);
+      }
       
       toast({
         title: "Item adicionado",
-        description: `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`,
+        description: newItem.quantidade > 0 
+          ? `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`
+          : `${newItem.nome} foi adicionado ao estoque!`,
       });
     } catch (error) {
       console.error('Error adding item:', error);
@@ -87,6 +96,12 @@ export function useCamaraFriaData() {
 
   const updateItemQuantity = async (id: string, newQuantity: number) => {
     try {
+      // Encontrar o item atual para comparar quantidades
+      const currentItem = items.find(item => item.id === id);
+      if (!currentItem) return;
+
+      const quantityIncrease = newQuantity - currentItem.quantidade;
+
       const { error } = await supabase
         .from('camara_fria_items')
         .update({ quantidade: newQuantity })
@@ -97,6 +112,19 @@ export function useCamaraFriaData() {
       setItems(prev => prev.map(item => 
         item.id === id ? { ...item, quantidade: newQuantity } : item
       ));
+
+      // Se houve aumento de quantidade, gerar QR codes para as unidades adicionadas
+      if (quantityIncrease > 0) {
+        const updatedItem = { ...currentItem, quantidade: newQuantity };
+        setLastAddedItem(updatedItem);
+        
+        const qrCodesData = generateQRCodeData(updatedItem, 'CF', quantityIncrease);
+        setQrCodes(qrCodesData);
+        
+        setTimeout(() => {
+          setShowQRGenerator(true);
+        }, 100);
+      }
     } catch (error) {
       console.error('Error updating quantity:', error);
       toast({

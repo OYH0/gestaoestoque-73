@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -94,6 +95,12 @@ export function useEstoqueSecoData() {
 
   const updateItemQuantity = async (id: string, newQuantity: number) => {
     try {
+      // Encontrar o item atual para comparar quantidades
+      const currentItem = items.find(item => item.id === id);
+      if (!currentItem) return;
+
+      const quantityIncrease = newQuantity - currentItem.quantidade;
+
       const { error } = await supabase
         .from('estoque_seco_items')
         .update({ quantidade: newQuantity })
@@ -104,6 +111,19 @@ export function useEstoqueSecoData() {
       setItems(prev => prev.map(item => 
         item.id === id ? { ...item, quantidade: newQuantity } : item
       ));
+
+      // Se houve aumento de quantidade, gerar QR codes para as unidades adicionadas
+      if (quantityIncrease > 0) {
+        const updatedItem = { ...currentItem, quantidade: newQuantity };
+        setLastAddedItem(updatedItem);
+        
+        const qrCodesData = generateQRCodeData(updatedItem, 'ES', quantityIncrease);
+        setQrCodes(qrCodesData);
+        
+        setTimeout(() => {
+          setShowQRGenerator(true);
+        }, 100);
+      }
     } catch (error) {
       console.error('Error updating quantity:', error);
       toast({

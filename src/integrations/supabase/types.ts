@@ -63,6 +63,42 @@ export type Database = {
         }
         Relationships: []
       }
+      camara_refrigerada_historico: {
+        Row: {
+          categoria: string
+          data_operacao: string
+          id: string
+          item_nome: string
+          observacoes: string | null
+          quantidade: number
+          tipo: string
+          unidade: string
+          user_id: string
+        }
+        Insert: {
+          categoria: string
+          data_operacao?: string
+          id?: string
+          item_nome: string
+          observacoes?: string | null
+          quantidade: number
+          tipo: string
+          unidade: string
+          user_id: string
+        }
+        Update: {
+          categoria?: string
+          data_operacao?: string
+          id?: string
+          item_nome?: string
+          observacoes?: string | null
+          quantidade?: number
+          tipo?: string
+          unidade?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       camara_refrigerada_items: {
         Row: {
           categoria: string

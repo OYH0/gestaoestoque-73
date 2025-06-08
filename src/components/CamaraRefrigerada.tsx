@@ -1,23 +1,50 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Thermometer, Clock, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Thermometer, Clock, ArrowRight, ArrowLeft, Loader2, History } from 'lucide-react';
 import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
+import { useCamaraRefrigeradaHistorico } from '@/hooks/useCamaraRefrigeradaHistorico';
+import { CamaraRefrigeradaHistoryDialog } from '@/components/camara-refrigerada/CamaraRefrigeradaHistoryDialog';
 
 export function CamaraRefrigerada() {
   const { items, loading, updateItemStatus, deleteItem } = useCamaraRefrigeradaData();
+  const { historico, loading: historicoLoading, addHistoricoItem } = useCamaraRefrigeradaHistorico();
+  const [historicoOpen, setHistoricoOpen] = useState(false);
 
   const moveToReady = (id: string) => {
     updateItemStatus(id, 'pronto');
   };
 
-  const moveToFreezer = (id: string) => {
+  const moveToFreezer = async (id: string) => {
+    const item = items.find(i => i.id === id);
+    if (item) {
+      // Registrar no histórico antes de remover
+      await addHistoricoItem({
+        item_nome: item.nome,
+        quantidade: item.quantidade,
+        unidade: item.unidade,
+        categoria: item.categoria,
+        tipo: 'volta_freezer'
+      });
+    }
     deleteItem(id);
   };
 
-  const removeFromChamber = (id: string) => {
+  const removeFromChamber = async (id: string) => {
+    const item = items.find(i => i.id === id);
+    if (item) {
+      // Registrar no histórico antes de remover
+      await addHistoricoItem({
+        item_nome: item.nome,
+        quantidade: item.quantidade,
+        unidade: item.unidade,
+        categoria: item.categoria,
+        tipo: 'retirada'
+      });
+    }
     deleteItem(id);
   };
 
@@ -49,9 +76,25 @@ export function CamaraRefrigerada() {
             <p className="text-gray-600">Carnes em processo de descongelamento</p>
           </div>
         </div>
-        <Badge variant="secondary" className="bg-green-100 text-green-800">
-          {sortedItems.length} itens descongelando
-        </Badge>
+        
+        <div className="flex items-center gap-3">
+          <Badge variant="secondary" className="bg-green-100 text-green-800">
+            {sortedItems.length} itens descongelando
+          </Badge>
+          
+          <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="border-gray-300">
+                <History className="w-4 h-4 mr-2" />
+                Histórico
+              </Button>
+            </DialogTrigger>
+            <CamaraRefrigeradaHistoryDialog 
+              historico={historico} 
+              loading={historicoLoading}
+            />
+          </Dialog>
+        </div>
       </div>
 
       {/* Status Cards */}

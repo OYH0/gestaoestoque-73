@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -43,13 +44,6 @@ export function Dashboard() {
   const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5));
   
   const temAlertas = carnesBaixoEstoque.length > 0 || estoqueBaixo.length > 0;
-
-  // Dados de estoque por categoria
-  const stockData = [
-    { name: 'Câmara Fria', value: Math.min(100, (camaraFriaItems.length / 20) * 100), color: '#3b82f6' },
-    { name: 'Estoque Seco', value: Math.min(100, (estoqueSecoItems.length / 15) * 100), color: '#f59e0b' },
-    { name: 'Descartáveis', value: Math.min(100, (descartaveisItems.length / 10) * 100), color: '#ef4444' },
-  ];
 
   const statsCards = [
     {
@@ -140,19 +134,19 @@ export function Dashboard() {
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de Barras - Todos os tipos de carne e quantidades */}
-        {meatTypesData.length > 0 && (
-          <Card className="shadow-md border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
-                Estoque por Tipo de Carne
-              </CardTitle>
-              <CardDescription>
-                Quantidade disponível de cada tipo de carne (kg)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
+        <Card className="shadow-md border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-blue-500" />
+              Estoque por Tipo de Carne
+            </CardTitle>
+            <CardDescription>
+              Quantidade disponível de cada tipo de carne (kg)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              {meatTypesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={meatTypesData} margin={{ bottom: 80 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -176,25 +170,32 @@ export function Dashboard() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <div className="text-center">
+                    <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum item na câmara fria</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Gráfico de Pizza - Top 5 carnes mais utilizadas */}
-        {top5MeatUsage.length > 0 && (
-          <Card className="shadow-md border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-green-500" />
-                Top 5 Carnes Mais Utilizadas
-              </CardTitle>
-              <CardDescription>
-                Carnes com maior percentual de utilização
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
+        <Card className="shadow-md border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="w-5 h-5 text-green-500" />
+              Top 5 Carnes Mais Utilizadas
+            </CardTitle>
+            <CardDescription>
+              Carnes com maior percentual de utilização
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              {top5MeatUsage.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -212,42 +213,22 @@ export function Dashboard() {
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value) => [`${Number(value).toFixed(1)}%`, 'Utilização']}
+                      formatter={(value) => {
+                        const numValue = typeof value === 'number' ? value : parseFloat(value as string);
+                        return [`${numValue.toFixed(1)}%`, 'Utilização'];
+                      }}
                     />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Gráfico de Nível de Estoque por Setor */}
-        <Card className="shadow-md border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-purple-500" />
-              Nível de Estoque por Setor
-            </CardTitle>
-            <CardDescription>
-              Percentual de ocupação de cada setor
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stockData} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" domain={[0, 100]} />
-                  <YAxis dataKey="name" type="category" width={100} />
-                  <Tooltip formatter={(value) => [`${value}%`, 'Ocupação']} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {stockData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <div className="text-center">
+                    <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum dado de utilização disponível</p>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

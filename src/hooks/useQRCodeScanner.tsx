@@ -57,18 +57,21 @@ export function useQRCodeScanner() {
       console.log(`Buscando item do tipo ${tipo} com ID contendo: ${itemIdPart}`);
 
       // Buscar item no banco de dados baseado no tipo
-      // Mudança: usar filtro mais específico ao invés de ilike com UUID
+      // Usar cast para text para evitar problemas com UUID
       if (tipo === 'CF') {
         const { data, error } = await supabase
           .from('camara_fria_items')
           .select('*')
           .gt('quantidade', 0);
         
-        // Filtrar localmente por nome ou ID que contenha a parte do QR code
-        items = data?.filter(item => 
-          item.id.toString().includes(itemIdPart) || 
-          item.nome.toLowerCase().includes(itemIdPart.toLowerCase())
-        ) || [];
+        // Filtrar localmente usando cast para string
+        items = data?.filter(item => {
+          const itemIdStr = String(item.id);
+          const nomeStr = String(item.nome).toLowerCase();
+          const searchStr = itemIdPart.toLowerCase();
+          
+          return itemIdStr.includes(itemIdPart) || nomeStr.includes(searchStr);
+        }) || [];
         searchError = error;
       } else if (tipo === 'ES') {
         const { data, error } = await supabase
@@ -76,10 +79,13 @@ export function useQRCodeScanner() {
           .select('*')
           .gt('quantidade', 0);
         
-        items = data?.filter(item => 
-          item.id.toString().includes(itemIdPart) || 
-          item.nome.toLowerCase().includes(itemIdPart.toLowerCase())
-        ) || [];
+        items = data?.filter(item => {
+          const itemIdStr = String(item.id);
+          const nomeStr = String(item.nome).toLowerCase();
+          const searchStr = itemIdPart.toLowerCase();
+          
+          return itemIdStr.includes(itemIdPart) || nomeStr.includes(searchStr);
+        }) || [];
         searchError = error;
       } else if (tipo === 'DESC') {
         const { data, error } = await supabase
@@ -87,10 +93,13 @@ export function useQRCodeScanner() {
           .select('*')
           .gt('quantidade', 0);
         
-        items = data?.filter(item => 
-          item.id.toString().includes(itemIdPart) || 
-          item.nome.toLowerCase().includes(itemIdPart.toLowerCase())
-        ) || [];
+        items = data?.filter(item => {
+          const itemIdStr = String(item.id);
+          const nomeStr = String(item.nome).toLowerCase();
+          const searchStr = itemIdPart.toLowerCase();
+          
+          return itemIdStr.includes(itemIdPart) || nomeStr.includes(searchStr);
+        }) || [];
         searchError = error;
       }
 

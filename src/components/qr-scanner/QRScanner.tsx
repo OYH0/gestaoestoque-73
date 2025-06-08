@@ -5,39 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Camera, X, Loader2 } from 'lucide-react';
 import { useQRCodeScanner } from '@/hooks/useQRCodeScanner';
 import { toast } from '@/hooks/use-toast';
-
-// Função para detectar QR codes usando a API de detecção do navegador
-const detectQRCode = (canvas: HTMLCanvasElement): string | null => {
-  try {
-    const context = canvas.getContext('2d');
-    if (!context) return null;
-
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    
-    // Usar detecção simples baseada em padrões do QR Code
-    // Esta é uma implementação básica que pode ser melhorada
-    const data = imageData.data;
-    let hasPattern = false;
-    
-    // Verificar se há contraste suficiente (indicativo de QR code)
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-      const brightness = (r + g + b) / 3;
-      
-      if (brightness < 50 || brightness > 200) {
-        hasPattern = true;
-        break;
-      }
-    }
-    
-    return hasPattern ? "detected" : null;
-  } catch (error) {
-    console.error('Erro na detecção de QR Code:', error);
-    return null;
-  }
-};
+import QrScanner from 'qr-scanner';
 
 interface QRScannerProps {
   isOpen: boolean;
@@ -47,12 +15,11 @@ interface QRScannerProps {
 
 export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasCamera, setHasCamera] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const { processQRCode, isProcessing } = useQRCodeScanner();
-  const scanIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const qrScannerRef = useRef<QrScanner | null>(null);
 
   // Lista de QR codes de teste para demonstração
   const testQRCodes = [
@@ -64,23 +31,37 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
   const startCamera = async () => {
     try {
       setCameraError(null);
-      console.log('Tentando acessar a câmera...');
-      
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: 'environment',
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        }
-      });
+      console.log('Iniciando scanner de QR...');
       
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        // Verificar se QR Scanner é suportado
+        const hasCamera = await QrScanner.hasCamera();
+        if (!hasCamera) {
+          throw new Error('Nenhuma câmera encontrada');
+        }
+
+        // Criar scanner
+        qrScannerRef.current = new QrScanner(
+          videoRef.current,
+          (result) => {
+            console.log('QR Code detectado:', result.data);
+            handleQRCodeDetected(result.data);
+          },
+          {
+            onDecodeError: (error) => {
+              // Silenciar erros de decodificação normais
+              // console.log('Erro de decodificação (normal):', error);
+            },
+            highlightScanRegion: true,
+            highlightCodeOutline: true,
+            preferredCamera: 'environment'
+          }
+        );
+
+        await qrScannerRef.current.start();
         setHasCamera(true);
         setIsScanning(true);
-        startQRScanning();
-        console.log('Câmera iniciada com sucesso');
+        console.log('Scanner iniciado com sucesso');
       }
     } catch (error) {
       console.error('Erro ao acessar câmera:', error);
@@ -93,50 +74,13 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
     console.log('Parando câmera...');
     setIsScanning(false);
     
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
+    if (qrScannerRef.current) {
+      qrScannerRef.current.stop();
+      qrScannerRef.current.destroy();
+      qrScannerRef.current = null;
     }
-
-    if (videoRef.current?.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => {
-        track.stop();
-        console.log('Track parado:', track.kind);
-      });
-      videoRef.current.srcObject = null;
-    }
+    
     setHasCamera(false);
-  };
-
-  const startQRScanning = () => {
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-    }
-
-    scanIntervalRef.current = setInterval(() => {
-      if (videoRef.current && canvasRef.current && videoRef.current.readyState === 4) {
-        const canvas = canvasRef.current;
-        const video = videoRef.current;
-        const context = canvas.getContext('2d');
-        
-        if (context) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          context.drawImage(video, 0, 0);
-          
-          // Aqui você pode implementar detecção de QR code mais sofisticada
-          // Por enquanto, vamos simular a detecção
-          const detection = detectQRCode(canvas);
-          
-          if (detection) {
-            console.log('QR Code detectado!');
-            // Para demonstração, vamos processar um QR code de teste
-            handleQRCodeDetected(testQRCodes[0]);
-          }
-        }
-      }
-    }, 500); // Escaneia a cada 500ms
   };
 
   const handleQRCodeDetected = async (qrCodeData: string) => {
@@ -145,9 +89,9 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
     console.log('Processando QR Code:', qrCodeData);
     setIsScanning(false);
     
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
+    // Parar temporariamente o scanner
+    if (qrScannerRef.current) {
+      qrScannerRef.current.stop();
     }
 
     try {
@@ -167,9 +111,11 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
           description: result.error || "QR Code não reconhecido",
           variant: "destructive",
         });
-        // Continuar escaneando
-        setIsScanning(true);
-        startQRScanning();
+        // Reiniciar scanner
+        if (qrScannerRef.current) {
+          await qrScannerRef.current.start();
+          setIsScanning(true);
+        }
       }
     } catch (error) {
       console.error('Erro ao processar QR code:', error);
@@ -178,8 +124,11 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
         description: "Ocorreu um erro ao processar o QR Code",
         variant: "destructive",
       });
-      setIsScanning(true);
-      startQRScanning();
+      // Reiniciar scanner
+      if (qrScannerRef.current) {
+        await qrScannerRef.current.start();
+        setIsScanning(true);
+      }
     }
   };
 
@@ -230,33 +179,19 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
                 playsInline
                 muted
               />
-              <canvas
-                ref={canvasRef}
-                className="hidden"
-              />
               
-              {/* Overlay para indicar área de escaneamento */}
-              <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute inset-4 border-2 border-white rounded-lg opacity-50">
-                  <div className="absolute top-0 left-0 w-6 h-6 border-l-4 border-t-4 border-green-500"></div>
-                  <div className="absolute top-0 right-0 w-6 h-6 border-r-4 border-t-4 border-green-500"></div>
-                  <div className="absolute bottom-0 left-0 w-6 h-6 border-l-4 border-b-4 border-green-500"></div>
-                  <div className="absolute bottom-0 right-0 w-6 h-6 border-r-4 border-b-4 border-green-500"></div>
+              {isScanning && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                  {isProcessing ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processando...
+                    </div>
+                  ) : (
+                    'Posicione o QR Code na área da câmera'
+                  )}
                 </div>
-                
-                {isScanning && (
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-                    {isProcessing ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Processando...
-                      </div>
-                    ) : (
-                      'Posicione o QR Code na área marcada'
-                    )}
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           )}
 

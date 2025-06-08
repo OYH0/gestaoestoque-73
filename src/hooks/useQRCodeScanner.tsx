@@ -24,10 +24,12 @@ export function useQRCodeScanner() {
     setIsProcessing(true);
 
     try {
+      console.log('Processando QR Code:', qrCodeData);
+      
       // Parse QR code ID (formato: CF-XXXXX-XXXXXX-001)
       const parts = qrCodeData.split('-');
       if (parts.length < 4) {
-        return { success: false, error: 'QR Code inválido' };
+        return { success: false, error: 'QR Code inválido - formato incorreto' };
       }
 
       const tipo = parts[0] as 'CF' | 'ES' | 'DESC';
@@ -52,30 +54,43 @@ export function useQRCodeScanner() {
       let items: any[] = [];
       let searchError: any = null;
 
+      console.log(`Buscando item do tipo ${tipo} com ID contendo: ${itemIdPart}`);
+
       // Buscar item no banco de dados baseado no tipo
+      // Mudança: usar filtro mais específico ao invés de ilike com UUID
       if (tipo === 'CF') {
         const { data, error } = await supabase
           .from('camara_fria_items')
           .select('*')
-          .ilike('id', `%${itemIdPart}%`)
           .gt('quantidade', 0);
-        items = data || [];
+        
+        // Filtrar localmente por nome ou ID que contenha a parte do QR code
+        items = data?.filter(item => 
+          item.id.toString().includes(itemIdPart) || 
+          item.nome.toLowerCase().includes(itemIdPart.toLowerCase())
+        ) || [];
         searchError = error;
       } else if (tipo === 'ES') {
         const { data, error } = await supabase
           .from('estoque_seco_items')
           .select('*')
-          .ilike('id', `%${itemIdPart}%`)
           .gt('quantidade', 0);
-        items = data || [];
+        
+        items = data?.filter(item => 
+          item.id.toString().includes(itemIdPart) || 
+          item.nome.toLowerCase().includes(itemIdPart.toLowerCase())
+        ) || [];
         searchError = error;
       } else if (tipo === 'DESC') {
         const { data, error } = await supabase
           .from('descartaveis_items')
           .select('*')
-          .ilike('id', `%${itemIdPart}%`)
           .gt('quantidade', 0);
-        items = data || [];
+        
+        items = data?.filter(item => 
+          item.id.toString().includes(itemIdPart) || 
+          item.nome.toLowerCase().includes(itemIdPart.toLowerCase())
+        ) || [];
         searchError = error;
       }
 
@@ -84,12 +99,15 @@ export function useQRCodeScanner() {
         return { success: false, error: 'Erro ao buscar item no banco de dados' };
       }
 
+      console.log('Itens encontrados:', items.length);
+
       if (!items || items.length === 0) {
         return { success: false, error: 'Item não encontrado ou sem estoque' };
       }
 
       // Se encontrou múltiplos itens, pegar o primeiro (mais provável)
       const item = items[0];
+      console.log('Item selecionado:', item.nome, 'Quantidade:', item.quantidade);
 
       // Verificar se há estoque disponível
       if (item.quantidade <= 0) {
@@ -100,6 +118,8 @@ export function useQRCodeScanner() {
       const newQuantity = item.quantidade - 1;
       
       let updateError: any = null;
+
+      console.log(`Atualizando quantidade de ${item.quantidade} para ${newQuantity}`);
 
       // Atualizar quantidade baseado no tipo
       if (tipo === 'CF') {
@@ -145,6 +165,8 @@ export function useQRCodeScanner() {
           console.error('Erro ao registrar histórico:', historyError);
         }
       }
+
+      console.log('QR Code processado com sucesso!');
 
       toast({
         title: "Item retirado com sucesso!",

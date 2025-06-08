@@ -4,24 +4,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus, Minus, Check, X } from 'lucide-react';
-
-interface Item {
-  id: number;
-  name: string;
-  quantidade: number;
-  unidade: string;
-  categoria: string;
-  minimo: number;
-}
+import { CamaraFriaItem } from '@/hooks/useCamaraFriaData';
 
 interface CamaraFriaItemCardProps {
-  item: Item;
+  item: CamaraFriaItem;
   isEditing: boolean;
   editValue: number;
-  onStartEdit: (id: number, currentQuantity: number) => void;
-  onUpdateEdit: (id: number, delta: number) => void;
-  onConfirmChange: (id: number) => void;
-  onCancelEdit: (id: number) => void;
+  onStartEdit: (id: string, currentQuantity: number) => void;
+  onUpdateEdit: (id: string, delta: number) => void;
+  onConfirmChange: (id: string) => void;
+  onCancelEdit: (id: string) => void;
 }
 
 export function CamaraFriaItemCard({
@@ -36,7 +28,7 @@ export function CamaraFriaItemCard({
   return (
     <Card 
       className={`${
-        item.quantidade <= item.minimo 
+        item.quantidade <= (item.minimo || 5)
           ? 'border-red-200 bg-red-50' 
           : 'border-gray-200'
       }`}
@@ -45,18 +37,18 @@ export function CamaraFriaItemCard({
         <div className="space-y-3">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.name}</h3>
+              <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.nome}</h3>
               <Badge variant="outline" className="text-xs">
                 {item.categoria}
               </Badge>
-              {item.quantidade <= item.minimo && (
+              {item.quantidade <= (item.minimo || 5) && (
                 <Badge variant="destructive" className="text-xs">
                   Baixo Estoque
                 </Badge>
               )}
             </div>
             <p className="text-xs md:text-sm text-gray-600">
-              {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo} {item.unidade}
+              {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo || 5} {item.unidade}
             </p>
           </div>
           

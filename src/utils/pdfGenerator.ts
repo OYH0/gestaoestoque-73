@@ -2,8 +2,8 @@
 import jsPDF from 'jspdf';
 
 interface Item {
-  id: number;
-  name: string;
+  id: string;
+  nome: string;
   quantidade: number;
   unidade: string;
   categoria: string;
@@ -51,7 +51,7 @@ export const generateInventoryPDF = (
   yPosition += 8;
   
   // Ordenar itens alfabeticamente
-  const sortedItems = [...items].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  const sortedItems = [...items].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   
   pdf.setFont(undefined, 'normal');
   
@@ -74,7 +74,7 @@ export const generateInventoryPDF = (
     }
     
     // Nome do item
-    pdf.text(item.name, margin, yPosition);
+    pdf.text(item.nome, margin, yPosition);
     
     // Quantidade atual
     pdf.text(`${item.quantidade} ${item.unidade}`, margin + 90, yPosition);

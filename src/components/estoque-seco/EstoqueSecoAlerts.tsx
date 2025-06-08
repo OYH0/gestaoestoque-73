@@ -2,18 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCart } from 'lucide-react';
-
-interface Item {
-  id: number;
-  name: string;
-  quantidade: number;
-  unidade: string;
-  categoria: string;
-  minimo: number;
-}
+import { EstoqueSecoItem } from '@/hooks/useEstoqueSecoData';
 
 interface EstoqueSecoAlertsProps {
-  itemsBaixoEstoque: Item[];
+  itemsBaixoEstoque: EstoqueSecoItem[];
 }
 
 export function EstoqueSecoAlerts({ itemsBaixoEstoque }: EstoqueSecoAlertsProps) {
@@ -31,7 +23,7 @@ export function EstoqueSecoAlerts({ itemsBaixoEstoque }: EstoqueSecoAlertsProps)
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {itemsBaixoEstoque.map((item) => (
             <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded border">
-              <span className="font-medium text-sm">{item.name}</span>
+              <span className="font-medium text-sm">{item.nome}</span>
               <span className="text-red-600 font-medium text-sm">{item.quantidade} {item.unidade}</span>
             </div>
           ))}

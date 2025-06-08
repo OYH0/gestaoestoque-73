@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { useQRCodeGenerator } from '@/hooks/useQRCodeGenerator';
 
 export interface DescartaveisItem {
   id: string;
@@ -20,7 +20,11 @@ export interface DescartaveisItem {
 export function useDescartaveisData() {
   const [items, setItems] = useState<DescartaveisItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [qrCodes, setQrCodes] = useState<any[]>([]);
+  const [showQRGenerator, setShowQRGenerator] = useState(false);
+  const [lastAddedItem, setLastAddedItem] = useState<DescartaveisItem | null>(null);
   const { user } = useAuth();
+  const { generateQRCodeData } = useQRCodeGenerator();
 
   const fetchItems = async () => {
     if (!user) return;
@@ -58,9 +62,16 @@ export function useDescartaveisData() {
       if (error) throw error;
       
       setItems(prev => [...prev, data]);
+      setLastAddedItem(data);
+      
+      // Gerar QR codes para o item
+      const qrCodesData = generateQRCodeData(data, 'DESC', newItem.quantidade);
+      setQrCodes(qrCodesData);
+      setShowQRGenerator(true);
+      
       toast({
         title: "Item adicionado",
-        description: `${newItem.nome} foi adicionado ao estoque!`,
+        description: `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`,
       });
     } catch (error) {
       console.error('Error adding item:', error);
@@ -128,6 +139,10 @@ export function useDescartaveisData() {
     addItem,
     updateItemQuantity,
     deleteItem,
-    fetchItems
+    fetchItems,
+    qrCodes,
+    showQRGenerator,
+    setShowQRGenerator,
+    lastAddedItem
   };
 }

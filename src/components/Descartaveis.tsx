@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,11 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Minus, Check, X, History, FileText } from 'lucide-react';
+import { Trash2, Plus, Minus, Check, X, History, FileText, QrCode } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
 import { DescartaveisFilters } from '@/components/descartaveis/DescartaveisFilters';
 import { DescartaveisAlerts } from '@/components/descartaveis/DescartaveisAlerts';
+import { QRScanner } from '@/components/qr-scanner/QRScanner';
+import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { useDescartaveisData } from '@/hooks/useDescartaveisData';
 
 const categorias = ['Todos', 'Utensílios', 'Higiene', 'Limpeza', 'Embalagens'];
@@ -27,7 +28,17 @@ interface HistoricoItem {
 }
 
 export function Descartaveis() {
-  const { items, loading, addItem, updateItemQuantity, deleteItem } = useDescartaveisData();
+  const { 
+    items, 
+    loading, 
+    addItem, 
+    updateItemQuantity, 
+    deleteItem,
+    qrCodes,
+    showQRGenerator,
+    setShowQRGenerator,
+    lastAddedItem
+  } = useDescartaveisData();
   const [newItem, setNewItem] = useState({ 
     nome: '', 
     quantidade: 0, 
@@ -38,6 +49,7 @@ export function Descartaveis() {
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historicoOpen, setHistoricoOpen] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const [editingQuantities, setEditingQuantities] = useState<{ [key: string]: number }>({});
   const [historico, setHistorico] = useState<HistoricoItem[]>([]);
 
@@ -176,6 +188,16 @@ export function Descartaveis() {
           >
             <FileText className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
             PDF
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowQRScanner(true)}
+            className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 text-xs md:text-sm"
+          >
+            <QrCode className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            Escanear QR
           </Button>
 
           <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
@@ -433,6 +455,23 @@ export function Descartaveis() {
           );
         })}
       </div>
+
+      <QRScanner
+        isOpen={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onSuccess={() => {
+          window.location.reload();
+        }}
+      />
+
+      {lastAddedItem && (
+        <QRCodeGenerator
+          isOpen={showQRGenerator}
+          onClose={() => setShowQRGenerator(false)}
+          qrCodes={qrCodes}
+          itemName={lastAddedItem.nome}
+        />
+      )}
     </div>
   );
 }

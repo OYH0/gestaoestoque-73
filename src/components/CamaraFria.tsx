@@ -6,9 +6,12 @@ import { CamaraFriaHeader } from './camara-fria/CamaraFriaHeader';
 import { CamaraFriaAlerts } from './camara-fria/CamaraFriaAlerts';
 import { CamaraFriaFilters } from './camara-fria/CamaraFriaFilters';
 import { CamaraFriaItemCard } from './camara-fria/CamaraFriaItemCard';
+import { QRScanner } from './qr-scanner/QRScanner';
+import { QRCodeGenerator } from './qr-scanner/QRCodeGenerator';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, QrCode } from 'lucide-react';
 import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
 
 const categorias = ['Todos', 'Bovina', 'Suína', 'Aves', 'Embutidos'];
@@ -24,7 +27,17 @@ interface HistoricoItem {
 }
 
 export function CamaraFria() {
-  const { items, loading, addItem, updateItemQuantity, deleteItem } = useCamaraFriaData();
+  const { 
+    items, 
+    loading, 
+    addItem, 
+    updateItemQuantity, 
+    deleteItem,
+    qrCodes,
+    showQRGenerator,
+    setShowQRGenerator,
+    lastAddedItem
+  } = useCamaraFriaData();
   const { addItem: addToRefrigerada } = useCamaraRefrigeradaData();
   
   const [newItem, setNewItem] = useState({ 
@@ -37,6 +50,7 @@ export function CamaraFria() {
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historicoOpen, setHistoricoOpen] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const [editingQuantities, setEditingQuantities] = useState<{ [key: string]: number }>({});
   const [thawingQuantities, setThawingQuantities] = useState<{ [key: string]: number }>({});
   const [historico, setHistorico] = useState<HistoricoItem[]>([]);
@@ -240,6 +254,17 @@ export function CamaraFria() {
         categorias={categorias}
       />
 
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          onClick={() => setShowQRScanner(true)}
+          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100"
+        >
+          <QrCode className="w-4 h-4 mr-2" />
+          Escanear QR Code
+        </Button>
+      </div>
+
       <CamaraFriaAlerts itemsBaixoEstoque={itemsBaixoEstoque} />
 
       <CamaraFriaFilters 
@@ -275,6 +300,24 @@ export function CamaraFria() {
           );
         })}
       </div>
+
+      <QRScanner
+        isOpen={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onSuccess={() => {
+          // Refresh items after successful scan
+          window.location.reload();
+        }}
+      />
+
+      {lastAddedItem && (
+        <QRCodeGenerator
+          isOpen={showQRGenerator}
+          onClose={() => setShowQRGenerator(false)}
+          qrCodes={qrCodes}
+          itemName={lastAddedItem.nome}
+        />
+      )}
     </div>
   );
 }

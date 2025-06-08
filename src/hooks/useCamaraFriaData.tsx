@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { useQRCodeGenerator } from '@/hooks/useQRCodeGenerator';
 
 export interface CamaraFriaItem {
   id: string;
@@ -22,7 +22,11 @@ export interface CamaraFriaItem {
 export function useCamaraFriaData() {
   const [items, setItems] = useState<CamaraFriaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [qrCodes, setQrCodes] = useState<any[]>([]);
+  const [showQRGenerator, setShowQRGenerator] = useState(false);
+  const [lastAddedItem, setLastAddedItem] = useState<CamaraFriaItem | null>(null);
   const { user } = useAuth();
+  const { generateQRCodeData } = useQRCodeGenerator();
 
   const fetchItems = async () => {
     if (!user) return;
@@ -60,9 +64,16 @@ export function useCamaraFriaData() {
       if (error) throw error;
       
       setItems(prev => [...prev, data]);
+      setLastAddedItem(data);
+      
+      // Gerar QR codes para o item
+      const qrCodesData = generateQRCodeData(data, 'CF', newItem.quantidade);
+      setQrCodes(qrCodesData);
+      setShowQRGenerator(true);
+      
       toast({
         title: "Item adicionado",
-        description: `${newItem.nome} foi adicionado ao estoque!`,
+        description: `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`,
       });
     } catch (error) {
       console.error('Error adding item:', error);
@@ -130,6 +141,10 @@ export function useCamaraFriaData() {
     addItem,
     updateItemQuantity,
     deleteItem,
-    fetchItems
+    fetchItems,
+    qrCodes,
+    showQRGenerator,
+    setShowQRGenerator,
+    lastAddedItem
   };
 }

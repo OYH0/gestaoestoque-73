@@ -160,6 +160,7 @@ export type Database = {
           data_entrada: string
           fornecedor: string | null
           id: string
+          minimo: number | null
           nome: string
           observacoes: string | null
           preco_unitario: number | null
@@ -174,6 +175,7 @@ export type Database = {
           data_entrada?: string
           fornecedor?: string | null
           id?: string
+          minimo?: number | null
           nome: string
           observacoes?: string | null
           preco_unitario?: number | null
@@ -188,6 +190,7 @@ export type Database = {
           data_entrada?: string
           fornecedor?: string | null
           id?: string
+          minimo?: number | null
           nome?: string
           observacoes?: string | null
           preco_unitario?: number | null
@@ -206,6 +209,7 @@ export type Database = {
           data_validade: string | null
           fornecedor: string | null
           id: string
+          minimo: number | null
           nome: string
           observacoes: string | null
           preco_unitario: number | null
@@ -221,6 +225,7 @@ export type Database = {
           data_validade?: string | null
           fornecedor?: string | null
           id?: string
+          minimo?: number | null
           nome: string
           observacoes?: string | null
           preco_unitario?: number | null
@@ -236,6 +241,7 @@ export type Database = {
           data_validade?: string | null
           fornecedor?: string | null
           id?: string
+          minimo?: number | null
           nome?: string
           observacoes?: string | null
           preco_unitario?: number | null

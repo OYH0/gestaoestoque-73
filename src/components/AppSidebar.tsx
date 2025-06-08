@@ -58,7 +58,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r-0 w-64 shadow-2xl" style={{background: 'linear-gradient(135deg, #8B4513, #CD853F)'}}>
+    <Sidebar className="border-r-0 w-64 shadow-2xl bg-churrasco-gradient">
       <SidebarContent className="bg-transparent flex flex-col h-full">
         <div className="flex-1">
           <SidebarGroup className="pt-8 px-4">

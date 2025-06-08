@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trash2, Plus, Minus, Check, X, History, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
@@ -225,45 +227,79 @@ export function Descartaveis() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Adicionar Novo Item</DialogTitle>
+                <DialogTitle>Adicionar Novo Item Descartável</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <Input
-                  placeholder="Nome do item"
-                  value={newItem.nome}
-                  onChange={(e) => setNewItem({...newItem, nome: e.target.value})}
-                />
-                <Input
-                  type="number"
-                  placeholder="Quantidade"
-                  value={newItem.quantidade}
-                  onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
-                />
-                <select 
-                  className="px-3 py-2 border border-gray-300 rounded-md w-full"
-                  value={newItem.unidade}
-                  onChange={(e) => setNewItem({...newItem, unidade: e.target.value})}
-                >
-                  <option value="unidades">unidades</option>
-                  <option value="rolos">rolos</option>
-                  <option value="pacotes">pacotes</option>
-                  <option value="caixas">caixas</option>
-                </select>
-                <select 
-                  className="px-3 py-2 border border-gray-300 rounded-md w-full"
-                  value={newItem.categoria}
-                  onChange={(e) => setNewItem({...newItem, categoria: e.target.value})}
-                >
-                  {categorias.slice(1).map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-                <Input
-                  type="number"
-                  placeholder="Quantidade mínima"
-                  value={newItem.minimo}
-                  onChange={(e) => setNewItem({...newItem, minimo: Number(e.target.value)})}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="nome">Nome do Item</Label>
+                  <Input
+                    id="nome"
+                    placeholder="Ex: Copo descartável, Guardanapo, Luva..."
+                    value={newItem.nome}
+                    onChange={(e) => setNewItem({...newItem, nome: e.target.value})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="quantidade">Quantidade em Estoque</Label>
+                  <Input
+                    id="quantidade"
+                    type="number"
+                    placeholder="Quantidade disponível"
+                    value={newItem.quantidade}
+                    onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="unidade">Unidade de Medida</Label>
+                  <Select 
+                    value={newItem.unidade}
+                    onValueChange={(value) => setNewItem({...newItem, unidade: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a unidade" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unidades">Unidades</SelectItem>
+                      <SelectItem value="rolos">Rolos</SelectItem>
+                      <SelectItem value="pacotes">Pacotes</SelectItem>
+                      <SelectItem value="caixas">Caixas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="categoria">Categoria do Item</Label>
+                  <Select 
+                    value={newItem.categoria}
+                    onValueChange={(value) => setNewItem({...newItem, categoria: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categorias.slice(1).map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="minimo">Estoque Mínimo</Label>
+                  <Input
+                    id="minimo"
+                    type="number"
+                    placeholder="Quantidade mínima para alerta"
+                    value={newItem.minimo}
+                    onChange={(e) => setNewItem({...newItem, minimo: Number(e.target.value)})}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Quando o estoque atingir esta quantidade, será exibido um alerta
+                  </p>
+                </div>
+                
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancelar

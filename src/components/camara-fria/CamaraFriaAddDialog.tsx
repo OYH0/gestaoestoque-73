@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface NewItem {
-  name: string;
+  nome: string;
   quantidade: number;
   unidade: string;
   categoria: string;
@@ -40,8 +40,8 @@ export function CamaraFriaAddDialog({
           <Input
             id="nome"
             placeholder="Ex: Picanha, Alcatra, Frango..."
-            value={newItem.name}
-            onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+            value={newItem.nome}
+            onChange={(e) => setNewItem({...newItem, nome: e.target.value})}
           />
         </div>
         

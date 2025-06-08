@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -15,7 +14,7 @@ export function Dashboard() {
   const { items: estoqueSecoItems } = useEstoqueSecoData();
   const { items: descartaveisItems } = useDescartaveisData();
 
-  // Processar dados para gráficos
+  // Processar dados para gráfico de barras - todos os tipos de carne
   const meatTypesData = camaraFriaItems
     .reduce((acc, item) => {
       const existing = acc.find(a => a.tipo === item.nome);
@@ -30,18 +29,14 @@ export function Dashboard() {
       }
       return acc;
     }, [] as any[])
-    .sort((a, b) => b.quantidade - a.quantidade)
-    .slice(0, 8);
+    .sort((a, b) => b.quantidade - a.quantidade);
 
-  const topMeatsData = meatTypesData.slice(0, 5);
-
-  // Simular dados de utilização das top 5 carnes (percentual de retiradas)
-  const top5MeatUsage = topMeatsData.map((meat, index) => ({
+  // Top 5 carnes mais utilizadas para gráfico de pizza (simulando percentual de uso)
+  const top5MeatUsage = meatTypesData.slice(0, 5).map((meat, index) => ({
     nome: meat.tipo,
-    percentualRetirada: Math.max(20, 90 - (index * 15) + Math.random() * 10), // Simular percentual de uso
-    estoqueAtual: meat.quantidade,
+    percentualUso: Math.max(20, 90 - (index * 15) + Math.random() * 10), // Simular percentual de uso
     color: meat.color
-  })).sort((a, b) => b.percentualRetirada - a.percentualRetirada);
+  })).sort((a, b) => b.percentualUso - a.percentualUso);
 
   // Dados para alertas de baixo estoque
   const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5));
@@ -144,21 +139,22 @@ export function Dashboard() {
 
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Gráfico de Barras - Todos os tipos de carne e quantidades */}
         {meatTypesData.length > 0 && (
           <Card className="shadow-md border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-blue-500" />
-                Quantidade por Tipo de Carne - Câmara Fria
+                Estoque por Tipo de Carne
               </CardTitle>
               <CardDescription>
-                Quantidade atual de cada tipo de carne (kg)
+                Quantidade disponível de cada tipo de carne (kg)
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={meatTypesData}>
+                  <BarChart data={meatTypesData} margin={{ bottom: 80 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis 
                       dataKey="tipo" 
@@ -169,8 +165,11 @@ export function Dashboard() {
                       fontSize={10}
                     />
                     <YAxis stroke="#888" />
-                    <Tooltip />
-                    <Bar dataKey="quantidade" radius={[2, 2, 0, 0]}>
+                    <Tooltip 
+                      formatter={(value) => [`${value}kg`, 'Quantidade']}
+                      labelFormatter={(label) => `Carne: ${label}`}
+                    />
+                    <Bar dataKey="quantidade" radius={[4, 4, 0, 0]}>
                       {meatTypesData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
@@ -182,102 +181,48 @@ export function Dashboard() {
           </Card>
         )}
 
+        {/* Gráfico de Pizza - Top 5 carnes mais utilizadas */}
         {top5MeatUsage.length > 0 && (
           <Card className="shadow-md border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-500" />
+                <Package className="w-5 h-5 text-green-500" />
                 Top 5 Carnes Mais Utilizadas
               </CardTitle>
               <CardDescription>
-                Percentual de retiradas do estoque por tipo de carne
+                Carnes com maior percentual de utilização
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={top5MeatUsage}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis 
-                      dataKey="nome" 
-                      stroke="#888" 
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                      fontSize={10}
-                    />
-                    <YAxis stroke="#888" label={{ value: '% Utilização', angle: -90, position: 'insideLeft' }} />
-                    <Tooltip 
-                      formatter={(value, name) => {
-                        const numValue = typeof value === 'number' ? value : parseFloat(value as string);
-                        return [`${numValue.toFixed(1)}%`, 'Percentual de Utilização'];
-                      }}
-                      labelFormatter={(label) => `Carne: ${label}`}
-                    />
-                    <Bar dataKey="percentualRetirada" radius={[2, 2, 0, 0]}>
+                  <PieChart>
+                    <Pie
+                      data={top5MeatUsage}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ nome, percentualUso }) => `${nome}: ${percentualUso.toFixed(1)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="percentualUso"
+                    >
                       {top5MeatUsage.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
-                    </Bar>
-                  </BarChart>
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value) => [`${Number(value).toFixed(1)}%`, 'Utilização']}
+                    />
+                    <Legend />
+                  </PieChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {topMeatsData.length > 0 && (
-          <Card className="shadow-md border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-green-500" />
-                Distribuição por Categoria
-              </CardTitle>
-              <CardDescription>
-                Categorias com maior quantidade em estoque
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80 flex items-center">
-                <div className="w-1/2">
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie
-                        data={topMeatsData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="quantidade"
-                      >
-                        {topMeatsData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="w-1/2 space-y-3">
-                  {topMeatsData.map((item, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <div className="flex-1">
-                        <div className="text-sm font-medium">{item.tipo}</div>
-                        <div className="text-xs text-muted-foreground">{item.quantidade}kg</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
+        {/* Gráfico de Nível de Estoque por Setor */}
         <Card className="shadow-md border-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

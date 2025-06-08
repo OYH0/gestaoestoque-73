@@ -186,7 +186,7 @@ export function CamaraRefrigerada() {
             <li>• Sempre manter na temperatura de 2-4°C</li>
           </ul>
         </CardContent>
-      </div>
+      </Card>
     </div>
   );
 }

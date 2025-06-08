@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
@@ -37,6 +38,7 @@ export function CamaraFria() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const [editingQuantities, setEditingQuantities] = useState<{ [key: string]: number }>({});
+  const [thawingQuantities, setThawingQuantities] = useState<{ [key: string]: number }>({});
   const [historico, setHistorico] = useState<HistoricoItem[]>([]);
 
   const startEditingQuantity = (id: string, currentQuantity: number) => {
@@ -88,24 +90,25 @@ export function CamaraFria() {
     setEditingQuantities(newEditingQuantities);
   };
 
-  const addNewItem = async () => {
-    if (newItem.nome && newItem.quantidade >= 0) {
-      await addItem({
-        ...newItem,
-        minimo: newItem.minimo
-      });
-      setNewItem({ 
-        nome: '', 
-        quantidade: 0, 
-        unidade: 'kg', 
-        categoria: 'Bovina', 
-        minimo: 5 
-      });
-      setDialogOpen(false);
-    }
+  const startThawing = (id: string, quantity: number) => {
+    setThawingQuantities({ ...thawingQuantities, [id]: quantity });
   };
 
-  const moveToRefrigerada = async (item: any, quantidade: number) => {
+  const updateThawingQuantity = (id: string, delta: number) => {
+    const currentThawValue = thawingQuantities[id] || 1;
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    
+    const newValue = Math.max(1, Math.min(item.quantidade, currentThawValue + delta));
+    setThawingQuantities({ ...thawingQuantities, [id]: newValue });
+  };
+
+  const confirmThaw = async (id: string) => {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+
+    const quantidade = thawingQuantities[id] || 1;
+    
     if (item.quantidade < quantidade) {
       toast({
         title: "Quantidade insuficiente",
@@ -131,10 +134,9 @@ export function CamaraFria() {
       quantidade: quantidade,
       unidade: item.unidade,
       categoria: item.categoria,
-      tempo_descongelamento: tempoDescongelamento,
       status: 'descongelando' as const,
       temperatura_ideal: item.temperatura_ideal,
-      observacoes: `Movido da câmara fria em ${new Date().toLocaleDateString('pt-BR')}`
+      observacoes: `Movido da câmara fria em ${new Date().toLocaleDateString('pt-BR')} - Tempo estimado: ${tempoDescongelamento}`
     });
 
     // Reduzir a quantidade na câmara fria
@@ -155,10 +157,38 @@ export function CamaraFria() {
 
     setHistorico([novoHistorico, ...historico]);
 
+    // Limpar estado de descongelamento
+    const newThawingQuantities = { ...thawingQuantities };
+    delete newThawingQuantities[id];
+    setThawingQuantities(newThawingQuantities);
+
     toast({
       title: "Item movido para descongelamento",
       description: `${quantidade} ${item.unidade} de ${item.nome} foi movido para a câmara refrigerada!`,
     });
+  };
+
+  const cancelThaw = (id: string) => {
+    const newThawingQuantities = { ...thawingQuantities };
+    delete newThawingQuantities[id];
+    setThawingQuantities(newThawingQuantities);
+  };
+
+  const addNewItem = async () => {
+    if (newItem.nome && newItem.quantidade >= 0) {
+      await addItem({
+        ...newItem,
+        minimo: newItem.minimo
+      });
+      setNewItem({ 
+        nome: '', 
+        quantidade: 0, 
+        unidade: 'kg', 
+        categoria: 'Bovina', 
+        minimo: 5 
+      });
+      setDialogOpen(false);
+    }
   };
 
   const handlePrintPDF = () => {
@@ -222,6 +252,8 @@ export function CamaraFria() {
         {sortedFilteredItems.map((item) => {
           const isEditing = editingQuantities.hasOwnProperty(item.id);
           const editValue = editingQuantities[item.id] || item.quantidade;
+          const isThawing = thawingQuantities.hasOwnProperty(item.id);
+          const thawValue = thawingQuantities[item.id] || 1;
 
           return (
             <CamaraFriaItemCard
@@ -229,11 +261,16 @@ export function CamaraFria() {
               item={item}
               isEditing={isEditing}
               editValue={editValue}
+              isThawing={isThawing}
+              thawValue={thawValue}
               onStartEdit={startEditingQuantity}
               onUpdateEdit={updateEditingQuantity}
               onConfirmChange={confirmQuantityChange}
               onCancelEdit={cancelQuantityEdit}
-              onMoveToRefrigerada={moveToRefrigerada}
+              onStartThaw={startThawing}
+              onUpdateThaw={updateThawingQuantity}
+              onConfirmThaw={confirmThaw}
+              onCancelThaw={cancelThaw}
             />
           );
         })}

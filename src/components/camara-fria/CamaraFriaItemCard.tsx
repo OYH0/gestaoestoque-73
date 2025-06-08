@@ -10,29 +10,33 @@ interface CamaraFriaItemCardProps {
   item: CamaraFriaItem;
   isEditing: boolean;
   editValue: number;
+  isThawing: boolean;
+  thawValue: number;
   onStartEdit: (id: string, currentQuantity: number) => void;
   onUpdateEdit: (id: string, delta: number) => void;
   onConfirmChange: (id: string) => void;
   onCancelEdit: (id: string) => void;
-  onMoveToRefrigerada?: (item: CamaraFriaItem, quantidade: number) => void;
+  onStartThaw: (id: string, currentQuantity: number) => void;
+  onUpdateThaw: (id: string, delta: number) => void;
+  onConfirmThaw: (id: string) => void;
+  onCancelThaw: (id: string) => void;
 }
 
 export function CamaraFriaItemCard({
   item,
   isEditing,
   editValue,
+  isThawing,
+  thawValue,
   onStartEdit,
   onUpdateEdit,
   onConfirmChange,
   onCancelEdit,
-  onMoveToRefrigerada
+  onStartThaw,
+  onUpdateThaw,
+  onConfirmThaw,
+  onCancelThaw
 }: CamaraFriaItemCardProps) {
-  const handleMoveToRefrigerada = () => {
-    if (onMoveToRefrigerada && item.quantidade > 0) {
-      onMoveToRefrigerada(item, 1);
-    }
-  };
-
   return (
     <Card 
       className={`${
@@ -56,7 +60,7 @@ export function CamaraFriaItemCard({
               )}
             </div>
             <p className="text-xs md:text-sm text-gray-600">
-              {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {item.minimo || 5} {item.unidade}
+              {item.quantidade} {item.unidade} • Mínimo: {item.minimo || 5} {item.unidade}
             </p>
           </div>
           
@@ -104,6 +108,51 @@ export function CamaraFriaItemCard({
                   <X className="w-3 h-3" />
                 </Button>
               </div>
+            ) : isThawing ? (
+              <div className="flex items-center gap-1 md:gap-2 flex-wrap">
+                <span className="text-xs md:text-sm text-gray-600 mr-2">Descongelar:</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  onClick={() => onUpdateThaw(item.id, -1)}
+                  disabled={thawValue === 1}
+                >
+                  <Minus className="w-3 h-3" />
+                </Button>
+                
+                <span className="w-12 md:w-16 text-center font-medium border rounded px-1 md:px-2 py-1 text-sm">
+                  {thawValue}
+                </span>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  onClick={() => onUpdateThaw(item.id, 1)}
+                  disabled={thawValue >= item.quantidade}
+                >
+                  <Plus className="w-3 h-3" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  onClick={() => onConfirmThaw(item.id)}
+                >
+                  <Check className="w-3 h-3" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9 p-0"
+                  onClick={() => onCancelThaw(item.id)}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
             ) : (
               <>
                 <Button
@@ -115,11 +164,11 @@ export function CamaraFriaItemCard({
                   Editar Quantidade
                 </Button>
                 
-                {onMoveToRefrigerada && item.quantidade > 0 && (
+                {item.quantidade > 0 && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleMoveToRefrigerada}
+                    onClick={() => onStartThaw(item.id, 1)}
                     className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 text-xs md:text-sm"
                   >
                     <ArrowRight className="w-3 h-3 mr-1" />

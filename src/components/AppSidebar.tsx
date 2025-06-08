@@ -1,6 +1,6 @@
 
 import React from "react"
-import { Home, Snowflake, Thermometer, Package, Trash2, BarChart3 } from "lucide-react"
+import { Home, Snowflake, Thermometer, Package2, FileText, BarChart3 } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import {
   Sidebar,
@@ -32,12 +32,12 @@ const items = [
   {
     title: "Estoque Seco",
     url: "/estoque-seco",
-    icon: Package,
+    icon: Package2,
   },
   {
     title: "Descartáveis",
     url: "/descartaveis",
-    icon: Trash2,
+    icon: FileText,
   },
   {
     title: "Relatórios",
@@ -48,20 +48,30 @@ const items = [
 
 export function AppSidebar() {
   return (
-    <Sidebar className="border-r-0 bg-gradient-to-b from-churrasco-red via-churrasco-red/90 to-churrasco-red/80">
+    <Sidebar className="border-r border-border/50 bg-gradient-to-b from-sidebar via-sidebar/95 to-sidebar/90 backdrop-blur-sm">
       <SidebarContent className="bg-transparent">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-churrasco-cream font-bold text-lg mb-4">
+        <SidebarGroup className="pt-8">
+          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold text-sm mb-6 px-4 tracking-wide">
             🥩 ChurrasControl
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="hover:bg-churrasco-cream/20 text-churrasco-cream hover:text-churrasco-cream data-[active=true]:bg-churrasco-cream data-[active=true]:text-churrasco-red">
-                    <NavLink to={item.url} className={({ isActive }) => isActive ? "bg-churrasco-cream text-churrasco-red" : ""}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                  <SidebarMenuButton 
+                    asChild 
+                    className="mx-2 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/60 text-sidebar-foreground/80 hover:text-sidebar-accent-foreground data-[active=true]:bg-churrasco-red data-[active=true]:text-white data-[active=true]:shadow-md font-medium"
+                  >
+                    <NavLink 
+                      to={item.url} 
+                      className={({ isActive }) => 
+                        isActive 
+                          ? "flex items-center gap-3 px-3 py-2.5 bg-churrasco-red text-white rounded-lg shadow-md" 
+                          : "flex items-center gap-3 px-3 py-2.5"
+                      }
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span className="text-sm">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

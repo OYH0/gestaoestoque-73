@@ -1,7 +1,8 @@
 
 import React from "react"
-import { Home, Snowflake, Thermometer, Package2, FileText, BarChart3 } from "lucide-react"
+import { Home, Snowflake, Thermometer, Package2, FileText, BarChart3, LogOut } from "lucide-react"
 import { NavLink } from "react-router-dom"
+import { useAuth } from "@/hooks/useAuth"
 import {
   Sidebar,
   SidebarContent,
@@ -11,7 +12,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
 } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 const items = [
   {
@@ -47,38 +51,70 @@ const items = [
 ]
 
 export function AppSidebar() {
+  const { signOut, user } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
-    <Sidebar className="border-r border-border/50 bg-gradient-to-b from-sidebar via-sidebar/95 to-sidebar/90 backdrop-blur-sm">
-      <SidebarContent className="bg-transparent">
-        <SidebarGroup className="pt-8">
-          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold text-sm mb-6 px-4 tracking-wide">
-            🥩 ChurrasControl
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    className="mx-2 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/60 text-sidebar-foreground/80 hover:text-sidebar-accent-foreground data-[active=true]:bg-churrasco-red data-[active=true]:text-white data-[active=true]:shadow-md font-medium"
-                  >
-                    <NavLink 
-                      to={item.url} 
-                      className={({ isActive }) => 
-                        isActive 
-                          ? "flex items-center gap-3 px-3 py-2.5 bg-churrasco-red text-white rounded-lg shadow-md" 
-                          : "flex items-center gap-3 px-3 py-2.5"
-                      }
+    <Sidebar className="border-r-0 bg-churrasco-gradient w-64">
+      <SidebarContent className="bg-transparent flex flex-col h-full">
+        <div className="flex-1">
+          <SidebarGroup className="pt-8 px-4">
+            <SidebarGroupLabel className="text-white/90 font-bold text-xl mb-8 px-0 text-center">
+              Gestão Financeira
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-2">
+                {items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild 
+                      className="w-full justify-start rounded-xl px-4 py-3 text-white/80 hover:bg-white/10 hover:text-white transition-all duration-200 data-[active=true]:bg-white/20 data-[active=true]:text-white font-medium text-base h-auto"
                     >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      <span className="text-sm">{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                      <NavLink 
+                        to={item.url} 
+                        className={({ isActive }) => 
+                          `flex items-center gap-4 w-full ${
+                            isActive 
+                              ? "bg-white/20 text-white rounded-xl" 
+                              : ""
+                          }`
+                        }
+                      >
+                        <item.icon className="h-5 w-5 shrink-0" />
+                        <span className="text-base">{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </div>
+        
+        <SidebarFooter className="p-4 mt-auto">
+          <div className="flex items-center gap-3 mb-4 px-2">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-white/20 text-white text-xs">
+                {user?.email?.charAt(0).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-white/80 text-sm truncate">
+              {user?.email || 'usuário'}
+            </span>
+          </div>
+          
+          <Button 
+            onClick={handleSignOut}
+            variant="ghost"
+            className="w-full justify-start rounded-xl px-4 py-3 text-white/80 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium text-base h-auto"
+          >
+            <LogOut className="h-5 w-5 shrink-0 mr-4" />
+            <span className="text-base">Sair</span>
+          </Button>
+        </SidebarFooter>
       </SidebarContent>
     </Sidebar>
   )

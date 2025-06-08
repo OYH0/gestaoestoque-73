@@ -89,12 +89,6 @@ export function Dashboard() {
     },
   ];
 
-  // Dados para alertas de baixo estoque
-  const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5));
-  const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5));
-  
-  const temAlertas = carnesBaixoEstoque.length > 0 || estoqueBaixo.length > 0;
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

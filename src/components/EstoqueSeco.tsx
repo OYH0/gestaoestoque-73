@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Package, Plus, Minus, Check, X, History, FileText, Loader2, QrCode } from 'lucide-react';
+import { Package, Plus, Minus, Check, X, History, FileText, Loader2, QrCode, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
 import { EstoqueSecoFilters } from '@/components/estoque-seco/EstoqueSecoFilters';
@@ -97,13 +97,19 @@ export function EstoqueSeco() {
   };
 
   const addNewItem = async () => {
-    if (newItem.nome && newItem.quantidade >= 0) {
+    if (newItem.nome) {
       await addItem({
         ...newItem,
         minimo: newItem.minimo
       });
       setNewItem({ nome: '', quantidade: 0, unidade: 'kg', categoria: 'Outros', minimo: 5 });
       setDialogOpen(false);
+    }
+  };
+
+  const handleDeleteItem = async (id: string, itemName: string) => {
+    if (window.confirm(`Tem certeza que deseja remover "${itemName}" do estoque?`)) {
+      await deleteItem(id);
     }
   };
 
@@ -241,7 +247,7 @@ export function EstoqueSeco() {
                   <Input
                     id="quantidade"
                     type="number"
-                    placeholder="Quantidade disponível"
+                    placeholder="Quantidade disponível (pode ser 0)"
                     value={newItem.quantidade}
                     onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
                   />
@@ -407,14 +413,24 @@ export function EstoqueSeco() {
                         </Button>
                       </>
                     ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => startEditingQuantity(item.id, item.quantidade)}
-                        className="bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100 text-xs md:text-sm px-2 md:px-3"
-                      >
-                        Editar
-                      </Button>
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => startEditingQuantity(item.id, item.quantidade)}
+                          className="bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100 text-xs md:text-sm px-2 md:px-3"
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteItem(item.id, item.nome)}
+                          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 p-1 md:p-2"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>

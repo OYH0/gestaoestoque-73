@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -69,7 +70,6 @@ export function useDescartaveisData() {
         const qrCodesData = generateQRCodeData(data, 'DESC', newItem.quantidade);
         setQrCodes(qrCodesData);
         
-        // Garantir que o diálogo apareça
         setTimeout(() => {
           setShowQRGenerator(true);
         }, 100);
@@ -93,7 +93,6 @@ export function useDescartaveisData() {
 
   const updateItemQuantity = async (id: string, newQuantity: number) => {
     try {
-      // Encontrar o item atual para comparar quantidades
       const currentItem = items.find(item => item.id === id);
       if (!currentItem) return;
 
@@ -110,7 +109,6 @@ export function useDescartaveisData() {
         item.id === id ? { ...item, quantidade: newQuantity } : item
       ));
 
-      // Se houve aumento de quantidade, gerar QR codes para as unidades adicionadas
       if (quantityIncrease > 0) {
         const updatedItem = { ...currentItem, quantidade: newQuantity };
         setLastAddedItem(updatedItem);

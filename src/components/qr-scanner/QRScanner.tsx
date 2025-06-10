@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Camera, X, Loader2 } from 'lucide-react';
 import { useQRCodeScanner } from '@/hooks/useQRCodeScanner';
 import { toast } from '@/hooks/use-toast';
-import QrScanner from 'qr-scanner';
 
 interface QRScannerProps {
   isOpen: boolean;
@@ -19,7 +18,7 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const { processQRCode, isProcessing } = useQRCodeScanner();
-  const qrScannerRef = useRef<QrScanner | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Lista de QR codes de teste para demonstração
   const testQRCodes = [
@@ -31,37 +30,28 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
   const startCamera = async () => {
     try {
       setCameraError(null);
-      console.log('Iniciando scanner de QR...');
+      console.log('Iniciando câmera...');
       
       if (videoRef.current) {
-        // Verificar se QR Scanner é suportado
-        const hasCamera = await QrScanner.hasCamera();
-        if (!hasCamera) {
-          throw new Error('Nenhuma câmera encontrada');
-        }
-
-        // Criar scanner
-        qrScannerRef.current = new QrScanner(
-          videoRef.current,
-          (result) => {
-            console.log('QR Code detectado:', result.data);
-            handleQRCodeDetected(result.data);
-          },
-          {
-            onDecodeError: (error) => {
-              // Silenciar erros de decodificação normais
-              // console.log('Erro de decodificação (normal):', error);
-            },
-            highlightScanRegion: true,
-            highlightCodeOutline: true,
-            preferredCamera: 'environment'
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'environment',
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          } 
+        });
+        
+        streamRef.current = stream;
+        videoRef.current.srcObject = stream;
+        
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play();
+            setHasCamera(true);
+            setIsScanning(true);
+            console.log('Câmera iniciada com sucesso');
           }
-        );
-
-        await qrScannerRef.current.start();
-        setHasCamera(true);
-        setIsScanning(true);
-        console.log('Scanner iniciado com sucesso');
+        };
       }
     } catch (error) {
       console.error('Erro ao acessar câmera:', error);
@@ -74,10 +64,13 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
     console.log('Parando câmera...');
     setIsScanning(false);
     
-    if (qrScannerRef.current) {
-      qrScannerRef.current.stop();
-      qrScannerRef.current.destroy();
-      qrScannerRef.current = null;
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     
     setHasCamera(false);
@@ -89,11 +82,6 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
     console.log('Processando QR Code:', qrCodeData);
     setIsScanning(false);
     
-    // Parar temporariamente o scanner
-    if (qrScannerRef.current) {
-      qrScannerRef.current.stop();
-    }
-
     try {
       const result = await processQRCode(qrCodeData);
       
@@ -111,11 +99,7 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
           description: result.error || "QR Code não reconhecido",
           variant: "destructive",
         });
-        // Reiniciar scanner
-        if (qrScannerRef.current) {
-          await qrScannerRef.current.start();
-          setIsScanning(true);
-        }
+        setIsScanning(true);
       }
     } catch (error) {
       console.error('Erro ao processar QR code:', error);
@@ -124,11 +108,7 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
         description: "Ocorreu um erro ao processar o QR Code",
         variant: "destructive",
       });
-      // Reiniciar scanner
-      if (qrScannerRef.current) {
-        await qrScannerRef.current.start();
-        setIsScanning(true);
-      }
+      setIsScanning(true);
     }
   };
 
@@ -175,9 +155,10 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
             <div className="relative">
               <video
                 ref={videoRef}
-                className="w-full h-64 bg-black rounded-lg object-cover"
+                className="w-full h-64 bg-gray-100 rounded-lg object-cover"
                 playsInline
                 muted
+                autoPlay
               />
               
               {isScanning && (

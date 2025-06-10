@@ -71,10 +71,8 @@ export function Descartaveis() {
     const oldQuantity = item.quantidade;
     const difference = newQuantity - oldQuantity;
 
-    // Atualizar o item no banco
     await updateItemQuantity(id, newQuantity);
 
-    // Adicionar ao histórico
     const now = new Date();
     const novoHistorico: HistoricoItem = {
       id: Date.now(),
@@ -88,7 +86,6 @@ export function Descartaveis() {
 
     setHistorico([novoHistorico, ...historico]);
 
-    // Limpar edição
     const newEditingQuantities = { ...editingQuantities };
     delete newEditingQuantities[id];
     setEditingQuantities(newEditingQuantities);
@@ -106,7 +103,7 @@ export function Descartaveis() {
   };
 
   const addNewItem = async () => {
-    if (newItem.nome && newItem.quantidade >= 0) {
+    if (newItem.nome) {
       await addItem(newItem);
       setNewItem({ 
         nome: '', 
@@ -116,6 +113,12 @@ export function Descartaveis() {
         minimo: 10 
       });
       setDialogOpen(false);
+    }
+  };
+
+  const handleDeleteItem = async (id: string, itemName: string) => {
+    if (window.confirm(`Tem certeza que deseja remover "${itemName}" do estoque?`)) {
+      await deleteItem(id);
     }
   };
 
@@ -146,9 +149,7 @@ export function Descartaveis() {
     ? items 
     : items.filter(item => item.categoria === categoriaFiltro);
 
-  // Ordenar itens filtrados alfabeticamente
   const sortedFilteredItems = [...filteredItems].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-
   const itemsBaixoEstoque = items.filter(item => item.minimo && item.quantidade <= item.minimo);
   const totalItens = items.reduce((acc, item) => acc + item.quantidade, 0);
 
@@ -257,7 +258,7 @@ export function Descartaveis() {
                   <Input
                     id="quantidade"
                     type="number"
-                    placeholder="Quantidade disponível"
+                    placeholder="Quantidade disponível (pode ser 0)"
                     value={newItem.quantidade}
                     onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
                   />
@@ -440,14 +441,24 @@ export function Descartaveis() {
                         </Button>
                       </>
                     ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => startEditingQuantity(item.id, item.quantidade)}
-                        className="bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100 text-xs md:text-sm px-2 md:px-3"
-                      >
-                        Editar
-                      </Button>
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => startEditingQuantity(item.id, item.quantidade)}
+                          className="bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100 text-xs md:text-sm px-2 md:px-3"
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteItem(item.id, item.nome)}
+                          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 p-1 md:p-2"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>

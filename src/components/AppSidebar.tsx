@@ -54,27 +54,27 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0 w-64 shadow-2xl">
-      <div className="bg-gradient-to-br from-orange-600 via-red-600 to-amber-600 h-full">
+      <div className="bg-gradient-to-b from-blue-600 to-blue-800 h-full">
         <SidebarContent className="bg-transparent flex flex-col h-full">
           <div className="flex-1">
             <SidebarGroup className="pt-8 px-4">
-              <SidebarGroupLabel className="text-white font-bold text-xl mb-8 px-0 text-center">
+              <SidebarGroupLabel className="text-white font-bold text-xl mb-8 px-0 text-left">
                 Gestão Financeira
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-2">
+                <SidebarMenu className="space-y-1">
                   {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton 
                         asChild 
-                        className="w-full justify-start rounded-xl px-4 py-3 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 data-[active=true]:bg-white/20 data-[active=true]:text-white font-medium text-base h-auto shadow-lg hover:shadow-xl"
+                        className="w-full justify-start rounded-lg px-4 py-3 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 data-[active=true]:bg-white/20 data-[active=true]:text-white font-medium text-base h-auto"
                       >
                         <NavLink 
                           to={item.url} 
                           className={({ isActive }) => 
-                            `flex items-center gap-4 w-full ${
+                            `flex items-center gap-3 w-full ${
                               isActive 
-                                ? "bg-white/20 text-white rounded-xl shadow-lg" 
+                                ? "bg-white/20 text-white rounded-lg" 
                                 : ""
                             }`
                           }
@@ -104,10 +104,9 @@ export function AppSidebar() {
             
             <Button 
               onClick={handleSignOut}
-              variant="ghost"
-              className="w-full justify-start rounded-xl px-4 py-3 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium text-base h-auto shadow-lg hover:shadow-xl"
+              className="w-full justify-start rounded-lg px-4 py-3 text-white bg-transparent border border-white/20 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium text-base h-auto"
             >
-              <LogOut className="h-5 w-5 shrink-0 mr-4" />
+              <LogOut className="h-5 w-5 shrink-0 mr-3" />
               <span className="text-base">Sair</span>
             </Button>
           </SidebarFooter>

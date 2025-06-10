@@ -71,7 +71,6 @@ export function useEstoqueSecoData() {
         const qrCodesData = generateQRCodeData(data, 'ES', newItem.quantidade);
         setQrCodes(qrCodesData);
         
-        // Garantir que o diálogo apareça
         setTimeout(() => {
           setShowQRGenerator(true);
         }, 100);
@@ -95,7 +94,6 @@ export function useEstoqueSecoData() {
 
   const updateItemQuantity = async (id: string, newQuantity: number) => {
     try {
-      // Encontrar o item atual para comparar quantidades
       const currentItem = items.find(item => item.id === id);
       if (!currentItem) return;
 
@@ -112,7 +110,6 @@ export function useEstoqueSecoData() {
         item.id === id ? { ...item, quantidade: newQuantity } : item
       ));
 
-      // Se houve aumento de quantidade, gerar QR codes para as unidades adicionadas
       if (quantityIncrease > 0) {
         const updatedItem = { ...currentItem, quantidade: newQuantity };
         setLastAddedItem(updatedItem);

@@ -36,46 +36,50 @@ export function useQRCodeScanner() {
       const itemIdPart = parts[1];
       
       let tableDisplayName: string;
-      let tableName: string;
+      let items: any[] = [];
       
-      switch (tipo) {
-        case 'CF':
-          tableDisplayName = 'Câmara Fria';
-          tableName = 'camara_fria_items';
-          break;
-        case 'ES':
-          tableDisplayName = 'Estoque Seco';
-          tableName = 'estoque_seco_items';
-          break;
-        case 'DESC':
-          tableDisplayName = 'Descartáveis';
-          tableName = 'descartaveis_items';
-          break;
-        default:
-          return { success: false, error: 'Tipo de estoque não reconhecido' };
+      // Buscar itens baseado no tipo
+      if (tipo === 'CF') {
+        tableDisplayName = 'Câmara Fria';
+        const { data, error } = await supabase
+          .from('camara_fria_items')
+          .select('*')
+          .gt('quantidade', 0);
+        
+        if (error) throw error;
+        items = data || [];
+      } else if (tipo === 'ES') {
+        tableDisplayName = 'Estoque Seco';
+        const { data, error } = await supabase
+          .from('estoque_seco_items')
+          .select('*')
+          .gt('quantidade', 0);
+        
+        if (error) throw error;
+        items = data || [];
+      } else if (tipo === 'DESC') {
+        tableDisplayName = 'Descartáveis';
+        const { data, error } = await supabase
+          .from('descartaveis_items')
+          .select('*')
+          .gt('quantidade', 0);
+        
+        if (error) throw error;
+        items = data || [];
+      } else {
+        return { success: false, error: 'Tipo de estoque não reconhecido' };
       }
 
       console.log(`Buscando item do tipo ${tipo} com ID contendo: ${itemIdPart}`);
 
-      // Buscar item no banco de dados
-      const { data: items, error: searchError } = await supabase
-        .from(tableName)
-        .select('*')
-        .gt('quantidade', 0);
-
-      if (searchError) {
-        console.error('Erro ao buscar item:', searchError);
-        return { success: false, error: 'Erro ao buscar item no banco de dados' };
-      }
-
       // Filtrar localmente
-      const filteredItems = items?.filter(item => {
+      const filteredItems = items.filter(item => {
         const itemIdStr = String(item.id);
         const nomeStr = String(item.nome).toLowerCase();
         const searchStr = itemIdPart.toLowerCase();
         
         return itemIdStr.includes(itemIdPart) || nomeStr.includes(searchStr);
-      }) || [];
+      });
 
       console.log('Itens encontrados:', filteredItems.length);
 
@@ -97,15 +101,28 @@ export function useQRCodeScanner() {
       
       console.log(`Atualizando quantidade de ${item.quantidade} para ${newQuantity}`);
 
-      // Atualizar quantidade
-      const { error: updateError } = await supabase
-        .from(tableName)
-        .update({ quantidade: newQuantity })
-        .eq('id', item.id);
+      // Atualizar quantidade baseado no tipo
+      if (tipo === 'CF') {
+        const { error } = await supabase
+          .from('camara_fria_items')
+          .update({ quantidade: newQuantity })
+          .eq('id', item.id);
 
-      if (updateError) {
-        console.error('Erro ao atualizar quantidade:', updateError);
-        return { success: false, error: 'Erro ao atualizar estoque' };
+        if (error) throw error;
+      } else if (tipo === 'ES') {
+        const { error } = await supabase
+          .from('estoque_seco_items')
+          .update({ quantidade: newQuantity })
+          .eq('id', item.id);
+
+        if (error) throw error;
+      } else if (tipo === 'DESC') {
+        const { error } = await supabase
+          .from('descartaveis_items')
+          .update({ quantidade: newQuantity })
+          .eq('id', item.id);
+
+        if (error) throw error;
       }
 
       // Registrar no histórico (apenas para câmara fria)

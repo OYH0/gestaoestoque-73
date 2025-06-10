@@ -54,7 +54,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0 w-64 shadow-2xl">
-      <div className="bg-gradient-to-b from-blue-600 to-blue-800 h-full">
+      <div className="bg-gradient-to-b from-blue-600 via-blue-700 to-purple-800 h-full">
         <SidebarContent className="bg-transparent flex flex-col h-full">
           <div className="flex-1">
             <SidebarGroup className="pt-8 px-4">
@@ -62,19 +62,16 @@ export function AppSidebar() {
                 Gestão Financeira
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-1">
+                <SidebarMenu className="space-y-2">
                   {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton 
-                        asChild 
-                        className="w-full justify-start rounded-lg px-4 py-3 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 data-[active=true]:bg-white/20 data-[active=true]:text-white font-medium text-base h-auto"
-                      >
+                      <SidebarMenuButton asChild className="w-full p-0">
                         <NavLink 
                           to={item.url} 
                           className={({ isActive }) => 
-                            `flex items-center gap-3 w-full ${
+                            `flex items-center gap-3 w-full px-4 py-3 text-white/90 hover:bg-white/10 transition-all duration-200 font-medium text-base h-auto rounded-lg ${
                               isActive 
-                                ? "bg-white/20 text-white rounded-lg" 
+                                ? "bg-gradient-to-r from-blue-400 to-purple-600 text-white shadow-lg border border-white/20" 
                                 : ""
                             }`
                           }

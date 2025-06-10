@@ -13,11 +13,11 @@ interface QRScannerProps {
 }
 
 export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [hasCamera, setHasCamera] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const { processQRCode, isProcessing } = useQRCodeScanner();
+  const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   // Lista de QR codes de teste para demonstração
@@ -32,30 +32,43 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
       setCameraError(null);
       console.log('Iniciando câmera...');
       
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Câmera não disponível neste dispositivo');
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        } 
+      });
+      
       if (videoRef.current) {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: 'environment',
-            width: { ideal: 640 },
-            height: { ideal: 480 }
-          } 
-        });
-        
         streamRef.current = stream;
         videoRef.current.srcObject = stream;
         
         videoRef.current.onloadedmetadata = () => {
           if (videoRef.current) {
-            videoRef.current.play();
-            setHasCamera(true);
-            setIsScanning(true);
-            console.log('Câmera iniciada com sucesso');
+            videoRef.current.play().then(() => {
+              setHasCamera(true);
+              setIsScanning(true);
+              console.log('Câmera iniciada com sucesso');
+            }).catch((error) => {
+              console.error('Erro ao reproduzir vídeo:', error);
+              setCameraError('Erro ao iniciar a visualização da câmera');
+            });
           }
+        };
+
+        videoRef.current.onerror = (error) => {
+          console.error('Erro no elemento de vídeo:', error);
+          setCameraError('Erro no elemento de vídeo');
         };
       }
     } catch (error) {
       console.error('Erro ao acessar câmera:', error);
-      setCameraError('Não foi possível acessar a câmera. Verifique as permissões.');
+      setCameraError('Não foi possível acessar a câmera. Verifique as permissões ou use os códigos de teste abaixo.');
       setHasCamera(false);
     }
   };
@@ -65,7 +78,10 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
     setIsScanning(false);
     
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log('Track parada:', track.kind);
+      });
       streamRef.current = null;
     }
     
@@ -144,37 +160,40 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
         </DialogHeader>
 
         <div className="space-y-4">
-          {cameraError ? (
-            <div className="text-center p-8 bg-red-50 rounded-lg">
-              <div className="text-red-600 mb-4">{cameraError}</div>
-              <Button onClick={startCamera} variant="outline">
-                Tentar Novamente
-              </Button>
-            </div>
-          ) : (
-            <div className="relative">
-              <video
-                ref={videoRef}
-                className="w-full h-64 bg-gray-100 rounded-lg object-cover"
-                playsInline
-                muted
-                autoPlay
-              />
-              
-              {isScanning && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-                  {isProcessing ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Processando...
-                    </div>
-                  ) : (
-                    'Posicione o QR Code na área da câmera'
-                  )}
+          <div className="relative">
+            <video
+              ref={videoRef}
+              className="w-full h-64 bg-gray-900 rounded-lg object-cover"
+              playsInline
+              muted
+              autoPlay
+              style={{ background: '#000' }}
+            />
+            
+            {cameraError && (
+              <div className="absolute inset-0 bg-gray-900 rounded-lg flex items-center justify-center">
+                <div className="text-center text-white p-4">
+                  <div className="mb-4">{cameraError}</div>
+                  <Button onClick={startCamera} variant="outline" className="text-white border-white">
+                    Tentar Novamente
+                  </Button>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+            
+            {isScanning && !cameraError && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                {isProcessing ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processando...
+                  </div>
+                ) : (
+                  'Posicione o QR Code na área da câmera'
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Botões de teste para demonstração */}
           <div className="space-y-2">

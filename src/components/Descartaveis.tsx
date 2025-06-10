@@ -371,18 +371,21 @@ export function Descartaveis() {
           return (
             <Card 
               key={item.id} 
-              className={`${
+              className={`transition-all duration-200 hover:shadow-md ${
                 item.quantidade <= minimo 
-                  ? 'border-red-200 bg-red-50' 
-                  : 'border-gray-200'
+                  ? 'border-l-4 border-l-red-500 bg-red-50/30' 
+                  : ''
               }`}
             >
-              <CardContent className="p-3 md:p-4">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.nome}</h3>
-                      <Badge variant="outline" className="text-xs">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-2">
+                        <Trash2 className="w-4 h-4 text-purple-500" />
+                        <h3 className="font-semibold text-lg">{item.nome}</h3>
+                      </div>
+                      <Badge variant={item.quantidade <= minimo ? "destructive" : "secondary"}>
                         {item.categoria}
                       </Badge>
                       {item.quantidade <= minimo && (
@@ -391,74 +394,67 @@ export function Descartaveis() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs md:text-sm text-gray-600 mt-1">
-                      {isEditing ? editValue : item.quantidade} {item.unidade} • Mínimo: {minimo} {item.unidade}
-                    </p>
+                    
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></p>
+                      <p>Mínimo: <span className="font-medium">{minimo} {item.unidade}</span></p>
+                    </div>
                   </div>
-                  
-                  <div className="flex items-center gap-1 md:gap-2">
+
+                  <div className="flex flex-col gap-2 ml-4">
                     {isEditing ? (
-                      <>
+                      <div className="flex items-center gap-2 bg-purple-50 p-2 rounded-lg">
                         <Button
-                          variant="outline"
                           size="sm"
-                          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 p-1 md:p-2"
+                          variant="outline"
                           onClick={() => updateEditingQuantity(item.id, -1)}
-                          disabled={editValue === 0}
+                          disabled={editValue <= 0}
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-4 h-4" />
                         </Button>
-                        
-                        <span className="w-12 md:w-16 text-center font-medium border rounded px-1 md:px-2 py-1 text-sm">
-                          {editValue}
-                        </span>
-                        
+                        <span className="font-medium min-w-12 text-center">{editValue}</span>
                         <Button
-                          variant="outline"
                           size="sm"
-                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 p-1 md:p-2"
+                          variant="outline"
                           onClick={() => updateEditingQuantity(item.id, 1)}
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus className="w-4 h-4" />
                         </Button>
-
                         <Button
-                          variant="outline"
                           size="sm"
-                          className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 p-1 md:p-2"
                           onClick={() => confirmQuantityChange(item.id)}
+                          className="bg-green-500 hover:bg-green-600"
                         >
-                          <Check className="w-3 h-3" />
+                          <Check className="w-4 h-4" />
                         </Button>
-
                         <Button
-                          variant="outline"
                           size="sm"
-                          className="bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 p-1 md:p-2"
+                          variant="outline"
                           onClick={() => cancelQuantityEdit(item.id)}
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-4 h-4" />
                         </Button>
-                      </>
+                      </div>
                     ) : (
-                      <>
+                      <div className="flex flex-col gap-2">
                         <Button
-                          variant="outline"
                           size="sm"
+                          variant="outline"
                           onClick={() => startEditingQuantity(item.id, item.quantidade)}
-                          className="bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100 text-xs md:text-sm px-2 md:px-3"
+                          className="text-xs bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100"
                         >
-                          Editar
+                          Ajustar Estoque
                         </Button>
                         <Button
-                          variant="outline"
                           size="sm"
+                          variant="destructive"
                           onClick={() => handleDeleteItem(item.id, item.nome)}
-                          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 p-1 md:p-2"
+                          className="text-xs"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Remover
                         </Button>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>

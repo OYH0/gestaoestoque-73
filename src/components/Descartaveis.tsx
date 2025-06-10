@@ -1,57 +1,33 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Minus, Check, X, History, FileText, QrCode } from 'lucide-react';
+import { FileText, Plus, Minus, Check, X, History, Loader2, QrCode, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
 import { DescartaveisFilters } from '@/components/descartaveis/DescartaveisFilters';
 import { DescartaveisAlerts } from '@/components/descartaveis/DescartaveisAlerts';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
-import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { useDescartaveisData } from '@/hooks/useDescartaveisData';
+import { useDescartaveisHistorico } from '@/hooks/useDescartaveisHistorico';
 
-const categorias = ['Todos', 'Utensílios', 'Higiene', 'Limpeza', 'Embalagens'];
-
-interface HistoricoItem {
-  id: number;
-  itemName: string;
-  tipo: 'entrada' | 'saida';
-  quantidade: number;
-  unidade: string;
-  data: string;
-  hora: string;
-}
+const categorias = ['Todos', 'Embalagens', 'Talheres', 'Copos', 'Pratos', 'Guardanapos', 'Outros'];
 
 export function Descartaveis() {
-  const { 
-    items, 
-    loading, 
-    addItem, 
-    updateItemQuantity, 
-    deleteItem,
-    qrCodes,
-    showQRGenerator,
-    setShowQRGenerator,
-    lastAddedItem
-  } = useDescartaveisData();
-  const [newItem, setNewItem] = useState({ 
-    nome: '', 
-    quantidade: 0, 
-    unidade: 'unidades', 
-    categoria: 'Utensílios', 
-    minimo: 10 
-  });
+  const { items, loading, addItem, updateItemQuantity, deleteItem } = useDescartaveisData();
+  const { historico, addHistoricoItem } = useDescartaveisHistorico();
+  
+  const [newItem, setNewItem] = useState({ nome: '', quantidade: 0, unidade: 'unidade', categoria: 'Outros', minimo: 10 });
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [editingQuantities, setEditingQuantities] = useState<{ [key: string]: number }>({});
-  const [historico, setHistorico] = useState<HistoricoItem[]>([]);
 
   const startEditingQuantity = (id: string, currentQuantity: number) => {
     setEditingQuantities({ ...editingQuantities, [id]: currentQuantity });
@@ -73,18 +49,16 @@ export function Descartaveis() {
 
     await updateItemQuantity(id, newQuantity);
 
-    const now = new Date();
-    const novoHistorico: HistoricoItem = {
-      id: Date.now(),
-      itemName: item.nome,
-      tipo: difference > 0 ? 'entrada' : 'saida',
-      quantidade: Math.abs(difference),
-      unidade: item.unidade,
-      data: now.toLocaleDateString('pt-BR'),
-      hora: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-    };
-
-    setHistorico([novoHistorico, ...historico]);
+    if (difference !== 0) {
+      await addHistoricoItem({
+        item_nome: item.nome,
+        quantidade: Math.abs(difference),
+        unidade: item.unidade,
+        categoria: item.categoria,
+        tipo: difference > 0 ? 'entrada' : 'saida',
+        observacoes: `Ajuste manual de estoque`
+      });
+    }
 
     const newEditingQuantities = { ...editingQuantities };
     delete newEditingQuantities[id];
@@ -104,14 +78,11 @@ export function Descartaveis() {
 
   const addNewItem = async () => {
     if (newItem.nome) {
-      await addItem(newItem);
-      setNewItem({ 
-        nome: '', 
-        quantidade: 0, 
-        unidade: 'unidades', 
-        categoria: 'Utensílios', 
-        minimo: 10 
+      await addItem({
+        ...newItem,
+        minimo: newItem.minimo
       });
+      setNewItem({ nome: '', quantidade: 0, unidade: 'unidade', categoria: 'Outros', minimo: 10 });
       setDialogOpen(false);
     }
   };
@@ -126,7 +97,7 @@ export function Descartaveis() {
     generateInventoryPDF(
       items,
       'Inventário de Descartáveis',
-      'Utensílios e materiais descartáveis'
+      'Produtos descartáveis'
     );
     toast({
       title: "PDF gerado",
@@ -136,11 +107,13 @@ export function Descartaveis() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando descartáveis...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-64">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex items-center justify-center p-6">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <span>Carregando dados...</span>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -150,28 +123,24 @@ export function Descartaveis() {
     : items.filter(item => item.categoria === categoriaFiltro);
 
   const sortedFilteredItems = [...filteredItems].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-  const itemsBaixoEstoque = items.filter(item => item.minimo && item.quantidade <= item.minimo);
-  const totalItens = items.reduce((acc, item) => acc + item.quantidade, 0);
+  const itemsBaixoEstoque = items.filter(item => item.quantidade <= (item.minimo || 10));
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-            <Trash2 className="w-4 h-4 md:w-5 md:h-5 text-white" />
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-green-500 rounded-lg flex items-center justify-center">
+            <FileText className="w-4 h-4 md:w-5 md:h-5 text-white" />
           </div>
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-gray-900">Descartáveis</h2>
-            <p className="text-sm md:text-base text-gray-600">Utensílios e materiais descartáveis</p>
+            <p className="text-sm md:text-base text-gray-600">Produtos descartáveis</p>
           </div>
         </div>
         
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-xs">
-            {items.length} tipos
-          </Badge>
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-            {totalItens} total
+          <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+            {items.length} itens
           </Badge>
           {itemsBaixoEstoque.length > 0 && (
             <Badge variant="destructive" className="text-xs">
@@ -198,11 +167,11 @@ export function Descartaveis() {
                 Histórico
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
               <DialogHeader>
-                <DialogTitle>Histórico de Movimentações</DialogTitle>
+                <DialogTitle>Histórico - Descartáveis</DialogTitle>
                 <DialogDescription>
-                  Registro de entradas e saídas de descartáveis
+                  Registro de entradas e saídas de produtos
                 </DialogDescription>
               </DialogHeader>
               <div className="max-h-96 overflow-y-auto space-y-2">
@@ -214,15 +183,15 @@ export function Descartaveis() {
                       <div className="flex items-center gap-3">
                         <div className={`w-2 h-2 rounded-full ${item.tipo === 'entrada' ? 'bg-green-500' : 'bg-red-500'}`} />
                         <div>
-                          <p className="font-medium">{item.itemName}</p>
+                          <p className="font-medium">{item.item_nome}</p>
                           <p className="text-sm text-gray-600">
                             {item.tipo === 'entrada' ? 'Entrada' : 'Saída'} de {item.quantidade} {item.unidade}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-600">{item.data}</p>
-                        <p className="text-sm text-gray-600">{item.hora}</p>
+                        <p className="text-sm text-gray-600">{new Date(item.data_operacao).toLocaleDateString('pt-BR')}</p>
+                        <p className="text-sm text-gray-600">{new Date(item.data_operacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                       </div>
                     </div>
                   ))
@@ -233,21 +202,21 @@ export function Descartaveis() {
           
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-purple-500 hover:bg-purple-600 text-xs md:text-sm" size="sm">
+              <Button className="bg-green-500 hover:bg-green-600 text-xs md:text-sm" size="sm">
                 <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                 Adicionar
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Adicionar Novo Item Descartável</DialogTitle>
+                <DialogTitle>Adicionar Novo Item</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="nome">Nome do Item</Label>
                   <Input
                     id="nome"
-                    placeholder="Ex: Copo descartável, Guardanapo, Luva..."
+                    placeholder="Ex: Copo plástico, Guardanapo..."
                     value={newItem.nome}
                     onChange={(e) => setNewItem({...newItem, nome: e.target.value})}
                   />
@@ -274,10 +243,10 @@ export function Descartaveis() {
                       <SelectValue placeholder="Selecione a unidade" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="unidades">Unidades</SelectItem>
-                      <SelectItem value="rolos">Rolos</SelectItem>
+                      <SelectItem value="unidade">Unidades</SelectItem>
                       <SelectItem value="pacotes">Pacotes</SelectItem>
                       <SelectItem value="caixas">Caixas</SelectItem>
+                      <SelectItem value="kg">Quilogramas (kg)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -317,7 +286,7 @@ export function Descartaveis() {
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button onClick={addNewItem} className="bg-purple-500 hover:bg-purple-600">
+                  <Button onClick={addNewItem} className="bg-green-500 hover:bg-green-600">
                     Adicionar
                   </Button>
                 </div>
@@ -338,22 +307,6 @@ export function Descartaveis() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-        {categorias.slice(1).map((categoria) => {
-          const itensCategoria = items.filter(item => item.categoria === categoria);
-          const totalCategoria = itensCategoria.reduce((acc, item) => acc + item.quantidade, 0);
-          return (
-            <Card key={categoria}>
-              <CardContent className="p-3 md:p-4 text-center">
-                <div className="text-lg md:text-2xl font-bold text-purple-600">{totalCategoria}</div>
-                <p className="text-xs md:text-sm text-gray-600">{categoria}</p>
-                <p className="text-xs text-gray-500">{itensCategoria.length} tipos</p>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
       <DescartaveisAlerts itemsBaixoEstoque={itemsBaixoEstoque} />
 
       <DescartaveisFilters 
@@ -366,44 +319,45 @@ export function Descartaveis() {
         {sortedFilteredItems.map((item) => {
           const isEditing = editingQuantities.hasOwnProperty(item.id);
           const editValue = editingQuantities[item.id] || item.quantidade;
-          const minimo = item.minimo || 0;
 
           return (
             <Card 
               key={item.id} 
               className={`transition-all duration-200 hover:shadow-md ${
-                item.quantidade <= minimo 
+                item.quantidade <= (item.minimo || 10)
                   ? 'border-l-4 border-l-red-500 bg-red-50/30' 
                   : ''
               }`}
             >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+              <CardContent className="p-3 md:p-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex-1 w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
                       <div className="flex items-center gap-2">
-                        <Trash2 className="w-4 h-4 text-purple-500" />
-                        <h3 className="font-semibold text-lg">{item.nome}</h3>
+                        <FileText className="w-4 h-4 text-green-500" />
+                        <h3 className="font-semibold text-base md:text-lg">{item.nome}</h3>
                       </div>
-                      <Badge variant={item.quantidade <= minimo ? "destructive" : "secondary"}>
-                        {item.categoria}
-                      </Badge>
-                      {item.quantidade <= minimo && (
-                        <Badge variant="destructive" className="text-xs">
-                          Baixo Estoque
+                      <div className="flex flex-wrap gap-1">
+                        <Badge variant={item.quantidade <= (item.minimo || 10) ? "destructive" : "secondary"} className="text-xs">
+                          {item.categoria}
                         </Badge>
-                      )}
+                        {item.quantidade <= (item.minimo || 10) && (
+                          <Badge variant="destructive" className="text-xs">
+                            Baixo Estoque
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="space-y-1 text-sm text-gray-600">
                       <p>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></p>
-                      <p>Mínimo: <span className="font-medium">{minimo} {item.unidade}</span></p>
+                      <p>Mínimo: <span className="font-medium">{item.minimo || 10} {item.unidade}</span></p>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2 ml-4">
+                  <div className="flex flex-col gap-2 w-full sm:w-auto sm:ml-4">
                     {isEditing ? (
-                      <div className="flex items-center gap-2 bg-purple-50 p-2 rounded-lg">
+                      <div className="flex items-center gap-2 bg-green-50 p-2 rounded-lg">
                         <Button
                           size="sm"
                           variant="outline"
@@ -441,7 +395,7 @@ export function Descartaveis() {
                           size="sm"
                           variant="outline"
                           onClick={() => startEditingQuantity(item.id, item.quantidade)}
-                          className="text-xs bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100"
+                          className="text-xs bg-green-50 border-green-200 text-green-600 hover:bg-green-100 w-full sm:w-auto"
                         >
                           Ajustar Estoque
                         </Button>
@@ -449,7 +403,7 @@ export function Descartaveis() {
                           size="sm"
                           variant="destructive"
                           onClick={() => handleDeleteItem(item.id, item.nome)}
-                          className="text-xs"
+                          className="text-xs w-full sm:w-auto"
                         >
                           <Trash2 className="w-3 h-3 mr-1" />
                           Remover
@@ -471,15 +425,6 @@ export function Descartaveis() {
           window.location.reload();
         }}
       />
-
-      {lastAddedItem && (
-        <QRCodeGenerator
-          isOpen={showQRGenerator}
-          onClose={() => setShowQRGenerator(false)}
-          qrCodes={qrCodes}
-          itemName={lastAddedItem.nome}
-        />
-      )}
     </div>
   );
 }

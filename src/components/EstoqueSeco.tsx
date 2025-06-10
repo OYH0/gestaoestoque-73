@@ -15,18 +15,9 @@ import { EstoqueSecoAlerts } from '@/components/estoque-seco/EstoqueSecoAlerts';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { useEstoqueSecoData } from '@/hooks/useEstoqueSecoData';
+import { useEstoqueSecoHistorico } from '@/hooks/useEstoqueSecoHistorico';
 
 const categorias = ['Todos', 'Grãos', 'Farináceos', 'Massas', 'Temperos', 'Outros'];
-
-interface HistoricoItem {
-  id: number;
-  itemName: string;
-  tipo: 'entrada' | 'saida';
-  quantidade: number;
-  unidade: string;
-  data: string;
-  hora: string;
-}
 
 export function EstoqueSeco() {
   const { 
@@ -40,13 +31,18 @@ export function EstoqueSeco() {
     setShowQRGenerator,
     lastAddedItem
   } = useEstoqueSecoData();
+  
+  const { 
+    historico, 
+    addHistoricoItem 
+  } = useEstoqueSecoHistorico();
+
   const [newItem, setNewItem] = useState({ nome: '', quantidade: 0, unidade: 'kg', categoria: 'Outros', minimo: 5 });
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [editingQuantities, setEditingQuantities] = useState<{ [key: string]: number }>({});
-  const [historico, setHistorico] = useState<HistoricoItem[]>([]);
 
   const startEditingQuantity = (id: string, currentQuantity: number) => {
     setEditingQuantities({ ...editingQuantities, [id]: currentQuantity });
@@ -68,18 +64,16 @@ export function EstoqueSeco() {
 
     await updateItemQuantity(id, newQuantity);
 
-    const now = new Date();
-    const novoHistorico: HistoricoItem = {
-      id: Date.now(),
-      itemName: item.nome,
-      tipo: difference > 0 ? 'entrada' : 'saida',
-      quantidade: Math.abs(difference),
-      unidade: item.unidade,
-      data: now.toLocaleDateString('pt-BR'),
-      hora: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-    };
-
-    setHistorico([novoHistorico, ...historico]);
+    if (difference !== 0) {
+      await addHistoricoItem({
+        item_nome: item.nome,
+        quantidade: Math.abs(difference),
+        unidade: item.unidade,
+        categoria: item.categoria,
+        tipo: difference > 0 ? 'entrada' : 'saida',
+        observacoes: `Ajuste manual de estoque`
+      });
+    }
 
     const newEditingQuantities = { ...editingQuantities };
     delete newEditingQuantities[id];
@@ -147,7 +141,7 @@ export function EstoqueSeco() {
   const itemsBaixoEstoque = items.filter(item => item.quantidade <= (item.minimo || 5));
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 md:w-10 md:h-10 bg-orange-500 rounded-lg flex items-center justify-center">
@@ -188,9 +182,9 @@ export function EstoqueSeco() {
                 Histórico
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
               <DialogHeader>
-                <DialogTitle>Histórico de Movimentações</DialogTitle>
+                <DialogTitle>Histórico - Estoque Seco</DialogTitle>
                 <DialogDescription>
                   Registro de entradas e saídas de produtos
                 </DialogDescription>
@@ -204,15 +198,15 @@ export function EstoqueSeco() {
                       <div className="flex items-center gap-3">
                         <div className={`w-2 h-2 rounded-full ${item.tipo === 'entrada' ? 'bg-green-500' : 'bg-red-500'}`} />
                         <div>
-                          <p className="font-medium">{item.itemName}</p>
+                          <p className="font-medium">{item.item_nome}</p>
                           <p className="text-sm text-gray-600">
                             {item.tipo === 'entrada' ? 'Entrada' : 'Saída'} de {item.quantidade} {item.unidade}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-600">{item.data}</p>
-                        <p className="text-sm text-gray-600">{item.hora}</p>
+                        <p className="text-sm text-gray-600">{new Date(item.data_operacao).toLocaleDateString('pt-BR')}</p>
+                        <p className="text-sm text-gray-600">{new Date(item.data_operacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                       </div>
                     </div>
                   ))
@@ -228,7 +222,7 @@ export function EstoqueSeco() {
                 Adicionar
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Adicionar Novo Produto</DialogTitle>
               </DialogHeader>
@@ -350,22 +344,24 @@ export function EstoqueSeco() {
                   : ''
               }`}
             >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+              <CardContent className="p-3 md:p-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex-1 w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
                       <div className="flex items-center gap-2">
                         <Package className="w-4 h-4 text-orange-500" />
-                        <h3 className="font-semibold text-lg">{item.nome}</h3>
+                        <h3 className="font-semibold text-base md:text-lg">{item.nome}</h3>
                       </div>
-                      <Badge variant={item.quantidade <= (item.minimo || 5) ? "destructive" : "secondary"}>
-                        {item.categoria}
-                      </Badge>
-                      {item.quantidade <= (item.minimo || 5) && (
-                        <Badge variant="destructive" className="text-xs">
-                          Baixo Estoque
+                      <div className="flex flex-wrap gap-1">
+                        <Badge variant={item.quantidade <= (item.minimo || 5) ? "destructive" : "secondary"} className="text-xs">
+                          {item.categoria}
                         </Badge>
-                      )}
+                        {item.quantidade <= (item.minimo || 5) && (
+                          <Badge variant="destructive" className="text-xs">
+                            Baixo Estoque
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="space-y-1 text-sm text-gray-600">
@@ -377,7 +373,7 @@ export function EstoqueSeco() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2 ml-4">
+                  <div className="flex flex-col gap-2 w-full sm:w-auto sm:ml-4">
                     {isEditing ? (
                       <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-lg">
                         <Button
@@ -417,7 +413,7 @@ export function EstoqueSeco() {
                           size="sm"
                           variant="outline"
                           onClick={() => startEditingQuantity(item.id, item.quantidade)}
-                          className="text-xs bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100"
+                          className="text-xs bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100 w-full sm:w-auto"
                         >
                           Ajustar Estoque
                         </Button>
@@ -425,7 +421,7 @@ export function EstoqueSeco() {
                           size="sm"
                           variant="destructive"
                           onClick={() => handleDeleteItem(item.id, item.nome)}
-                          className="text-xs"
+                          className="text-xs w-full sm:w-auto"
                         >
                           <Trash2 className="w-3 h-3 mr-1" />
                           Remover

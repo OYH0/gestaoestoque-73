@@ -11,10 +11,11 @@ import { CamaraFriaItemCard } from '@/components/camara-fria/CamaraFriaItemCard'
 import { CamaraFriaAddDialog } from '@/components/camara-fria/CamaraFriaAddDialog';
 import { CamaraFriaHistoryDialog } from '@/components/camara-fria/CamaraFriaHistoryDialog';
 import { CamaraFriaAlerts } from '@/components/camara-fria/CamaraFriaAlerts';
-import { CamaraFriaHeader } from '@/components/camara-fria/CamaraFriaHeader';
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Badge } from '@/components/ui/badge';
+import { generateInventoryPDF } from '@/utils/pdfGenerator';
 
 export default function CamaraFria() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem } = useCamaraFriaData();
@@ -245,22 +246,75 @@ export default function CamaraFria() {
   const categories = ['Todos', 'Bovina', 'Suína', 'Aves', 'Embutidos'];
   const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
 
+  const handlePrintPDF = () => {
+    try {
+      generateInventoryPDF(
+        items,
+        'Relatório - Câmara Fria',
+        'Inventário de carnes e produtos congelados'
+      );
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+    }
+  };
+
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <CamaraFriaHeader
-        itemsCount={items.length}
-        lowStockCount={lowStockItems.length}
-        historicoOpen={isHistoryDialogOpen}
-        setHistoricoOpen={setIsHistoryDialogOpen}
-        historico={historico}
-        dialogOpen={isAddDialogOpen}
-        setDialogOpen={setIsAddDialogOpen}
-        newItem={newItem}
-        setNewItem={setNewItem}
-        onAddNewItem={handleAddNewItem}
-        categorias={categories}
-        items={items}
-      />
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+          {items.length} tipos
+        </Badge>
+        {lowStockItems.length > 0 && (
+          <Badge variant="destructive" className="text-xs">
+            {lowStockItems.length} baixo estoque
+          </Badge>
+        )}
+      </div>
+
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Button 
+          variant="outline" 
+          size={isMobile ? "sm" : "default"}
+          className="border-gray-300"
+          onClick={handlePrintPDF}
+        >
+          <FileText className="w-4 h-4 mr-1 md:mr-2" />
+          <span className={isMobile ? "text-xs" : "text-sm"}>PDF</span>
+        </Button>
+
+        <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              size={isMobile ? "sm" : "default"}
+              className="border-gray-300"
+            >
+              <History className="w-4 h-4 mr-1 md:mr-2" />
+              <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
+            </Button>
+          </DialogTrigger>
+          <CamaraFriaHistoryDialog historico={historico} />
+        </Dialog>
+        
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              size={isMobile ? "sm" : "default"}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              <Plus className="w-4 h-4 mr-1 md:mr-2" />
+              <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
+            </Button>
+          </DialogTrigger>
+          <CamaraFriaAddDialog 
+            newItem={newItem}
+            setNewItem={setNewItem}
+            onAddNewItem={handleAddNewItem}
+            setDialogOpen={setIsAddDialogOpen}
+            categorias={categories}
+          />
+        </Dialog>
+      </div>
 
       <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
         <Button 

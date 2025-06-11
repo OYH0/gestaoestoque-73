@@ -57,7 +57,8 @@ export default function Descartaveis() {
     );
   }
 
-  const categories = ['Todos', ...Array.from(new Set(items.map(item => item.categoria)))];
+  // Categorias predefinidas para descartáveis
+  const categories = ['Todos', 'Pratos e Talheres', 'Copos e Bebidas', 'Embalagens', 'Guardanapos e Toalhas', 'Sacolas e Sacos', 'Recipientes', 'Descartáveis Diversos'];
   const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (

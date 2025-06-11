@@ -57,7 +57,8 @@ export default function EstoqueSeco() {
     );
   }
 
-  const categories = ['Todos', ...Array.from(new Set(items.map(item => item.categoria)))];
+  // Categorias predefinidas para estoque seco
+  const categories = ['Todos', 'Grãos e Cereais', 'Temperos e Condimentos', 'Enlatados', 'Massas', 'Óleos e Vinagres', 'Açúcares e Adoçantes', 'Farinhas', 'Conservas'];
   const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (

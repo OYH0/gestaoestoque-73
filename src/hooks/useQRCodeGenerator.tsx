@@ -94,16 +94,16 @@ export function useQRCodeGenerator() {
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       
-      // Configuração para 6 QR codes por página (2 colunas x 3 linhas)
-      const qrSize = 60;
-      const margin = 25;
-      const spacingX = 30;
-      const spacingY = 45;
+      // Configuração ajustada para 6 QR codes por página (2 colunas x 3 linhas)
+      const qrSize = 55;
+      const margin = 20;
+      const spacingX = 25;
+      const spacingY = 35;
       const codesPerRow = 2;
       const rowsPerPage = 3;
       const codesPerPage = 6; // FIXO: 6 QR codes por página
       
-      console.log('⚙️ CONFIGURAÇÃO PDF (6 por página):', {
+      console.log('⚙️ CONFIGURAÇÃO PDF AJUSTADA (6 por página):', {
         pageWidth,
         pageHeight,
         qrSize,
@@ -137,7 +137,7 @@ export function useQRCodeGenerator() {
           console.log(`📄 NOVA PÁGINA ${pageIndex + 1} adicionada para QR ${i + 1}`);
         }
         
-        // Calcular posições centralizadas para 6 QR codes
+        // Calcular posições com espaçamento ajustado para 6 QR codes
         const x = margin + col * (qrSize + spacingX);
         const y = margin + row * (qrSize + spacingY);
         
@@ -154,8 +154,8 @@ export function useQRCodeGenerator() {
           pdf.addImage(qrCodeDataURL, 'PNG', x, y, qrSize, qrSize);
           
           // Adicionar texto abaixo do QR code
-          pdf.setFontSize(8);
-          const textY = y + qrSize + 4;
+          pdf.setFontSize(7);
+          const textY = y + qrSize + 3;
           const maxTextWidth = qrSize;
           
           // Nome (truncado se necessário)
@@ -164,7 +164,7 @@ export function useQRCodeGenerator() {
           
           // ID (só os últimos caracteres)
           const idText = `${qrData.id.slice(-10)}`;
-          pdf.text(idText, x, textY + 6, { maxWidth: maxTextWidth });
+          pdf.text(idText, x, textY + 5, { maxWidth: maxTextWidth });
           
           qrCodesProcessados++;
           console.log(`✅ QR code ${i + 1} INCLUÍDO COM SUCESSO no PDF (${qrCodesProcessados}/${qrCodes.length})`);

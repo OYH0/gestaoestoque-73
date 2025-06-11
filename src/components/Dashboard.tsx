@@ -5,6 +5,7 @@ import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
+import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
 import { useEstoqueSecoData } from '@/hooks/useEstoqueSecoData';
 import { useDescartaveisData } from '@/hooks/useDescartaveisData';
 
@@ -21,6 +22,7 @@ const PIE_COLORS = [
 export function Dashboard() {
   const isMobile = useIsMobile();
   const { items: camaraFriaItems } = useCamaraFriaData();
+  const { historico: camaraFriaHistorico } = useCamaraFriaHistorico();
   const { items: estoqueSecoItems } = useEstoqueSecoData();
   const { items: descartaveisItems } = useDescartaveisData();
 
@@ -40,11 +42,23 @@ export function Dashboard() {
     }, [] as any[])
     .sort((a, b) => b.quantidade - a.quantidade);
 
-  // Top 5 carnes mais utilizadas para gráfico de pizza (simulando percentual de uso)
-  const top5MeatUsage = meatTypesData.slice(0, 5).map((meat, index) => ({
-    nome: meat.tipo,
-    percentualUso: Math.max(20, 90 - (index * 15) + Math.random() * 10),
-  })).sort((a, b) => b.percentualUso - a.percentualUso);
+  // Top 5 carnes mais utilizadas baseado no histórico real de saídas
+  const top5MeatUsage = camaraFriaHistorico
+    .filter(item => item.tipo === 'saida') // Apenas saídas
+    .reduce((acc, item) => {
+      const existing = acc.find(a => a.nome === item.item_nome);
+      if (existing) {
+        existing.totalSaidas += item.quantidade;
+      } else {
+        acc.push({
+          nome: item.item_nome,
+          totalSaidas: item.quantidade
+        });
+      }
+      return acc;
+    }, [] as any[])
+    .sort((a, b) => b.totalSaidas - a.totalSaidas)
+    .slice(0, 5); // Top 5
 
   // Dados para alertas de baixo estoque
   const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5));
@@ -118,7 +132,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Gráfico de Pizza - Top 5 carnes mais utilizadas */}
+        {/* Gráfico de Pizza - Top 5 carnes mais utilizadas baseado no histórico real */}
         <Card className="shadow-md border-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -126,7 +140,7 @@ export function Dashboard() {
               Top 5 Carnes Mais Utilizadas
             </CardTitle>
             <CardDescription>
-              Carnes com maior percentual de utilização
+              Carnes com maior quantidade de saídas registradas
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -139,20 +153,17 @@ export function Dashboard() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ nome, percentualUso }) => `${nome}: ${percentualUso.toFixed(1)}%`}
+                      label={({ nome, totalSaidas }) => `${nome}: ${totalSaidas}kg`}
                       outerRadius={80}
                       fill="#8884d8"
-                      dataKey="percentualUso"
+                      dataKey="totalSaidas"
                     >
                       {top5MeatUsage.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value) => {
-                        const numValue = typeof value === 'number' ? value : parseFloat(value as string);
-                        return [`${numValue.toFixed(1)}%`, 'Utilização'];
-                      }}
+                      formatter={(value) => [`${value}kg`, 'Total de Saídas']}
                     />
                     <Legend />
                   </PieChart>
@@ -161,7 +172,7 @@ export function Dashboard() {
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
                     <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum dado de utilização disponível</p>
+                    <p>Nenhuma movimentação de saída registrada</p>
                   </div>
                 </div>
               )}

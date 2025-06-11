@@ -11,6 +11,9 @@ export interface QRScanResult {
   error?: string;
 }
 
+// Cache global para QR codes já escaneados
+const scannedQRCodes = new Set<string>();
+
 export function useQRCodeScanner() {
   const [isScanning, setIsScanning] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -20,6 +23,12 @@ export function useQRCodeScanner() {
     if (!user || !session) {
       console.log('Usuário não autenticado');
       return { success: false, error: 'Usuário não autenticado' };
+    }
+
+    // Verificar se o QR code já foi escaneado
+    if (scannedQRCodes.has(qrCodeData)) {
+      console.log('QR Code já foi escaneado anteriormente:', qrCodeData);
+      return { success: false, error: 'Este QR Code já foi escaneado anteriormente' };
     }
 
     setIsProcessing(true);
@@ -184,7 +193,9 @@ export function useQRCodeScanner() {
         console.error('Erro ao registrar histórico:', historyError);
       }
 
-      console.log('QR Code processado com sucesso!');
+      // Marcar QR code como escaneado APENAS após sucesso completo
+      scannedQRCodes.add(qrCodeData);
+      console.log('QR Code processado com sucesso e marcado como usado!');
 
       toast({
         title: "Item retirado com sucesso!",

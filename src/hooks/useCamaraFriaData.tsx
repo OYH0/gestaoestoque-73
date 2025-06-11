@@ -69,7 +69,9 @@ export function useCamaraFriaData() {
       
       // Gerar QR codes para o item apenas se quantidade > 0
       if (newItem.quantidade > 0) {
+        console.log('Gerando QR codes para quantidade:', newItem.quantidade);
         const qrCodesData = generateQRCodeData(data, 'CF', newItem.quantidade);
+        console.log('QR codes gerados:', qrCodesData.length);
         setQrCodes(qrCodesData);
         
         setTimeout(() => {
@@ -80,7 +82,7 @@ export function useCamaraFriaData() {
       toast({
         title: "Item adicionado",
         description: newItem.quantidade > 0 
-          ? `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`
+          ? `${newItem.nome} foi adicionado ao estoque! ${newItem.quantidade} QR codes serão gerados.`
           : `${newItem.nome} foi adicionado ao estoque!`,
       });
     } catch (error) {
@@ -111,11 +113,14 @@ export function useCamaraFriaData() {
         item.id === id ? { ...item, quantidade: newQuantity } : item
       ));
 
+      // Gerar QR codes apenas se houve aumento de quantidade
       if (quantityIncrease > 0) {
         const updatedItem = { ...currentItem, quantidade: newQuantity };
         setLastAddedItem(updatedItem);
         
+        console.log('Gerando QR codes para aumento de quantidade:', quantityIncrease);
         const qrCodesData = generateQRCodeData(updatedItem, 'CF', quantityIncrease);
+        console.log('QR codes gerados para aumento:', qrCodesData.length);
         setQrCodes(qrCodesData);
         
         setTimeout(() => {

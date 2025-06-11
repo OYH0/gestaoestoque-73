@@ -9,9 +9,10 @@ interface QRCodeGeneratorProps {
   qrCodes: QRCodeData[];
   onClose: () => void;
   itemName: string;
+  stockType?: string;
 }
 
-export function QRCodeGenerator({ qrCodes, onClose, itemName }: QRCodeGeneratorProps) {
+export function QRCodeGenerator({ qrCodes, onClose, itemName, stockType }: QRCodeGeneratorProps) {
   const { generateQRCodePDF, isGenerating } = useQRCodeGenerator();
   const [isOpen, setIsOpen] = React.useState(true);
 
@@ -43,6 +44,7 @@ export function QRCodeGenerator({ qrCodes, onClose, itemName }: QRCodeGeneratorP
             <h3 className="font-semibold text-blue-900 mb-2">{itemName}</h3>
             <p className="text-blue-700 text-sm">
               Serão gerados <strong>{qrCodes.length} QR codes</strong> individuais para este item.
+              {stockType && <span> ({stockType})</span>}
             </p>
           </div>
 

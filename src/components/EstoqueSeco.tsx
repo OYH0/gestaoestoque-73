@@ -15,7 +15,7 @@ import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 
 export default function EstoqueSeco() {
-  const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem } = useEstoqueSecoData();
+  const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, fetchItems } = useEstoqueSecoData();
   const { historico } = useEstoqueSecoHistorico();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
@@ -43,6 +43,10 @@ export default function EstoqueSeco() {
     await addItem(newItem);
     setNewItem({ nome: '', quantidade: 0, unidade: '', categoria: '', minimo: 0 });
     setIsAddDialogOpen(false);
+  };
+
+  const handleQRScanSuccess = () => {
+    fetchItems(); // Recarregar os dados após scan bem-sucedido
   };
 
   if (loading) {
@@ -131,6 +135,7 @@ export default function EstoqueSeco() {
       {showQRScanner && (
         <QRScanner
           onClose={() => setShowQRScanner(false)}
+          onSuccess={handleQRScanSuccess}
         />
       )}
     </div>

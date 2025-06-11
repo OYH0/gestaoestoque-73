@@ -16,7 +16,7 @@ export function useQRCodeScanner() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { user, session } = useAuth();
 
-  const processQRCode = async (qrCodeData: string): Promise<QRScanResult> => {
+  const processQRCode = async (qrCodeData: string, onSuccess?: () => void): Promise<QRScanResult> => {
     if (!user || !session) {
       console.log('Usuário não autenticado');
       return { success: false, error: 'Usuário não autenticado' };
@@ -37,8 +37,8 @@ export function useQRCodeScanner() {
       const itemIdPart = parts[1];
       
       let tableDisplayName: string;
-      let tableName: string;
-      let historyTableName: string;
+      let tableName: 'camara_fria_items' | 'estoque_seco_items' | 'descartaveis_items';
+      let historyTableName: 'camara_fria_historico' | 'estoque_seco_historico' | 'descartaveis_historico';
       let items: any[] = [];
       
       // Buscar itens baseado no tipo
@@ -46,7 +46,7 @@ export function useQRCodeScanner() {
         if (tipo === 'CF') {
           tableDisplayName = 'Câmara Fria';
           tableName = 'camara_fria_items';
-          historyTableName = 'camara_refrigerada_historico';
+          historyTableName = 'camara_fria_historico';
           
           const { data, error } = await supabase
             .from(tableName)
@@ -190,6 +190,11 @@ export function useQRCodeScanner() {
         title: "Item retirado com sucesso!",
         description: `1 ${item.unidade} de ${item.nome} foi removido do ${tableDisplayName}`,
       });
+
+      // Chamar callback para atualizar os dados
+      if (onSuccess) {
+        onSuccess();
+      }
 
       return {
         success: true,

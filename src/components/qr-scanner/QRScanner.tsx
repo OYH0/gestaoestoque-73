@@ -12,7 +12,7 @@ interface QRScannerProps {
   onSuccess?: () => void;
 }
 
-export function QRScanner({ onClose }: QRScannerProps) {
+export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
   const [hasCamera, setHasCamera] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -100,7 +100,7 @@ export function QRScanner({ onClose }: QRScannerProps) {
     }
     
     try {
-      const result = await processQRCode(qrCodeData);
+      const result = await processQRCode(qrCodeData, onSuccess);
       
       if (result.success) {
         toast({

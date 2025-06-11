@@ -67,7 +67,7 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className={`flex items-center ${isMobile ? 'justify-center' : 'justify-end'}`}>
+      <div className="flex items-center justify-center md:justify-end">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CheckCircle className="w-4 h-4 text-green-500" />
           Sistema atualizado
@@ -88,7 +88,7 @@ export function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-96">
+            <div className="h-80">
               {meatTypesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
@@ -97,7 +97,7 @@ export function Dashboard() {
                       top: 20, 
                       right: 30, 
                       left: 20, 
-                      bottom: 80 
+                      bottom: 60 
                     }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -106,7 +106,7 @@ export function Dashboard() {
                       stroke="#888" 
                       angle={-45}
                       textAnchor="end"
-                      height={80}
+                      height={60}
                       fontSize={10}
                       interval={0}
                     />
@@ -153,7 +153,7 @@ export function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-96">
+            <div className="h-80">
               {top5MeatUsage.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -163,7 +163,7 @@ export function Dashboard() {
                       cy="50%"
                       labelLine={false}
                       label={({ nome, totalSaidas }) => `${nome}: ${totalSaidas}kg`}
-                      outerRadius={100}
+                      outerRadius={80}
                       fill="#8884d8"
                       dataKey="totalSaidas"
                     >

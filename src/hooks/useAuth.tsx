@@ -24,46 +24,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
     let retryTimeout: NodeJS.Timeout;
+    let refreshing = false; // Prevent multiple simultaneous refresh attempts
 
-    // Set up auth state listener with rate limit handling
+    // Set up auth state listener with improved rate limit handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (mounted) {
-          console.log('Auth state change:', event, session?.user?.email);
-          
-          // Clear any existing retry timeout
-          if (retryTimeout) {
-            clearTimeout(retryTimeout);
-          }
-          
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
+        if (!mounted) return;
+        
+        console.log('Auth state change:', event, session?.user?.email);
+        
+        // Handle rate limiting gracefully
+        if (event === 'TOKEN_REFRESHED' && refreshing) {
+          console.log('Token refresh already in progress, ignoring duplicate');
+          return;
         }
+        
+        // Clear any existing retry timeout
+        if (retryTimeout) {
+          clearTimeout(retryTimeout);
+        }
+        
+        // Update state immediately for valid sessions
+        if (session) {
+          setSession(session);
+          setUser(session.user);
+        } else {
+          setSession(null);
+          setUser(null);
+        }
+        
+        setLoading(false);
+        refreshing = false;
       }
     );
 
-    // Get initial session with exponential backoff retry logic
+    // Get initial session with conservative retry logic
     const getInitialSession = async (retryCount = 0) => {
+      if (!mounted || refreshing) return;
+      
+      refreshing = true;
+      
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error getting session:', error);
           
-          // If rate limited, implement exponential backoff
-          if (error.message?.includes('rate limit') || error.message?.includes('429')) {
-            const delay = Math.min(1000 * Math.pow(2, retryCount), 30000); // Max 30 seconds
+          // Handle rate limiting with exponential backoff (max 3 retries)
+          if ((error.message?.includes('rate limit') || error.message?.includes('429')) && retryCount < 3) {
+            const delay = Math.min(2000 * Math.pow(2, retryCount), 10000); // Max 10 seconds
             console.log(`Rate limited - retrying in ${delay}ms (attempt ${retryCount + 1})`);
             
-            if (retryCount < 5 && mounted) { // Max 5 retries
+            if (mounted) {
               retryTimeout = setTimeout(() => {
                 getInitialSession(retryCount + 1);
               }, delay);
-            } else {
-              setLoading(false);
             }
             return;
+          } else {
+            // For other errors or max retries reached, stop trying
+            console.log('Stopping session check due to persistent errors');
+            if (mounted) {
+              setLoading(false);
+            }
           }
         }
         
@@ -74,24 +97,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Session check failed:', error);
-        if (mounted) {
-          // Retry with exponential backoff for network errors
-          if (retryCount < 3) {
-            const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
-            retryTimeout = setTimeout(() => {
-              getInitialSession(retryCount + 1);
-            }, delay);
-          } else {
-            setLoading(false);
-          }
+        if (mounted && retryCount < 2) {
+          // Only retry network errors twice
+          const delay = 3000;
+          retryTimeout = setTimeout(() => {
+            getInitialSession(retryCount + 1);
+          }, delay);
+        } else {
+          setLoading(false);
         }
+      } finally {
+        refreshing = false;
       }
     };
 
-    getInitialSession();
+    // Initial session check with delay to prevent immediate rate limiting
+    setTimeout(() => {
+      getInitialSession();
+    }, 100);
 
     return () => {
       mounted = false;
+      refreshing = false;
       if (retryTimeout) {
         clearTimeout(retryTimeout);
       }

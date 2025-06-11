@@ -18,13 +18,13 @@ const Index = () => {
   return (
     <ProtectedRoute>
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-muted/30 to-background">
+        <div className="min-h-screen flex w-full bg-gradient-to-br from-churrasco-cream via-background to-churrasco-cream/50">
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0 h-screen">
             <Header />
             <main className="flex-1 p-4 md:p-6 relative overflow-auto">
-              <div className="absolute inset-0 bg-dot-pattern opacity-40 pointer-events-none" />
-              <div className="relative z-10 max-w-full animate-fade-in">
+              <div className="absolute inset-0 bg-grid-pattern opacity-30 pointer-events-none" />
+              <div className="relative z-10 max-w-full">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/camara-fria" element={<CamaraFria />} />

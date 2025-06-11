@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -78,7 +79,7 @@ export function CamaraFriaAddDialog({
             min="0"
             step="1"
             placeholder="Digite a quantidade (pode ser 0)"
-            value={newItem.quantidade.toString()}
+            value={newItem.quantidade === 0 ? '' : newItem.quantidade.toString()}
             onChange={handleQuantidadeChange}
           />
           <p className="text-xs text-gray-500">
@@ -129,7 +130,7 @@ export function CamaraFriaAddDialog({
             min="0"
             step="1"
             placeholder="Digite o estoque mínimo (pode ser 0)"
-            value={newItem.minimo.toString()}
+            value={newItem.minimo === 0 ? '' : newItem.minimo.toString()}
             onChange={handleMinimoChange}
           />
           <p className="text-xs text-gray-500">

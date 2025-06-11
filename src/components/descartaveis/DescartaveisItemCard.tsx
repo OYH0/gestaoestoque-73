@@ -40,7 +40,7 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
       <CardContent className="p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h3 className="font-semibold text-lg">{item.nome}</h3>
@@ -64,14 +64,15 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
             )}
           </div>
 
-          <div className="flex gap-2 ml-4">
+          <div className="flex justify-end">
             {isEditing ? (
-              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg">
+              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleUpdateEdit(-1)}
                   disabled={editValue <= 0}
+                  className="h-8 w-8 p-0"
                 >
                   <Minus className="w-4 h-4" />
                 </Button>
@@ -80,13 +81,14 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
                   size="sm"
                   variant="outline"
                   onClick={() => handleUpdateEdit(1)}
+                  className="h-8 w-8 p-0"
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleConfirmChange}
-                  className="bg-green-500 hover:bg-green-600"
+                  className="bg-green-500 hover:bg-green-600 h-8 w-8 p-0"
                 >
                   <Check className="w-4 h-4" />
                 </Button>
@@ -94,28 +96,30 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
                   size="sm"
                   variant="outline"
                   onClick={handleCancelEdit}
+                  className="h-8 w-8 p-0"
                 >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={handleStartEdit}
-                  className="text-xs whitespace-nowrap"
+                  className="text-xs h-8 px-2 sm:px-3"
                 >
-                  Ajustar Estoque
+                  <span className="hidden sm:inline">Ajustar Estoque</span>
+                  <span className="sm:hidden">Ajustar</span>
                 </Button>
                 <Button
                   size="sm"
                   variant="destructive"
                   onClick={() => onDelete(item.id)}
-                  className="text-xs"
+                  className="text-xs h-8 px-2 sm:px-3"
                 >
-                  <Trash2 className="w-3 h-3 mr-1" />
-                  Remover
+                  <Trash2 className="w-3 h-3 sm:mr-1" />
+                  <span className="hidden sm:inline">Remover</span>
                 </Button>
               </div>
             )}

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, History, QrCode } from 'lucide-react';
+import { Plus, History, QrCode, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
@@ -148,8 +148,8 @@ export default function CamaraFria() {
     );
   }
 
-  // Get unique categories from items
-  const categories = ['Todos', ...Array.from(new Set(items.map(item => item.categoria)))];
+  // Get unique categories from items, but ensure the main categories are always available
+  const categories = ['Todos', 'Bovina', 'Suína', 'Aves', 'Embutidos'];
   const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (
@@ -173,7 +173,7 @@ export default function CamaraFria() {
 
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" className="text-gray-600">
-            <div className="w-4 h-4 mr-2 bg-gray-400 rounded" />
+            <FileText className="w-4 h-4 mr-2" />
             PDF
           </Button>
 
@@ -231,7 +231,7 @@ export default function CamaraFria() {
 
       <CamaraFriaAlerts itemsBaixoEstoque={lowStockItems} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="space-y-3">
         {filteredItems.map((item) => (
           <CamaraFriaItemCard
             key={item.id}

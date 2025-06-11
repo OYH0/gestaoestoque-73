@@ -63,17 +63,11 @@ export function CamaraFriaItemCard({
             
             <div className="space-y-1 text-sm text-gray-600">
               <p>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></p>
-              {item.temperatura_ideal && (
-                <p>Temperatura ideal: <span className="font-medium">{item.temperatura_ideal}°C</span></p>
-              )}
-              {item.data_validade && (
-                <p>Validade: <span className="font-medium">{new Date(item.data_validade).toLocaleDateString('pt-BR')}</span></p>
-              )}
               <p>Mínimo: <span className="font-medium">{item.minimo || 5} {item.unidade}</span></p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 ml-4">
+          <div className="flex gap-2 ml-4">
             {isEditing ? (
               <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg">
                 <Button
@@ -142,26 +136,24 @@ export function CamaraFriaItemCard({
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onStartEdit(item.id, item.quantidade)}
+                  className="text-xs whitespace-nowrap"
+                >
+                  Ajustar Estoque
+                </Button>
+                {item.quantidade > 0 && (
                   <Button
                     size="sm"
-                    variant="outline"
-                    onClick={() => onStartEdit(item.id, item.quantidade)}
-                    className="text-xs"
+                    onClick={() => onStartThaw(item.id, 1)}
+                    className="bg-orange-500 hover:bg-orange-600 text-xs whitespace-nowrap"
                   >
-                    Ajustar Estoque
+                    Descongelar
                   </Button>
-                  {item.quantidade > 0 && (
-                    <Button
-                      size="sm"
-                      onClick={() => onStartThaw(item.id, 1)}
-                      className="bg-orange-500 hover:bg-orange-600 text-xs"
-                    >
-                      Descongelar
-                    </Button>
-                  )}
-                </div>
+                )}
                 {onDelete && (
                   <Button
                     size="sm"

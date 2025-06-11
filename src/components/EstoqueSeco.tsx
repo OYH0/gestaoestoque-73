@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, History, QrCode } from 'lucide-react';
+import { Plus, History, QrCode, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useEstoqueSecoData } from '@/hooks/useEstoqueSecoData';
@@ -63,7 +63,7 @@ export default function EstoqueSeco() {
 
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" className="text-gray-600">
-            <div className="w-4 h-4 mr-2 bg-gray-400 rounded" />
+            <FileText className="w-4 h-4 mr-2" />
             PDF
           </Button>
 
@@ -97,8 +97,8 @@ export default function EstoqueSeco() {
         categorias={categories}
         categoriaFiltro={filterCategory}
         setCategoriaFiltro={setFilterCategory}
-        searchQuery={searchTerm}
-        setSearchQuery={setSearchTerm}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
       />
 
       <EstoqueSecoAlerts itemsBaixoEstoque={lowStockItems} />

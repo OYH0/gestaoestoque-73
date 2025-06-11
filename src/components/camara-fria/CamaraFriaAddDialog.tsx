@@ -50,8 +50,8 @@ export function CamaraFriaAddDialog({
           <Input
             id="quantidade"
             type="number"
-            placeholder="Quantidade disponível"
-            value={newItem.quantidade}
+            placeholder="Ex: 10, 25, 50..."
+            value={newItem.quantidade || ''}
             onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
           />
         </div>
@@ -95,8 +95,8 @@ export function CamaraFriaAddDialog({
           <Input
             id="minimo"
             type="number"
-            placeholder="Quantidade mínima para alerta"
-            value={newItem.minimo}
+            placeholder="Ex: 5, 10, 15..."
+            value={newItem.minimo || ''}
             onChange={(e) => setNewItem({...newItem, minimo: Number(e.target.value)})}
           />
           <p className="text-xs text-gray-500">

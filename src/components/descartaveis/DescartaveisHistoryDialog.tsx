@@ -1,19 +1,19 @@
 
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { CamaraFriaHistoricoItem } from '@/hooks/useCamaraFriaHistorico';
+import { DescartaveisHistoricoItem } from '@/hooks/useDescartaveisHistorico';
 
-interface CamaraFriaHistoryDialogProps {
-  historico: CamaraFriaHistoricoItem[];
+interface DescartaveisHistoryDialogProps {
+  historico: DescartaveisHistoricoItem[];
 }
 
-export function CamaraFriaHistoryDialog({ historico }: CamaraFriaHistoryDialogProps) {
+export function DescartaveisHistoryDialog({ historico }: DescartaveisHistoryDialogProps) {
   return (
     <DialogContent className="max-w-2xl">
       <DialogHeader>
-        <DialogTitle>Histórico de Movimentações - Câmara Fria</DialogTitle>
+        <DialogTitle>Histórico de Movimentações - Descartáveis</DialogTitle>
         <DialogDescription>
-          Registro de entradas e saídas de carnes
+          Registro de entradas e saídas de descartáveis
         </DialogDescription>
       </DialogHeader>
       <div className="max-h-96 overflow-y-auto space-y-2">

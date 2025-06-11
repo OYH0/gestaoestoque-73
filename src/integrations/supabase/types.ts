@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      camara_fria_historico: {
+        Row: {
+          categoria: string
+          data_operacao: string
+          id: string
+          item_nome: string
+          observacoes: string | null
+          quantidade: number
+          tipo: string
+          unidade: string
+          user_id: string
+        }
+        Insert: {
+          categoria: string
+          data_operacao?: string
+          id?: string
+          item_nome: string
+          observacoes?: string | null
+          quantidade: number
+          tipo: string
+          unidade: string
+          user_id: string
+        }
+        Update: {
+          categoria?: string
+          data_operacao?: string
+          id?: string
+          item_nome?: string
+          observacoes?: string | null
+          quantidade?: number
+          tipo?: string
+          unidade?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       camara_fria_items: {
         Row: {
           categoria: string
@@ -153,6 +189,42 @@ export type Database = {
         }
         Relationships: []
       }
+      descartaveis_historico: {
+        Row: {
+          categoria: string
+          data_operacao: string
+          id: string
+          item_nome: string
+          observacoes: string | null
+          quantidade: number
+          tipo: string
+          unidade: string
+          user_id: string
+        }
+        Insert: {
+          categoria: string
+          data_operacao?: string
+          id?: string
+          item_nome: string
+          observacoes?: string | null
+          quantidade: number
+          tipo: string
+          unidade: string
+          user_id: string
+        }
+        Update: {
+          categoria?: string
+          data_operacao?: string
+          id?: string
+          item_nome?: string
+          observacoes?: string | null
+          quantidade?: number
+          tipo?: string
+          unidade?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       descartaveis_items: {
         Row: {
           categoria: string
@@ -197,6 +269,42 @@ export type Database = {
           quantidade?: number
           unidade?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      estoque_seco_historico: {
+        Row: {
+          categoria: string
+          data_operacao: string
+          id: string
+          item_nome: string
+          observacoes: string | null
+          quantidade: number
+          tipo: string
+          unidade: string
+          user_id: string
+        }
+        Insert: {
+          categoria: string
+          data_operacao?: string
+          id?: string
+          item_nome: string
+          observacoes?: string | null
+          quantidade: number
+          tipo: string
+          unidade: string
+          user_id: string
+        }
+        Update: {
+          categoria?: string
+          data_operacao?: string
+          id?: string
+          item_nome?: string
+          observacoes?: string | null
+          quantidade?: number
+          tipo?: string
+          unidade?: string
           user_id?: string
         }
         Relationships: []

@@ -97,8 +97,8 @@ export default function EstoqueSeco() {
         categorias={categories}
         categoriaFiltro={filterCategory}
         setCategoriaFiltro={setFilterCategory}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
+        searchQuery={searchTerm}
+        setSearchQuery={setSearchTerm}
       />
 
       <EstoqueSecoAlerts itemsBaixoEstoque={lowStockItems} />

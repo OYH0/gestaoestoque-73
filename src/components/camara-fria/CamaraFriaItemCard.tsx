@@ -44,7 +44,7 @@ export function CamaraFriaItemCard({
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
       <CardContent className="p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <div className="flex items-center gap-2">
@@ -67,14 +67,15 @@ export function CamaraFriaItemCard({
             </div>
           </div>
 
-          <div className="flex gap-2 ml-4">
+          <div className="flex justify-end">
             {isEditing ? (
-              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg">
+              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => onUpdateEdit(item.id, -1)}
                   disabled={editValue <= 0}
+                  className="h-8 w-8 p-0"
                 >
                   <Minus className="w-4 h-4" />
                 </Button>
@@ -83,13 +84,14 @@ export function CamaraFriaItemCard({
                   size="sm"
                   variant="outline"
                   onClick={() => onUpdateEdit(item.id, 1)}
+                  className="h-8 w-8 p-0"
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => onConfirmChange(item.id)}
-                  className="bg-green-500 hover:bg-green-600"
+                  className="bg-green-500 hover:bg-green-600 h-8 w-8 p-0"
                 >
                   <Check className="w-4 h-4" />
                 </Button>
@@ -97,17 +99,19 @@ export function CamaraFriaItemCard({
                   size="sm"
                   variant="outline"
                   onClick={() => onCancelEdit(item.id)}
+                  className="h-8 w-8 p-0"
                 >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
             ) : isThawing ? (
-              <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-lg">
+              <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-lg flex-wrap">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => onUpdateThaw(item.id, -1)}
                   disabled={thawValue <= 1}
+                  className="h-8 w-8 p-0"
                 >
                   <Minus className="w-4 h-4" />
                 </Button>
@@ -117,13 +121,14 @@ export function CamaraFriaItemCard({
                   variant="outline"
                   onClick={() => onUpdateThaw(item.id, 1)}
                   disabled={thawValue >= item.quantidade}
+                  className="h-8 w-8 p-0"
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => onConfirmThaw(item.id)}
-                  className="bg-orange-500 hover:bg-orange-600"
+                  className="bg-orange-500 hover:bg-orange-600 h-8 w-8 p-0"
                 >
                   <Check className="w-4 h-4" />
                 </Button>
@@ -131,27 +136,30 @@ export function CamaraFriaItemCard({
                   size="sm"
                   variant="outline"
                   onClick={() => onCancelThaw(item.id)}
+                  className="h-8 w-8 p-0"
                 >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => onStartEdit(item.id, item.quantidade)}
-                  className="text-xs whitespace-nowrap"
+                  className="text-xs h-8 px-2 sm:px-3"
                 >
-                  Ajustar Estoque
+                  <span className="hidden sm:inline">Ajustar Estoque</span>
+                  <span className="sm:hidden">Ajustar</span>
                 </Button>
                 {item.quantidade > 0 && (
                   <Button
                     size="sm"
                     onClick={() => onStartThaw(item.id, 1)}
-                    className="bg-orange-500 hover:bg-orange-600 text-xs whitespace-nowrap"
+                    className="bg-orange-500 hover:bg-orange-600 text-xs h-8 px-2 sm:px-3"
                   >
-                    Descongelar
+                    <span className="hidden sm:inline">Descongelar</span>
+                    <span className="sm:hidden">Desc.</span>
                   </Button>
                 )}
                 {onDelete && (
@@ -159,10 +167,10 @@ export function CamaraFriaItemCard({
                     size="sm"
                     variant="destructive"
                     onClick={() => onDelete(item.id)}
-                    className="text-xs"
+                    className="text-xs h-8 px-2 sm:px-3"
                   >
-                    <Trash2 className="w-3 h-3 mr-1" />
-                    Remover
+                    <Trash2 className="w-3 h-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Remover</span>
                   </Button>
                 )}
               </div>

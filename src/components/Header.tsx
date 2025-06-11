@@ -52,19 +52,21 @@ export function Header() {
     <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
       <SidebarTrigger className="-ml-1" />
       
-      {currentRoute && (
-        <div className="flex items-center gap-3 ml-2">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-            <IconComponent className="w-4 h-4 text-white" />
+      <div className="flex-1 flex justify-center">
+        {currentRoute && (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <IconComponent className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
+              <p className="text-sm text-muted-foreground">{currentRoute.description}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">{currentRoute.title}</h1>
-            <p className="text-sm text-gray-600">{currentRoute.description}</p>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
@@ -77,7 +79,7 @@ export function Header() {
               {user?.email || 'Usuário'}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-600">
+            <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
               Sair
             </DropdownMenuItem>

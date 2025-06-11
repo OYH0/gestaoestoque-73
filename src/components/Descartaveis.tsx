@@ -9,9 +9,10 @@ import { DescartaveisFilters } from '@/components/descartaveis/DescartaveisFilte
 import { DescartaveisAlerts } from '@/components/descartaveis/DescartaveisAlerts';
 import { DescartaveisHistoryDialog } from '@/components/descartaveis/DescartaveisHistoryDialog';
 import { DescartaveisAddDialog } from '@/components/descartaveis/DescartaveisAddDialog';
+import { DescartaveisItemCard } from '@/components/descartaveis/DescartaveisItemCard';
 
 export default function Descartaveis() {
-  const { items, loading, addItem } = useDescartaveisData();
+  const { items, loading, addItem, updateItemQuantity, deleteItem } = useDescartaveisData();
   const { historico } = useDescartaveisHistorico();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
@@ -133,16 +134,12 @@ export default function Descartaveis() {
 
       <div className="space-y-3">
         {filteredItems.map((item) => (
-          <div key={item.id} className="bg-white p-4 rounded-lg shadow border flex items-center justify-between">
-            <div className="flex-1">
-              <h3 className="font-semibold text-lg mb-1">{item.nome}</h3>
-              <div className="flex items-center gap-4 text-sm text-gray-600">
-                <span>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></span>
-                <span>Categoria: <span className="font-medium">{item.categoria}</span></span>
-                <span>Mínimo: <span className="font-medium">{item.minimo || 10} {item.unidade}</span></span>
-              </div>
-            </div>
-          </div>
+          <DescartaveisItemCard
+            key={item.id}
+            item={item}
+            onUpdateQuantity={updateItemQuantity}
+            onDelete={deleteItem}
+          />
         ))}
       </div>
 

@@ -9,9 +9,10 @@ import { EstoqueSecoFilters } from '@/components/estoque-seco/EstoqueSecoFilters
 import { EstoqueSecoAlerts } from '@/components/estoque-seco/EstoqueSecoAlerts';
 import { EstoqueSecoHistoryDialog } from '@/components/estoque-seco/EstoqueSecoHistoryDialog';
 import { EstoqueSecoAddDialog } from '@/components/estoque-seco/EstoqueSecoAddDialog';
+import { EstoqueSecoItemCard } from '@/components/estoque-seco/EstoqueSecoItemCard';
 
 export default function EstoqueSeco() {
-  const { items, loading, addItem } = useEstoqueSecoData();
+  const { items, loading, addItem, updateItemQuantity, deleteItem } = useEstoqueSecoData();
   const { historico } = useEstoqueSecoHistorico();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
@@ -133,16 +134,12 @@ export default function EstoqueSeco() {
 
       <div className="space-y-3">
         {filteredItems.map((item) => (
-          <div key={item.id} className="bg-white p-4 rounded-lg shadow border flex items-center justify-between">
-            <div className="flex-1">
-              <h3 className="font-semibold text-lg mb-1">{item.nome}</h3>
-              <div className="flex items-center gap-4 text-sm text-gray-600">
-                <span>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></span>
-                <span>Categoria: <span className="font-medium">{item.categoria}</span></span>
-                <span>Mínimo: <span className="font-medium">{item.minimo || 5} {item.unidade}</span></span>
-              </div>
-            </div>
-          </div>
+          <EstoqueSecoItemCard
+            key={item.id}
+            item={item}
+            onUpdateQuantity={updateItemQuantity}
+            onDelete={deleteItem}
+          />
         ))}
       </div>
 

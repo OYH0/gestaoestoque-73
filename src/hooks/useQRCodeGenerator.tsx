@@ -32,14 +32,14 @@ export function useQRCodeGenerator() {
       const qrCodeId = generateQRCodeId(tipo, item.id, i);
       const qrCodeData = {
         id: qrCodeId,
-        nome: item.nome,
+        nome: `${item.nome} ${i}`, // Adiciona numeração sequencial no nome
         categoria: item.categoria,
         tipo,
         lote: `${new Date().toISOString().split('T')[0]}-${i.toString().padStart(3, '0')}`
       };
       
       qrCodes.push(qrCodeData);
-      console.log(`QR Code ${i}/${quantidade} criado:`, qrCodeId);
+      console.log(`QR Code ${i}/${quantidade} criado:`, qrCodeId, 'Nome:', qrCodeData.nome);
     }
     
     console.log('Total de QR codes criados:', qrCodes.length);
@@ -83,7 +83,7 @@ export function useQRCodeGenerator() {
         const row = Math.floor(indexInPage / codesPerRow);
         const col = indexInPage % codesPerRow;
         
-        console.log(`Processando QR code ${i + 1}/${qrCodes.length}:`, qrData.id);
+        console.log(`Processando QR code ${i + 1}/${qrCodes.length}:`, qrData.id, 'Nome:', qrData.nome);
         
         // Adicionar nova página se necessário
         if (i > 0 && indexInPage === 0) {

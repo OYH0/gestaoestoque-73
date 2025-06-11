@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -10,12 +11,13 @@ import { useDescartaveisData } from '@/hooks/useDescartaveisData';
 
 // Cores fixas para os gráficos
 const CHART_COLORS = [
-  '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#8dd1e1',
-  '#d084d0', '#ffb347', '#87ceeb', '#dda0dd', '#98fb98'
+  '#10b981', '#10b981', '#10b981', // Verde para os 3 primeiros
+  '#f59e0b', '#f59e0b', '#f59e0b', '#f59e0b', '#f59e0b', // Laranja para os próximos 5
+  '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444' // Vermelho para o resto
 ];
 
 const PIE_COLORS = [
-  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'
+  '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'
 ];
 
 export function Dashboard() {
@@ -88,7 +90,7 @@ export function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-96">
               {meatTypesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
@@ -97,8 +99,9 @@ export function Dashboard() {
                       top: 20, 
                       right: 30, 
                       left: 20, 
-                      bottom: 60 
+                      bottom: 80 
                     }}
+                    barCategoryGap="15%"
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis 
@@ -106,22 +109,22 @@ export function Dashboard() {
                       stroke="#888" 
                       angle={-45}
                       textAnchor="end"
-                      height={60}
-                      fontSize={10}
+                      height={80}
+                      fontSize={11}
                       interval={0}
                     />
                     <YAxis 
                       stroke="#888"
-                      width={40}
+                      width={50}
                     />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}
-                      labelFormatter={(label) => `Carne: ${label}`}
+                      labelFormatter={(label) => `${label}`}
                     />
                     <Bar 
                       dataKey="quantidade" 
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={60}
+                      radius={[2, 2, 0, 0]}
+                      maxBarSize={35}
                     >
                       {meatTypesData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
@@ -153,7 +156,7 @@ export function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-96">
               {top5MeatUsage.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -162,10 +165,12 @@ export function Dashboard() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ nome, totalSaidas }) => `${nome}: ${totalSaidas}kg`}
-                      outerRadius={80}
+                      outerRadius={120}
+                      innerRadius={60}
                       fill="#8884d8"
                       dataKey="totalSaidas"
+                      strokeWidth={2}
+                      stroke="#ffffff"
                     >
                       {top5MeatUsage.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
@@ -174,7 +179,11 @@ export function Dashboard() {
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Total de Saídas']}
                     />
-                    <Legend />
+                    <Legend 
+                      verticalAlign="bottom"
+                      height={36}
+                      formatter={(value) => `${value}`}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (

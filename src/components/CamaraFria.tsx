@@ -1,8 +1,8 @@
+
 import React, { useState } from 'react';
 import { Plus, History, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
 import { CamaraFriaFilters } from '@/components/camara-fria/CamaraFriaFilters';
@@ -17,7 +17,7 @@ export default function CamaraFria() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem } = useCamaraFriaData();
   const { historico, addHistoricoItem } = useCamaraFriaHistorico();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('todas');
+  const [filterCategory, setFilterCategory] = useState('Todos');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
@@ -128,7 +128,7 @@ export default function CamaraFria() {
   const filteredItems = items.filter(item => {
     const matchesSearch = item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.categoria.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === 'todas' || item.categoria === filterCategory;
+    const matchesCategory = filterCategory === 'Todos' || item.categoria === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -149,7 +149,7 @@ export default function CamaraFria() {
   }
 
   // Get unique categories from items
-  const categories = ['todas', ...Array.from(new Set(items.map(item => item.categoria)))];
+  const categories = ['Todos', ...Array.from(new Set(items.map(item => item.categoria)))];
   const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (
@@ -158,128 +158,106 @@ export default function CamaraFria() {
         <div className="p-2 bg-blue-100 rounded-lg">
           <Plus className="h-6 w-6 text-blue-600" />
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Câmara Fria</h1>
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Câmara Fria</h1>
+          <p className="text-gray-600">Carnes e produtos congelados</p>
+        </div>
       </div>
 
-      <Tabs defaultValue="estoque" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="estoque">Estoque</TabsTrigger>
-          <TabsTrigger value="historico">Histórico</TabsTrigger>
-          <TabsTrigger value="ferramentas">Ferramentas</TabsTrigger>
-        </TabsList>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
+            {items.length} tipos
+          </span>
+        </div>
 
-        <TabsContent value="estoque" className="space-y-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <CamaraFriaFilters
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" className="text-gray-600">
+            <div className="w-4 h-4 mr-2 bg-gray-400 rounded" />
+            PDF
+          </Button>
+
+          <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-gray-600">
+                <History className="w-4 h-4 mr-2" />
+                Histórico
+              </Button>
+            </DialogTrigger>
+            <CamaraFriaHistoryDialog historico={historico} />
+          </Dialog>
+
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+                <Plus className="w-4 h-4 mr-2" />
+                Nova Carne
+              </Button>
+            </DialogTrigger>
+            <CamaraFriaAddDialog
+              newItem={{
+                nome: '',
+                quantidade: 0,
+                unidade: 'kg',
+                categoria: '',
+                minimo: 5
+              }}
+              setNewItem={() => {}}
+              onAddNewItem={() => {}}
+              setDialogOpen={setIsAddDialogOpen}
               categorias={categories}
-              categoriaFiltro={filterCategory}
-              setCategoriaFiltro={setFilterCategory}
-              searchQuery={searchTerm}
-              setSearchQuery={setSearchTerm}
             />
-            
-            <div className="flex flex-wrap gap-2">
-              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-churrasco-red hover:bg-churrasco-red/90 text-white shadow-lg">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Item
-                  </Button>
-                </DialogTrigger>
-                <CamaraFriaAddDialog
-                  newItem={{
-                    nome: '',
-                    quantidade: 0,
-                    unidade: 'kg',
-                    categoria: '',
-                    minimo: 5
-                  }}
-                  setNewItem={() => {}}
-                  onAddNewItem={() => {}}
-                  setDialogOpen={setIsAddDialogOpen}
-                  categorias={categories}
-                />
-              </Dialog>
-            </div>
-          </div>
+          </Dialog>
+        </div>
 
-          <CamaraFriaAlerts itemsBaixoEstoque={lowStockItems} />
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-fit text-green-600 border-green-200 hover:bg-green-50"
+          onClick={() => setShowScanner(true)}
+        >
+          <QrCode className="w-4 h-4 mr-2" />
+          Escanear QR Code
+        </Button>
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredItems.map((item) => (
-              <CamaraFriaItemCard
-                key={item.id}
-                item={item}
-                isEditing={editingItems.hasOwnProperty(item.id)}
-                editValue={editingItems[item.id] || item.quantidade}
-                isThawing={thawingItems.hasOwnProperty(item.id)}
-                thawValue={thawingItems[item.id] || 1}
-                onStartEdit={handleStartEdit}
-                onUpdateEdit={handleUpdateEdit}
-                onConfirmChange={handleConfirmChange}
-                onCancelEdit={handleCancelEdit}
-                onStartThaw={handleStartThaw}
-                onUpdateThaw={handleUpdateThaw}
-                onConfirmThaw={handleConfirmThaw}
-                onCancelThaw={handleCancelThaw}
-                onDelete={deleteItem}
-              />
-            ))}
-          </div>
+      <CamaraFriaFilters
+        categorias={categories}
+        categoriaFiltro={filterCategory}
+        setCategoriaFiltro={setFilterCategory}
+        searchQuery={searchTerm}
+        setSearchQuery={setSearchTerm}
+      />
 
-          {filteredItems.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">Nenhum item encontrado</p>
-            </div>
-          )}
-        </TabsContent>
+      <CamaraFriaAlerts itemsBaixoEstoque={lowStockItems} />
 
-        <TabsContent value="historico" className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-semibold mb-4">Histórico de Movimentações</h3>
-            <div className="space-y-3">
-              {historico.map((item, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                  <div>
-                    <span className="font-medium">{item.item_nome}</span>
-                    <span className="text-sm text-gray-600 ml-2">
-                      {item.tipo === 'entrada' ? '+' : '-'}{item.quantidade} {item.unidade}
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    {new Date(item.data_movimentacao).toLocaleDateString('pt-BR')}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </TabsContent>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {filteredItems.map((item) => (
+          <CamaraFriaItemCard
+            key={item.id}
+            item={item}
+            isEditing={editingItems.hasOwnProperty(item.id)}
+            editValue={editingItems[item.id] || item.quantidade}
+            isThawing={thawingItems.hasOwnProperty(item.id)}
+            thawValue={thawingItems[item.id] || 1}
+            onStartEdit={handleStartEdit}
+            onUpdateEdit={handleUpdateEdit}
+            onConfirmChange={handleConfirmChange}
+            onCancelEdit={handleCancelEdit}
+            onStartThaw={handleStartThaw}
+            onUpdateThaw={handleUpdateThaw}
+            onConfirmThaw={handleConfirmThaw}
+            onCancelThaw={handleCancelThaw}
+            onDelete={deleteItem}
+          />
+        ))}
+      </div>
 
-        <TabsContent value="ferramentas" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold mb-4">Scanner QR</h3>
-              <p className="text-gray-600 mb-4">Escaneie códigos QR para localizar itens rapidamente</p>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowScanner(true)}
-                className="w-full"
-              >
-                <QrCode className="h-4 w-4 mr-2" />
-                Abrir Scanner QR
-              </Button>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold mb-4">Relatórios</h3>
-              <p className="text-gray-600 mb-4">Gere relatórios do estoque atual</p>
-              <Button variant="outline" className="w-full">
-                Gerar Relatório PDF
-              </Button>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+      {filteredItems.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">Nenhum item encontrado</p>
+        </div>
+      )}
 
       {showQRGenerator && qrCodes.length > 0 && lastAddedItem && (
         <QRCodeGenerator

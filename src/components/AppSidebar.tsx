@@ -8,7 +8,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -58,9 +57,6 @@ export function AppSidebar() {
         <SidebarContent className="bg-transparent flex flex-col h-full">
           <div className="flex-1">
             <SidebarGroup className="pt-6 md:pt-8 px-3 md:px-4">
-              <SidebarGroupLabel className="text-white font-bold text-lg md:text-xl mb-6 md:mb-8 px-0 text-left">
-                Companhia do Churrasco
-              </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1 md:space-y-2">
                   {items.map((item) => (

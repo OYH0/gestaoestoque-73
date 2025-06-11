@@ -58,10 +58,7 @@ export function Header() {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <IconComponent className="w-4 h-4 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
-              <p className="text-sm text-muted-foreground">{currentRoute.description}</p>
-            </div>
+            <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
           </div>
         )}
       </div>

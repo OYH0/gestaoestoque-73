@@ -69,6 +69,7 @@ export function CamaraFriaAddDialog({
               <SelectItem value="kg">Quilogramas (kg)</SelectItem>
               <SelectItem value="unidades">Unidades</SelectItem>
               <SelectItem value="pacotes">Pacotes</SelectItem>
+              <SelectItem value="peças">Peças</SelectItem>
             </SelectContent>
           </Select>
         </div>

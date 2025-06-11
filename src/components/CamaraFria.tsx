@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -191,7 +190,7 @@ export default function CamaraFria() {
   }
 
   // Get unique categories from items, but ensure the main categories are always available
-  const categories = ['Todos', 'Bovina', 'Suína', 'Aves', 'Embutidos', 'Peças'];
+  const categories = ['Todos', 'Bovina', 'Suína', 'Aves', 'Embutidos'];
   const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (

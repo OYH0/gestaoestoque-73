@@ -2,8 +2,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Home, Snowflake, Thermometer, Package2, FileText } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +14,56 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+const routeConfig = {
+  '/': {
+    title: 'Dashboard',
+    description: 'Visão geral do sistema',
+    icon: Home
+  },
+  '/camara-fria': {
+    title: 'Câmara Fria',
+    description: 'Carnes e produtos congelados',
+    icon: Snowflake
+  },
+  '/camara-refrigerada': {
+    title: 'Câmara Refrigerada',
+    description: 'Produtos refrigerados',
+    icon: Thermometer
+  },
+  '/estoque-seco': {
+    title: 'Estoque Seco',
+    description: 'Produtos não perecíveis',
+    icon: Package2
+  },
+  '/descartaveis': {
+    title: 'Descartáveis',
+    description: 'Materiais descartáveis',
+    icon: FileText
+  }
+};
+
 export function Header() {
   const { user, signOut } = useAuth();
+  const location = useLocation();
+  const currentRoute = routeConfig[location.pathname as keyof typeof routeConfig];
+  const IconComponent = currentRoute?.icon || Home;
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
       <SidebarTrigger className="-ml-1" />
+      
+      {currentRoute && (
+        <div className="flex items-center gap-3 ml-2">
+          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+            <IconComponent className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">{currentRoute.title}</h1>
+            <p className="text-sm text-gray-600">{currentRoute.description}</p>
+          </div>
+        </div>
+      )}
+
       <div className="ml-auto flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

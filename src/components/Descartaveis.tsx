@@ -1,23 +1,27 @@
 
 import React, { useState } from 'react';
-import { Plus, History, QrCode, FileText } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { useDescartaveisData } from '@/hooks/useDescartaveisData';
 import { useDescartaveisHistorico } from '@/hooks/useDescartaveisHistorico';
+import { DescartaveisHeader } from '@/components/descartaveis/DescartaveisHeader';
 import { DescartaveisFilters } from '@/components/descartaveis/DescartaveisFilters';
 import { DescartaveisAlerts } from '@/components/descartaveis/DescartaveisAlerts';
 import { DescartaveisHistoryDialog } from '@/components/descartaveis/DescartaveisHistoryDialog';
 import { DescartaveisAddDialog } from '@/components/descartaveis/DescartaveisAddDialog';
 import { DescartaveisItemCard } from '@/components/descartaveis/DescartaveisItemCard';
+import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
+import { QRScanner } from '@/components/qr-scanner/QRScanner';
 
 export default function Descartaveis() {
-  const { items, loading, addItem, updateItemQuantity, deleteItem } = useDescartaveisData();
+  const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem } = useDescartaveisData();
   const { historico } = useDescartaveisHistorico();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const [newItem, setNewItem] = useState({
     nome: '',
     quantidade: 0,
@@ -63,65 +67,30 @@ export default function Descartaveis() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-green-100 rounded-lg">
-          <Plus className="h-6 w-6 text-green-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Descartáveis</h1>
-          <p className="text-gray-600">Utensílios e materiais descartáveis</p>
-        </div>
-      </div>
+      <DescartaveisHeader
+        itemsCount={items.length}
+        lowStockCount={lowStockItems.length}
+        historicoOpen={isHistoryDialogOpen}
+        setHistoricoOpen={setIsHistoryDialogOpen}
+        historico={historico}
+        dialogOpen={isAddDialogOpen}
+        setDialogOpen={setIsAddDialogOpen}
+        newItem={newItem}
+        setNewItem={setNewItem}
+        onAddNewItem={handleAddNewItem}
+        categorias={categories}
+        items={items}
+      />
 
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
-            {items.length} tipos
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" className="text-gray-600">
-            <FileText className="w-4 h-4 mr-2" />
-            PDF
-          </Button>
-
-          <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-gray-600">
-                <History className="w-4 h-4 mr-2" />
-                Histórico
-              </Button>
-            </DialogTrigger>
-            <DescartaveisHistoryDialog historico={historico} />
-          </Dialog>
-
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Item
-              </Button>
-            </DialogTrigger>
-            <DescartaveisAddDialog
-              newItem={newItem}
-              setNewItem={setNewItem}
-              onAddNewItem={handleAddNewItem}
-              setDialogOpen={setIsAddDialogOpen}
-              categorias={categories}
-            />
-          </Dialog>
-        </div>
-
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-fit text-green-600 border-green-200 hover:bg-green-50"
-        >
-          <QrCode className="w-4 h-4 mr-2" />
-          Escanear QR Code
-        </Button>
-      </div>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="w-fit text-green-600 border-green-200 hover:bg-green-50"
+        onClick={() => setShowQRScanner(true)}
+      >
+        <QrCode className="w-4 h-4 mr-2" />
+        Escanear QR Code
+      </Button>
 
       <DescartaveisFilters
         categorias={categories}
@@ -148,6 +117,21 @@ export default function Descartaveis() {
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">Nenhum item encontrado</p>
         </div>
+      )}
+
+      {showQRGenerator && qrCodes.length > 0 && lastAddedItem && (
+        <QRCodeGenerator
+          qrCodes={qrCodes}
+          onClose={() => setShowQRGenerator(false)}
+          itemName={lastAddedItem.nome}
+          stockType="Descartáveis"
+        />
+      )}
+
+      {showQRScanner && (
+        <QRScanner
+          onClose={() => setShowQRScanner(false)}
+        />
       )}
     </div>
   );

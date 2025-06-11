@@ -37,20 +37,24 @@ export function useQRCodeScanner() {
       const itemIdPart = parts[1];
       
       let tableDisplayName: string;
+      let tableName: string;
+      let historyTableName: string;
       let items: any[] = [];
       
-      // Buscar itens baseado no tipo com tratamento específico para erro de rate limit
+      // Buscar itens baseado no tipo
       try {
         if (tipo === 'CF') {
           tableDisplayName = 'Câmara Fria';
+          tableName = 'camara_fria_items';
+          historyTableName = 'camara_refrigerada_historico';
+          
           const { data, error } = await supabase
-            .from('camara_fria_items')
+            .from(tableName)
             .select('*')
             .gt('quantidade', 0);
           
           if (error) {
             if (error.message?.includes('rate limit')) {
-              console.error('Erro de rate limit na API do Supabase');
               return { success: false, error: 'Limite de requisições excedido. Por favor, aguarde alguns segundos e tente novamente.' };
             }
             throw error;
@@ -58,14 +62,16 @@ export function useQRCodeScanner() {
           items = data || [];
         } else if (tipo === 'ES') {
           tableDisplayName = 'Estoque Seco';
+          tableName = 'estoque_seco_items';
+          historyTableName = 'estoque_seco_historico';
+          
           const { data, error } = await supabase
-            .from('estoque_seco_items')
+            .from(tableName)
             .select('*')
             .gt('quantidade', 0);
           
           if (error) {
             if (error.message?.includes('rate limit')) {
-              console.error('Erro de rate limit na API do Supabase');
               return { success: false, error: 'Limite de requisições excedido. Por favor, aguarde alguns segundos e tente novamente.' };
             }
             throw error;
@@ -73,14 +79,16 @@ export function useQRCodeScanner() {
           items = data || [];
         } else if (tipo === 'DESC') {
           tableDisplayName = 'Descartáveis';
+          tableName = 'descartaveis_items';
+          historyTableName = 'descartaveis_historico';
+          
           const { data, error } = await supabase
-            .from('descartaveis_items')
+            .from(tableName)
             .select('*')
             .gt('quantidade', 0);
           
           if (error) {
             if (error.message?.includes('rate limit')) {
-              console.error('Erro de rate limit na API do Supabase');
               return { success: false, error: 'Limite de requisições excedido. Por favor, aguarde alguns segundos e tente novamente.' };
             }
             throw error;
@@ -91,7 +99,6 @@ export function useQRCodeScanner() {
         }
       } catch (apiError: any) {
         console.error('Erro ao buscar dados:', apiError);
-        // Verifica se é um problema de 429 (Too Many Requests)
         if (apiError.status === 429 || apiError.message?.includes('429')) {
           toast({
             title: "Limite de requisições excedido",
@@ -136,45 +143,16 @@ export function useQRCodeScanner() {
 
       // Atualizar quantidade baseado no tipo
       try {
-        if (tipo === 'CF') {
-          const { error } = await supabase
-            .from('camara_fria_items')
-            .update({ quantidade: newQuantity })
-            .eq('id', item.id);
+        const { error } = await supabase
+          .from(tableName)
+          .update({ quantidade: newQuantity })
+          .eq('id', item.id);
 
-          if (error) {
-            if (error.message?.includes('rate limit')) {
-              console.error('Erro de rate limit na API do Supabase');
-              return { success: false, error: 'Limite de requisições excedido. Por favor, aguarde alguns segundos e tente novamente.' };
-            }
-            throw error;
+        if (error) {
+          if (error.message?.includes('rate limit')) {
+            return { success: false, error: 'Limite de requisições excedido. Por favor, aguarde alguns segundos e tente novamente.' };
           }
-        } else if (tipo === 'ES') {
-          const { error } = await supabase
-            .from('estoque_seco_items')
-            .update({ quantidade: newQuantity })
-            .eq('id', item.id);
-
-          if (error) {
-            if (error.message?.includes('rate limit')) {
-              console.error('Erro de rate limit na API do Supabase');
-              return { success: false, error: 'Limite de requisições excedido. Por favor, aguarde alguns segundos e tente novamente.' };
-            }
-            throw error;
-          }
-        } else if (tipo === 'DESC') {
-          const { error } = await supabase
-            .from('descartaveis_items')
-            .update({ quantidade: newQuantity })
-            .eq('id', item.id);
-
-          if (error) {
-            if (error.message?.includes('rate limit')) {
-              console.error('Erro de rate limit na API do Supabase');
-              return { success: false, error: 'Limite de requisições excedido. Por favor, aguarde alguns segundos e tente novamente.' };
-            }
-            throw error;
-          }
+          throw error;
         }
       } catch (updateError: any) {
         console.error('Erro ao atualizar quantidade:', updateError);
@@ -184,28 +162,26 @@ export function useQRCodeScanner() {
         return { success: false, error: 'Erro ao atualizar quantidade: ' + updateError.message };
       }
 
-      // Registrar no histórico (apenas para câmara fria)
-      if (tipo === 'CF') {
-        try {
-          const { error: historyError } = await supabase
-            .from('camara_refrigerada_historico')
-            .insert([{
-              item_nome: item.nome,
-              quantidade: 1,
-              unidade: item.unidade,
-              categoria: item.categoria,
-              tipo: 'retirada',
-              observacoes: `Retirada via QR Code: ${qrCodeData}`,
-              user_id: user.id
-            }]);
+      // Registrar no histórico para todos os tipos
+      try {
+        const { error: historyError } = await supabase
+          .from(historyTableName)
+          .insert([{
+            item_nome: item.nome,
+            quantidade: 1,
+            unidade: item.unidade,
+            categoria: item.categoria,
+            tipo: 'saida',
+            observacoes: `Retirada via QR Code: ${qrCodeData}`,
+            user_id: user.id
+          }]);
 
-          if (historyError) {
-            console.error('Erro ao registrar histórico:', historyError);
-          }
-        } catch (historyError: any) {
-          // Erro no histórico não é crítico, apenas logar
+        if (historyError) {
           console.error('Erro ao registrar histórico:', historyError);
         }
+      } catch (historyError: any) {
+        // Erro no histórico não é crítico, apenas logar
+        console.error('Erro ao registrar histórico:', historyError);
       }
 
       console.log('QR Code processado com sucesso!');

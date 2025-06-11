@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { Trash2, Plus, History, FileText } from 'lucide-react';
+import { Package, Plus, History, FileText } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DescartaveisHistoryDialog } from './DescartaveisHistoryDialog';
 import { DescartaveisAddDialog } from './DescartaveisAddDialog';
@@ -45,7 +45,7 @@ export function DescartaveisHeader({
       generateInventoryPDF(
         items,
         'Relatório - Descartáveis',
-        'Inventário de produtos descartáveis e utensílios'
+        'Inventário de produtos descartáveis'
       );
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
@@ -55,17 +55,17 @@ export function DescartaveisHeader({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 md:w-10 md:h-10 bg-red-500 rounded-lg flex items-center justify-center">
-          <Trash2 className="w-4 h-4 md:w-5 md:h-5 text-white" />
+        <div className="w-8 h-8 md:w-10 md:h-10 bg-green-500 rounded-lg flex items-center justify-center">
+          <Package className="w-4 h-4 md:w-5 md:h-5 text-white" />
         </div>
         <div>
           <h2 className="text-xl md:text-2xl font-bold text-gray-900">Descartáveis</h2>
-          <p className="text-sm md:text-base text-gray-600">Produtos descartáveis e utensílios</p>
+          <p className="text-sm md:text-base text-gray-600">Produtos descartáveis e embalagens</p>
         </div>
       </div>
       
-      <div className="flex flex-wrap gap-2">
-        <Badge variant="secondary" className="bg-red-100 text-red-800 text-xs">
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
           {itemsCount} tipos
         </Badge>
         {lowStockCount > 0 && (
@@ -75,7 +75,7 @@ export function DescartaveisHeader({
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
         <Button 
           variant="outline" 
           size={isMobile ? "sm" : "default"}
@@ -104,7 +104,7 @@ export function DescartaveisHeader({
           <DialogTrigger asChild>
             <Button 
               size={isMobile ? "sm" : "default"}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-green-500 hover:bg-green-600"
             >
               <Plus className="w-4 h-4 mr-1 md:mr-2" />
               <span className={isMobile ? "text-xs" : "text-sm"}>Novo Item</span>

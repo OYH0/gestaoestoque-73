@@ -64,7 +64,7 @@ export function EstoqueSecoHeader({
         </div>
       </div>
       
-      <div className="flex flex-wrap gap-2">
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
         <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs">
           {itemsCount} tipos
         </Badge>
@@ -75,7 +75,7 @@ export function EstoqueSecoHeader({
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
         <Button 
           variant="outline" 
           size={isMobile ? "sm" : "default"}

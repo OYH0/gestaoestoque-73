@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Minus, Plus, Check, X, Snowflake, Trash2 } from 'lucide-react';
 import { CamaraFriaItem } from '@/hooks/useCamaraFriaData';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CamaraFriaItemCardProps {
   item: CamaraFriaItem;
@@ -40,6 +41,7 @@ export function CamaraFriaItemCard({
   onDelete
 }: CamaraFriaItemCardProps) {
   const isLowStock = item.quantidade <= (item.minimo || 5);
+  const isMobile = useIsMobile();
   
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
@@ -67,9 +69,9 @@ export function CamaraFriaItemCard({
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className={`flex ${isMobile ? 'justify-center' : 'justify-end'}`}>
             {isEditing ? (
-              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap">
+              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap justify-center">
                 <Button
                   size="sm"
                   variant="outline"
@@ -105,7 +107,7 @@ export function CamaraFriaItemCard({
                 </Button>
               </div>
             ) : isThawing ? (
-              <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-lg flex-wrap">
+              <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-lg flex-wrap justify-center">
                 <Button
                   size="sm"
                   variant="outline"
@@ -142,7 +144,7 @@ export function CamaraFriaItemCard({
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} gap-2 ${isMobile ? 'w-full items-center' : 'w-full sm:w-auto'}`}>
                 <Button
                   size="sm"
                   variant="outline"

@@ -23,12 +23,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let retryTimeout: NodeJS.Timeout;
 
-    // Set up auth state listener first
+    // Set up auth state listener with rate limit handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (mounted) {
           console.log('Auth state change:', event, session?.user?.email);
+          
+          // Clear any existing retry timeout
+          if (retryTimeout) {
+            clearTimeout(retryTimeout);
+          }
+          
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
@@ -36,19 +43,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Get initial session with retry logic for rate limiting
-    const getInitialSession = async () => {
+    // Get initial session with exponential backoff retry logic
+    const getInitialSession = async (retryCount = 0) => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        
         if (error) {
           console.error('Error getting session:', error);
-          // If rate limited, wait and don't retry automatically
-          if (error.message?.includes('rate limit')) {
-            console.log('Rate limited - waiting before retry');
-            setLoading(false);
+          
+          // If rate limited, implement exponential backoff
+          if (error.message?.includes('rate limit') || error.message?.includes('429')) {
+            const delay = Math.min(1000 * Math.pow(2, retryCount), 30000); // Max 30 seconds
+            console.log(`Rate limited - retrying in ${delay}ms (attempt ${retryCount + 1})`);
+            
+            if (retryCount < 5 && mounted) { // Max 5 retries
+              retryTimeout = setTimeout(() => {
+                getInitialSession(retryCount + 1);
+              }, delay);
+            } else {
+              setLoading(false);
+            }
             return;
           }
         }
+        
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
@@ -57,7 +75,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('Session check failed:', error);
         if (mounted) {
-          setLoading(false);
+          // Retry with exponential backoff for network errors
+          if (retryCount < 3) {
+            const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
+            retryTimeout = setTimeout(() => {
+              getInitialSession(retryCount + 1);
+            }, delay);
+          } else {
+            setLoading(false);
+          }
         }
       }
     };
@@ -66,6 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false;
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+      }
       subscription.unsubscribe();
     };
   }, []);
@@ -80,11 +109,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) {
         console.error('Sign in error:', error);
-        toast({
-          title: "Erro no login",
-          description: error.message,
-          variant: "destructive",
-        });
+        
+        // Handle rate limiting errors specifically
+        if (error.message?.includes('rate limit') || error.message?.includes('429')) {
+          toast({
+            title: "Muitas tentativas de login",
+            description: "Aguarde alguns segundos antes de tentar novamente.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Erro no login",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           title: "Login realizado com sucesso!",
@@ -95,6 +134,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error };
     } catch (error: any) {
       console.error('Sign in failed:', error);
+      toast({
+        title: "Erro no login",
+        description: "Falha na conexão. Tente novamente.",
+        variant: "destructive",
+      });
       return { error };
     } finally {
       setLoading(false);
@@ -118,11 +162,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) {
-        toast({
-          title: "Erro no cadastro",
-          description: error.message,
-          variant: "destructive",
-        });
+        if (error.message?.includes('rate limit') || error.message?.includes('429')) {
+          toast({
+            title: "Muitas tentativas de cadastro",
+            description: "Aguarde alguns segundos antes de tentar novamente.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Erro no cadastro",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           title: "Conta criada com sucesso!",
@@ -132,6 +184,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       return { error };
     } catch (error: any) {
+      toast({
+        title: "Erro no cadastro",
+        description: "Falha na conexão. Tente novamente.",
+        variant: "destructive",
+      });
       return { error };
     } finally {
       setLoading(false);
@@ -146,11 +203,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Até logo!",
       });
     } catch (error: any) {
-      toast({
-        title: "Erro no logout",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error('Sign out error:', error);
+      if (!error.message?.includes('rate limit')) {
+        toast({
+          title: "Erro no logout",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     }
   };
 

@@ -27,6 +27,7 @@ export function useEstoqueSecoHistorico() {
       const { data, error } = await supabase
         .from('estoque_seco_historico')
         .select('*')
+        .eq('user_id', user.id)
         .order('data_operacao', { ascending: false });
 
       if (error) throw error;
@@ -59,16 +60,28 @@ export function useEstoqueSecoHistorico() {
     if (!user) return;
 
     try {
+      console.log('Adding history item:', { ...item, user_id: user.id });
+      
       const { data, error } = await supabase
         .from('estoque_seco_historico')
         .insert([{ 
-          ...item, 
+          item_nome: item.item_nome,
+          quantidade: item.quantidade,
+          unidade: item.unidade,
+          categoria: item.categoria,
+          tipo: item.tipo,
+          observacoes: item.observacoes,
           user_id: user.id
         }])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error inserting history:', error);
+        throw error;
+      }
+      
+      console.log('History item added successfully:', data);
       
       const mappedItem: EstoqueSecoHistoricoItem = {
         id: data.id,

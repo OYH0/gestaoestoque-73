@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,7 +41,7 @@ export default function CamaraFria() {
   const [thawingItems, setThawingItems] = useState<Record<string, number>>({});
 
   const handleAddNewItem = async () => {
-    if (!newItem.nome || !newItem.categoria) {
+    if (!newItem.nome.trim() || !newItem.categoria) {
       return;
     }
 

@@ -29,6 +29,8 @@ export function CamaraFriaAddDialog({
   setDialogOpen,
   categorias
 }: CamaraFriaAddDialogProps) {
+  const isFormValid = newItem.nome.trim() !== '' && newItem.categoria !== '';
+
   return (
     <DialogContent>
       <DialogHeader>
@@ -50,10 +52,14 @@ export function CamaraFriaAddDialog({
           <Input
             id="quantidade"
             type="number"
-            placeholder="Ex: 10, 25, 50..."
+            min="0"
+            placeholder="Ex: 0, 10, 25, 50..."
             value={newItem.quantidade || ''}
-            onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value)})}
+            onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value) || 0})}
           />
+          <p className="text-xs text-gray-500">
+            Você pode adicionar com quantidade zero para registrar o item no estoque
+          </p>
         </div>
         
         <div className="space-y-2">
@@ -96,9 +102,10 @@ export function CamaraFriaAddDialog({
           <Input
             id="minimo"
             type="number"
+            min="0"
             placeholder="Ex: 5, 10, 15..."
             value={newItem.minimo || ''}
-            onChange={(e) => setNewItem({...newItem, minimo: Number(e.target.value)})}
+            onChange={(e) => setNewItem({...newItem, minimo: Number(e.target.value) || 0})}
           />
           <p className="text-xs text-gray-500">
             Quando o estoque atingir esta quantidade, será exibido um alerta
@@ -109,7 +116,11 @@ export function CamaraFriaAddDialog({
           <Button variant="outline" onClick={() => setDialogOpen(false)}>
             Cancelar
           </Button>
-          <Button onClick={onAddNewItem} className="bg-blue-500 hover:bg-blue-600">
+          <Button 
+            onClick={onAddNewItem} 
+            className="bg-blue-500 hover:bg-blue-600"
+            disabled={!isFormValid}
+          >
             Adicionar
           </Button>
         </div>

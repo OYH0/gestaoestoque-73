@@ -8,11 +8,13 @@ import { Thermometer, Clock, ArrowRight, ArrowLeft, Loader2, History } from 'luc
 import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
 import { useCamaraRefrigeradaHistorico } from '@/hooks/useCamaraRefrigeradaHistorico';
 import { CamaraRefrigeradaHistoryDialog } from '@/components/camara-refrigerada/CamaraRefrigeradaHistoryDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function CamaraRefrigerada() {
   const { items, loading, updateItemStatus, deleteItem } = useCamaraRefrigeradaData();
   const { historico, loading: historicoLoading, addHistoricoItem } = useCamaraRefrigeradaHistorico();
   const [historicoOpen, setHistoricoOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const moveToReady = (id: string) => {
     updateItemStatus(id, 'pronto');
@@ -66,35 +68,35 @@ export function CamaraRefrigerada() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-            <Thermometer className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Câmara Refrigerada</h2>
-            <p className="text-gray-600">Carnes em processo de descongelamento</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            {sortedItems.length} itens descongelando
-          </Badge>
-          
-          <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="border-gray-300">
-                <History className="w-4 h-4 mr-2" />
-                Histórico
-              </Button>
-            </DialogTrigger>
-            <CamaraRefrigeradaHistoryDialog 
-              historico={historico} 
-              loading={historicoLoading}
-            />
-          </Dialog>
-        </div>
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+          {items.length} itens descongelando
+        </Badge>
+        <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
+          {items.filter(item => item.status === 'descongelando').length} em processo
+        </Badge>
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+          {items.filter(item => item.status === 'pronto').length} prontos
+        </Badge>
+      </div>
+
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              size={isMobile ? "sm" : "default"}
+              className="border-gray-300"
+            >
+              <History className="w-4 h-4 mr-1 md:mr-2" />
+              <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
+            </Button>
+          </DialogTrigger>
+          <CamaraRefrigeradaHistoryDialog 
+            historico={historico} 
+            loading={historicoLoading}
+          />
+        </Dialog>
       </div>
 
       {/* Status Cards */}

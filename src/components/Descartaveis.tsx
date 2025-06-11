@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { QrCode } from 'lucide-react';
+import { QrCode, Plus, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { useDescartaveisData } from '@/hooks/useDescartaveisData';
 import { useDescartaveisHistorico } from '@/hooks/useDescartaveisHistorico';
-import { DescartaveisHeader } from '@/components/descartaveis/DescartaveisHeader';
 import { DescartaveisFilters } from '@/components/descartaveis/DescartaveisFilters';
 import { DescartaveisAlerts } from '@/components/descartaveis/DescartaveisAlerts';
 import { DescartaveisHistoryDialog } from '@/components/descartaveis/DescartaveisHistoryDialog';
@@ -73,20 +73,51 @@ export default function Descartaveis() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <DescartaveisHeader
-        itemsCount={items.length}
-        lowStockCount={lowStockItems.length}
-        historicoOpen={isHistoryDialogOpen}
-        setHistoricoOpen={setIsHistoryDialogOpen}
-        historico={historico}
-        dialogOpen={isAddDialogOpen}
-        setDialogOpen={setIsAddDialogOpen}
-        newItem={newItem}
-        setNewItem={setNewItem}
-        onAddNewItem={handleAddNewItem}
-        categorias={categories}
-        items={items}
-      />
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+          {items.length} itens
+        </Badge>
+        {lowStockItems.length > 0 && (
+          <Badge variant="destructive" className="text-xs">
+            {lowStockItems.length} baixo estoque
+          </Badge>
+        )}
+      </div>
+
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              size={isMobile ? "sm" : "default"}
+              className="border-gray-300"
+            >
+              <History className="w-4 h-4 mr-1 md:mr-2" />
+              <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
+            </Button>
+          </DialogTrigger>
+          <DescartaveisHistoryDialog historico={historico} />
+        </Dialog>
+        
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              size={isMobile ? "sm" : "default"}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              <Plus className="w-4 h-4 mr-1 md:mr-2" />
+              <span className={isMobile ? "text-xs" : "text-sm"}>Novo Item</span>
+            </Button>
+          </DialogTrigger>
+          <DescartaveisAddDialog 
+            newItem={newItem}
+            setNewItem={setNewItem}
+            onAddNewItem={handleAddNewItem}
+            setDialogOpen={setIsAddDialogOpen}
+            categorias={categories}
+          />
+        </Dialog>
+      </div>
 
       <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
         <Button 

@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { QrCode } from 'lucide-react';
+import { QrCode, Plus, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { useEstoqueSecoData } from '@/hooks/useEstoqueSecoData';
 import { useEstoqueSecoHistorico } from '@/hooks/useEstoqueSecoHistorico';
-import { EstoqueSecoHeader } from '@/components/estoque-seco/EstoqueSecoHeader';
 import { EstoqueSecoFilters } from '@/components/estoque-seco/EstoqueSecoFilters';
 import { EstoqueSecoAlerts } from '@/components/estoque-seco/EstoqueSecoAlerts';
 import { EstoqueSecoHistoryDialog } from '@/components/estoque-seco/EstoqueSecoHistoryDialog';
@@ -73,20 +73,51 @@ export default function EstoqueSeco() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <EstoqueSecoHeader
-        itemsCount={items.length}
-        lowStockCount={lowStockItems.length}
-        historicoOpen={isHistoryDialogOpen}
-        setHistoricoOpen={setIsHistoryDialogOpen}
-        historico={historico}
-        dialogOpen={isAddDialogOpen}
-        setDialogOpen={setIsAddDialogOpen}
-        newItem={newItem}
-        setNewItem={setNewItem}
-        onAddNewItem={handleAddNewItem}
-        categorias={categories}
-        items={items}
-      />
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+          {items.length} itens
+        </Badge>
+        {lowStockItems.length > 0 && (
+          <Badge variant="destructive" className="text-xs">
+            {lowStockItems.length} baixo estoque
+          </Badge>
+        )}
+      </div>
+
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              size={isMobile ? "sm" : "default"}
+              className="border-gray-300"
+            >
+              <History className="w-4 h-4 mr-1 md:mr-2" />
+              <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
+            </Button>
+          </DialogTrigger>
+          <EstoqueSecoHistoryDialog historico={historico} />
+        </Dialog>
+        
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              size={isMobile ? "sm" : "default"}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              <Plus className="w-4 h-4 mr-1 md:mr-2" />
+              <span className={isMobile ? "text-xs" : "text-sm"}>Novo Item</span>
+            </Button>
+          </DialogTrigger>
+          <EstoqueSecoAddDialog 
+            newItem={newItem}
+            setNewItem={setNewItem}
+            onAddNewItem={handleAddNewItem}
+            setDialogOpen={setIsAddDialogOpen}
+            categorias={categories}
+          />
+        </Dialog>
+      </div>
 
       <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
         <Button 

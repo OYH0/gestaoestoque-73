@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -34,23 +35,25 @@ export function CamaraFriaAddDialog({
     const value = e.target.value;
     console.log('=== MUDANÇA DE QUANTIDADE NO FORMULÁRIO ===');
     console.log('Valor digitado:', value);
-    console.log('Tipo do valor:', typeof value);
     
-    if (value === '' || value === '0') {
-      console.log('Campo vazio ou zero, definindo quantidade como 0');
+    // Se campo vazio, manter como 0
+    if (value === '') {
+      console.log('Campo vazio, definindo quantidade como 0');
       setNewItem({...newItem, quantidade: 0});
+      return;
+    }
+    
+    // Converter para número inteiro
+    const numValue = parseInt(value, 10);
+    console.log('Valor convertido para número:', numValue);
+    console.log('É um número válido?', !isNaN(numValue));
+    
+    // Validar se é um número válido e positivo
+    if (!isNaN(numValue) && numValue >= 0) {
+      console.log('QUANTIDADE FINAL DEFINIDA:', numValue);
+      setNewItem({...newItem, quantidade: numValue});
     } else {
-      const numValue = parseInt(value, 10);
-      console.log('Valor convertido para número:', numValue);
-      console.log('Tipo após conversão:', typeof numValue);
-      console.log('É um número válido?', !isNaN(numValue));
-      
-      if (!isNaN(numValue) && numValue >= 0) {
-        console.log('Definindo quantidade como:', numValue);
-        setNewItem({...newItem, quantidade: numValue});
-      } else {
-        console.warn('Valor inválido ignorado:', value);
-      }
+      console.warn('Valor inválido ignorado:', value);
     }
   };
 
@@ -71,6 +74,22 @@ export function CamaraFriaAddDialog({
     console.log('Item completo antes de adicionar:', newItem);
     console.log('Quantidade final:', newItem.quantidade);
     console.log('Tipo da quantidade final:', typeof newItem.quantidade);
+    
+    // Garantir que a quantidade seja um número válido antes de enviar
+    const quantidadeValidada = Number(newItem.quantidade);
+    console.log('Quantidade após validação final:', quantidadeValidada);
+    
+    const itemValidado = {
+      ...newItem,
+      quantidade: quantidadeValidada
+    };
+    
+    console.log('Item final validado:', itemValidado);
+    
+    // Atualizar o estado com o item validado
+    setNewItem(itemValidado);
+    
+    // Chamar a função de adicionar
     onAddNewItem();
   };
 
@@ -97,7 +116,7 @@ export function CamaraFriaAddDialog({
             type="number"
             min="0"
             step="1"
-            placeholder="Digite a quantidade (pode ser 0)"
+            placeholder="Digite a quantidade"
             value={newItem.quantidade === 0 ? '' : newItem.quantidade.toString()}
             onChange={handleQuantidadeChange}
           />

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -60,18 +59,32 @@ export function useCamaraFriaData() {
     console.log('Quantidade recebida:', newItem.quantidade);
     console.log('Tipo da quantidade recebida:', typeof newItem.quantidade);
     
-    // Garantir que quantidade seja um número
-    const quantidadeSegura = Number(newItem.quantidade);
-    console.log('Quantidade após Number():', quantidadeSegura);
-    console.log('Tipo após Number():', typeof quantidadeSegura);
-    console.log('É um número válido?', !isNaN(quantidadeSegura));
+    // GARANTIR que quantidade seja um número inteiro válido
+    let quantidadeSegura: number;
+    
+    if (typeof newItem.quantidade === 'string') {
+      quantidadeSegura = parseInt(newItem.quantidade, 10);
+    } else if (typeof newItem.quantidade === 'number') {
+      quantidadeSegura = Math.floor(newItem.quantidade);
+    } else {
+      quantidadeSegura = 0;
+    }
+    
+    // Validar se é um número válido
+    if (isNaN(quantidadeSegura) || quantidadeSegura < 0) {
+      quantidadeSegura = 0;
+    }
+    
+    console.log('Quantidade após conversão e validação:', quantidadeSegura);
+    console.log('Tipo após conversão:', typeof quantidadeSegura);
     
     const itemParaSalvar = {
       ...newItem,
       quantidade: quantidadeSegura
     };
     
-    console.log('Item final para salvar:', itemParaSalvar);
+    console.log('Item final para salvar no banco:', itemParaSalvar);
+    console.log('Quantidade que será salva:', itemParaSalvar.quantidade);
 
     try {
       const { data, error } = await supabase
@@ -82,26 +95,31 @@ export function useCamaraFriaData() {
 
       if (error) throw error;
       
-      console.log('Item salvo no banco com sucesso:', data);
+      console.log('✅ ITEM SALVO NO BANCO COM SUCESSO!');
+      console.log('Dados retornados do banco:', data);
       console.log('Quantidade salva no banco:', data.quantidade);
-      console.log('Tipo da quantidade salva:', typeof data.quantidade);
+      console.log('Tipo da quantidade do banco:', typeof data.quantidade);
       
       setItems(prev => [...prev, data]);
       setLastAddedItem(data);
       
-      // Gerar QR codes para o item apenas se quantidade > 0
+      // Gerar QR codes APENAS se quantidade > 0
       if (data.quantidade > 0) {
-        console.log('=== INÍCIO GERAÇÃO DE QR CODES ===');
+        console.log('=== INICIANDO GERAÇÃO DE QR CODES ===');
         console.log('Quantidade para gerar QR codes:', data.quantidade);
-        console.log('Tipo da quantidade:', typeof data.quantidade);
-        console.log('Chamando generateQRCodeData...');
+        console.log('DEVE GERAR EXATAMENTE:', data.quantidade, 'QR codes');
         
         const qrCodesData = generateQRCodeData(data, 'CF', data.quantidade);
         
-        console.log('QR codes retornados:', qrCodesData.length);
-        console.log('Quantidade esperada vs gerada:', data.quantidade, 'vs', qrCodesData.length);
-        console.log('Primeira amostra de QR codes:', qrCodesData.slice(0, 3));
-        console.log('=== FIM GERAÇÃO DE QR CODES ===');
+        console.log('QR codes gerados:', qrCodesData.length);
+        console.log('VERIFICAÇÃO: Quantidade solicitada vs gerada:', data.quantidade, 'vs', qrCodesData.length);
+        
+        if (qrCodesData.length !== data.quantidade) {
+          console.error('❌ ERRO: Quantidade de QR codes não confere!');
+          console.error('Esperado:', data.quantidade, 'Gerado:', qrCodesData.length);
+        } else {
+          console.log('✅ SUCESSO: Quantidade de QR codes está correta!');
+        }
         
         setQrCodes(qrCodesData);
         
@@ -114,6 +132,7 @@ export function useCamaraFriaData() {
           description: `${data.nome} foi adicionado ao estoque! ${qrCodesData.length} QR codes serão gerados.`,
         });
       } else {
+        console.log('Quantidade zero - não gerando QR codes');
         toast({
           title: "Item adicionado",
           description: `${data.nome} foi adicionado ao estoque com quantidade zero!`,
@@ -122,7 +141,7 @@ export function useCamaraFriaData() {
       
       console.log('=== FIM addItem NO HOOK ===');
     } catch (error) {
-      console.error('Erro ao adicionar item:', error);
+      console.error('❌ ERRO ao adicionar item:', error);
       toast({
         title: "Erro ao adicionar item",
         description: "Não foi possível adicionar o item.",

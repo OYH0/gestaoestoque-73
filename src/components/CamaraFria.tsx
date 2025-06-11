@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { Plus, History, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
 import { CamaraFriaFilters } from '@/components/camara-fria/CamaraFriaFilters';
@@ -160,91 +160,126 @@ export default function CamaraFria() {
         </div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Câmara Fria</h1>
       </div>
-      
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <CamaraFriaFilters
-          categorias={categories}
-          categoriaFiltro={filterCategory}
-          setCategoriaFiltro={setFilterCategory}
-          searchQuery={searchTerm}
-          setSearchQuery={setSearchTerm}
-        />
-        
-        <div className="flex flex-wrap gap-2">
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-churrasco-red hover:bg-churrasco-red/90 text-white shadow-lg">
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Item
-              </Button>
-            </DialogTrigger>
-            <CamaraFriaAddDialog
-              newItem={{
-                nome: '',
-                quantidade: 0,
-                unidade: 'kg',
-                categoria: '',
-                minimo: 5
-              }}
-              setNewItem={() => {}}
-              onAddNewItem={() => {}}
-              setDialogOpen={setIsAddDialogOpen}
+
+      <Tabs defaultValue="estoque" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="estoque">Estoque</TabsTrigger>
+          <TabsTrigger value="historico">Histórico</TabsTrigger>
+          <TabsTrigger value="ferramentas">Ferramentas</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="estoque" className="space-y-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <CamaraFriaFilters
               categorias={categories}
+              categoriaFiltro={filterCategory}
+              setCategoriaFiltro={setFilterCategory}
+              searchQuery={searchTerm}
+              setSearchQuery={setSearchTerm}
             />
-          </Dialog>
+            
+            <div className="flex flex-wrap gap-2">
+              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-churrasco-red hover:bg-churrasco-red/90 text-white shadow-lg">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Item
+                  </Button>
+                </DialogTrigger>
+                <CamaraFriaAddDialog
+                  newItem={{
+                    nome: '',
+                    quantidade: 0,
+                    unidade: 'kg',
+                    categoria: '',
+                    minimo: 5
+                  }}
+                  setNewItem={() => {}}
+                  onAddNewItem={() => {}}
+                  setDialogOpen={setIsAddDialogOpen}
+                  categorias={categories}
+                />
+              </Dialog>
+            </div>
+          </div>
 
-          <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="shadow-lg">
-                <History className="h-4 w-4 mr-2" />
-                Histórico
+          <CamaraFriaAlerts itemsBaixoEstoque={lowStockItems} />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredItems.map((item) => (
+              <CamaraFriaItemCard
+                key={item.id}
+                item={item}
+                isEditing={editingItems.hasOwnProperty(item.id)}
+                editValue={editingItems[item.id] || item.quantidade}
+                isThawing={thawingItems.hasOwnProperty(item.id)}
+                thawValue={thawingItems[item.id] || 1}
+                onStartEdit={handleStartEdit}
+                onUpdateEdit={handleUpdateEdit}
+                onConfirmChange={handleConfirmChange}
+                onCancelEdit={handleCancelEdit}
+                onStartThaw={handleStartThaw}
+                onUpdateThaw={handleUpdateThaw}
+                onConfirmThaw={handleConfirmThaw}
+                onCancelThaw={handleCancelThaw}
+                onDelete={deleteItem}
+              />
+            ))}
+          </div>
+
+          {filteredItems.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">Nenhum item encontrado</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="historico" className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <h3 className="text-lg font-semibold mb-4">Histórico de Movimentações</h3>
+            <div className="space-y-3">
+              {historico.map((item, index) => (
+                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <div>
+                    <span className="font-medium">{item.item_nome}</span>
+                    <span className="text-sm text-gray-600 ml-2">
+                      {item.tipo === 'entrada' ? '+' : '-'}{item.quantidade} {item.unidade}
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-500">
+                    {new Date(item.data_movimentacao).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="ferramentas" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold mb-4">Scanner QR</h3>
+              <p className="text-gray-600 mb-4">Escaneie códigos QR para localizar itens rapidamente</p>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowScanner(true)}
+                className="w-full"
+              >
+                <QrCode className="h-4 w-4 mr-2" />
+                Abrir Scanner QR
               </Button>
-            </DialogTrigger>
-            <CamaraFriaHistoryDialog historico={historico} />
-          </Dialog>
+            </div>
 
-          <Button 
-            variant="outline" 
-            onClick={() => setShowScanner(true)}
-            className="shadow-lg"
-          >
-            <QrCode className="h-4 w-4 mr-2" />
-            Scanner QR
-          </Button>
-        </div>
-      </div>
-
-      <CamaraFriaAlerts
-        itemsBaixoEstoque={lowStockItems}
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredItems.map((item) => (
-          <CamaraFriaItemCard
-            key={item.id}
-            item={item}
-            isEditing={editingItems.hasOwnProperty(item.id)}
-            editValue={editingItems[item.id] || item.quantidade}
-            isThawing={thawingItems.hasOwnProperty(item.id)}
-            thawValue={thawingItems[item.id] || 1}
-            onStartEdit={handleStartEdit}
-            onUpdateEdit={handleUpdateEdit}
-            onConfirmChange={handleConfirmChange}
-            onCancelEdit={handleCancelEdit}
-            onStartThaw={handleStartThaw}
-            onUpdateThaw={handleUpdateThaw}
-            onConfirmThaw={handleConfirmThaw}
-            onCancelThaw={handleCancelThaw}
-            onDelete={deleteItem}
-          />
-        ))}
-      </div>
-
-      {filteredItems.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">Nenhum item encontrado</p>
-        </div>
-      )}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold mb-4">Relatórios</h3>
+              <p className="text-gray-600 mb-4">Gere relatórios do estoque atual</p>
+              <Button variant="outline" className="w-full">
+                Gerar Relatório PDF
+              </Button>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {showQRGenerator && qrCodes.length > 0 && lastAddedItem && (
         <QRCodeGenerator

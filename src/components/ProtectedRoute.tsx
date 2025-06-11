@@ -10,7 +10,11 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
 
-  console.log('ProtectedRoute - loading:', loading, 'user:', user);
+  console.log('ProtectedRoute render:', { 
+    hasUser: !!user, 
+    userEmail: user?.email, 
+    loading 
+  });
 
   if (loading) {
     return (
@@ -24,7 +28,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!user) {
-    console.log('No user found, showing login');
+    console.log('No user found, showing login page');
     return <Login />;
   }
 

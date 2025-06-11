@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -33,12 +32,24 @@ export function CamaraFriaAddDialog({
 
   const handleQuantidadeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (value === '') {
+    console.log('=== MUDANÇA DE QUANTIDADE NO FORMULÁRIO ===');
+    console.log('Valor digitado:', value);
+    console.log('Tipo do valor:', typeof value);
+    
+    if (value === '' || value === '0') {
+      console.log('Campo vazio ou zero, definindo quantidade como 0');
       setNewItem({...newItem, quantidade: 0});
     } else {
-      const numValue = Number(value);
+      const numValue = parseInt(value, 10);
+      console.log('Valor convertido para número:', numValue);
+      console.log('Tipo após conversão:', typeof numValue);
+      console.log('É um número válido?', !isNaN(numValue));
+      
       if (!isNaN(numValue) && numValue >= 0) {
+        console.log('Definindo quantidade como:', numValue);
         setNewItem({...newItem, quantidade: numValue});
+      } else {
+        console.warn('Valor inválido ignorado:', value);
       }
     }
   };
@@ -48,11 +59,19 @@ export function CamaraFriaAddDialog({
     if (value === '') {
       setNewItem({...newItem, minimo: 0});
     } else {
-      const numValue = Number(value);
+      const numValue = parseInt(value, 10);
       if (!isNaN(numValue) && numValue >= 0) {
         setNewItem({...newItem, minimo: numValue});
       }
     }
+  };
+
+  const handleAddItem = () => {
+    console.log('=== ADICIONANDO ITEM DO FORMULÁRIO ===');
+    console.log('Item completo antes de adicionar:', newItem);
+    console.log('Quantidade final:', newItem.quantidade);
+    console.log('Tipo da quantidade final:', typeof newItem.quantidade);
+    onAddNewItem();
   };
 
   return (
@@ -84,6 +103,9 @@ export function CamaraFriaAddDialog({
           />
           <p className="text-xs text-gray-500">
             Você pode adicionar com quantidade zero para registrar o item no estoque
+          </p>
+          <p className="text-xs text-blue-600">
+            Quantidade atual: {newItem.quantidade} (Tipo: {typeof newItem.quantidade})
           </p>
         </div>
         
@@ -143,7 +165,7 @@ export function CamaraFriaAddDialog({
             Cancelar
           </Button>
           <Button 
-            onClick={onAddNewItem} 
+            onClick={handleAddItem} 
             className="bg-blue-500 hover:bg-blue-600"
             disabled={!isFormValid}
           >

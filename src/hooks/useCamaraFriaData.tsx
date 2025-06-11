@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,53 +55,74 @@ export function useCamaraFriaData() {
   const addItem = async (newItem: Omit<CamaraFriaItem, 'id'>) => {
     if (!user) return;
 
-    console.log('=== INÍCIO addItem ===');
-    console.log('Item a ser adicionado:', newItem);
-    console.log('Quantidade do item:', newItem.quantidade);
-    console.log('Tipo da quantidade:', typeof newItem.quantidade);
+    console.log('=== INÍCIO addItem NO HOOK ===');
+    console.log('Item recebido no hook:', newItem);
+    console.log('Quantidade recebida:', newItem.quantidade);
+    console.log('Tipo da quantidade recebida:', typeof newItem.quantidade);
+    
+    // Garantir que quantidade seja um número
+    const quantidadeSegura = Number(newItem.quantidade);
+    console.log('Quantidade após Number():', quantidadeSegura);
+    console.log('Tipo após Number():', typeof quantidadeSegura);
+    console.log('É um número válido?', !isNaN(quantidadeSegura));
+    
+    const itemParaSalvar = {
+      ...newItem,
+      quantidade: quantidadeSegura
+    };
+    
+    console.log('Item final para salvar:', itemParaSalvar);
 
     try {
       const { data, error } = await supabase
         .from('camara_fria_items')
-        .insert([{ ...newItem, user_id: user.id }])
+        .insert([{ ...itemParaSalvar, user_id: user.id }])
         .select()
         .single();
 
       if (error) throw error;
       
-      console.log('Item salvo no banco:', data);
+      console.log('Item salvo no banco com sucesso:', data);
+      console.log('Quantidade salva no banco:', data.quantidade);
+      console.log('Tipo da quantidade salva:', typeof data.quantidade);
+      
       setItems(prev => [...prev, data]);
       setLastAddedItem(data);
       
       // Gerar QR codes para o item apenas se quantidade > 0
-      if (newItem.quantidade > 0) {
-        console.log('=== GERAÇÃO DE QR CODES ===');
-        console.log('Quantidade original do item:', newItem.quantidade);
-        console.log('Quantidade do item salvo no banco:', data.quantidade);
-        console.log('Chamando generateQRCodeData com quantidade:', newItem.quantidade);
+      if (data.quantidade > 0) {
+        console.log('=== INÍCIO GERAÇÃO DE QR CODES ===');
+        console.log('Quantidade para gerar QR codes:', data.quantidade);
+        console.log('Tipo da quantidade:', typeof data.quantidade);
+        console.log('Chamando generateQRCodeData...');
         
-        const qrCodesData = generateQRCodeData(data, 'CF', newItem.quantidade);
+        const qrCodesData = generateQRCodeData(data, 'CF', data.quantidade);
         
-        console.log('QR codes retornados pela função:', qrCodesData.length);
-        console.log('Primeiros 3 QR codes gerados:', qrCodesData.slice(0, 3));
+        console.log('QR codes retornados:', qrCodesData.length);
+        console.log('Quantidade esperada vs gerada:', data.quantidade, 'vs', qrCodesData.length);
+        console.log('Primeira amostra de QR codes:', qrCodesData.slice(0, 3));
+        console.log('=== FIM GERAÇÃO DE QR CODES ===');
         
         setQrCodes(qrCodesData);
         
         setTimeout(() => {
           setShowQRGenerator(true);
         }, 100);
+        
+        toast({
+          title: "Item adicionado",
+          description: `${data.nome} foi adicionado ao estoque! ${qrCodesData.length} QR codes serão gerados.`,
+        });
+      } else {
+        toast({
+          title: "Item adicionado",
+          description: `${data.nome} foi adicionado ao estoque com quantidade zero!`,
+        });
       }
       
-      toast({
-        title: "Item adicionado",
-        description: newItem.quantidade > 0 
-          ? `${newItem.nome} foi adicionado ao estoque! ${newItem.quantidade} QR codes serão gerados.`
-          : `${newItem.nome} foi adicionado ao estoque com quantidade zero!`,
-      });
-      
-      console.log('=== FIM addItem ===');
+      console.log('=== FIM addItem NO HOOK ===');
     } catch (error) {
-      console.error('Error adding item:', error);
+      console.error('Erro ao adicionar item:', error);
       toast({
         title: "Erro ao adicionar item",
         description: "Não foi possível adicionar o item.",

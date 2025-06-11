@@ -3,16 +3,15 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { Snowflake, Plus, History, FileText } from 'lucide-react';
+import { Package, Plus, History, FileText } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { CamaraFriaHistoryDialog } from './CamaraFriaHistoryDialog';
-import { CamaraFriaAddDialog } from './CamaraFriaAddDialog';
+import { EstoqueSecoHistoryDialog } from './EstoqueSecoHistoryDialog';
+import { EstoqueSecoAddDialog } from './EstoqueSecoAddDialog';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
 
-interface CamaraFriaHeaderProps {
+interface EstoqueSecoHeaderProps {
   itemsCount: number;
   lowStockCount: number;
-  onPrintPDF: () => void;
   historicoOpen: boolean;
   setHistoricoOpen: (open: boolean) => void;
   historico: any[];
@@ -25,10 +24,9 @@ interface CamaraFriaHeaderProps {
   items: any[];
 }
 
-export function CamaraFriaHeader({
+export function EstoqueSecoHeader({
   itemsCount,
   lowStockCount,
-  onPrintPDF,
   historicoOpen,
   setHistoricoOpen,
   historico,
@@ -39,15 +37,15 @@ export function CamaraFriaHeader({
   onAddNewItem,
   categorias,
   items
-}: CamaraFriaHeaderProps) {
+}: EstoqueSecoHeaderProps) {
   const isMobile = useIsMobile();
 
   const handlePrintPDF = () => {
     try {
       generateInventoryPDF(
         items,
-        'Relatório - Câmara Fria',
-        'Inventário de carnes e produtos congelados'
+        'Relatório - Estoque Seco',
+        'Inventário de produtos secos e não perecíveis'
       );
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
@@ -57,17 +55,17 @@ export function CamaraFriaHeader({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-          <Snowflake className="w-4 h-4 md:w-5 md:h-5 text-white" />
+        <div className="w-8 h-8 md:w-10 md:h-10 bg-amber-500 rounded-lg flex items-center justify-center">
+          <Package className="w-4 h-4 md:w-5 md:h-5 text-white" />
         </div>
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900">Câmara Fria</h2>
-          <p className="text-sm md:text-base text-gray-600">Carnes e produtos congelados</p>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">Estoque Seco</h2>
+          <p className="text-sm md:text-base text-gray-600">Produtos secos e não perecíveis</p>
         </div>
       </div>
       
       <div className="flex flex-wrap gap-2">
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+        <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs">
           {itemsCount} tipos
         </Badge>
         {lowStockCount > 0 && (
@@ -99,20 +97,20 @@ export function CamaraFriaHeader({
               <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
             </Button>
           </DialogTrigger>
-          <CamaraFriaHistoryDialog historico={historico} />
+          <EstoqueSecoHistoryDialog historico={historico} />
         </Dialog>
         
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button 
               size={isMobile ? "sm" : "default"}
-              className="bg-blue-500 hover:bg-blue-600"
+              className="bg-amber-500 hover:bg-amber-600"
             >
               <Plus className="w-4 h-4 mr-1 md:mr-2" />
-              <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
+              <span className={isMobile ? "text-xs" : "text-sm"}>Novo Item</span>
             </Button>
           </DialogTrigger>
-          <CamaraFriaAddDialog 
+          <EstoqueSecoAddDialog 
             newItem={newItem}
             setNewItem={setNewItem}
             onAddNewItem={onAddNewItem}

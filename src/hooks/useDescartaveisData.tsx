@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { useQRCodeGenerator } from '@/hooks/useQRCodeGenerator';
+import { useDescartaveisHistorico } from '@/hooks/useDescartaveisHistorico';
 
 export interface DescartaveisItem {
   id: string;
@@ -26,6 +27,7 @@ export function useDescartaveisData() {
   const [lastAddedItem, setLastAddedItem] = useState<DescartaveisItem | null>(null);
   const { user } = useAuth();
   const { generateQRCodeData } = useQRCodeGenerator();
+  const { addHistoricoItem } = useDescartaveisHistorico();
 
   const fetchItems = async () => {
     if (!user) return;
@@ -65,6 +67,18 @@ export function useDescartaveisData() {
       setItems(prev => [...prev, data]);
       setLastAddedItem(data);
       
+      // Registrar no histórico
+      if (newItem.quantidade > 0) {
+        await addHistoricoItem({
+          item_nome: newItem.nome,
+          quantidade: newItem.quantidade,
+          unidade: newItem.unidade,
+          categoria: newItem.categoria,
+          tipo: 'entrada',
+          observacoes: 'Item adicionado ao estoque'
+        });
+      }
+      
       // Gerar QR codes para o item apenas se quantidade > 0
       if (newItem.quantidade > 0) {
         const qrCodesData = generateQRCodeData(data, 'DESC', newItem.quantidade);
@@ -96,7 +110,7 @@ export function useDescartaveisData() {
       const currentItem = items.find(item => item.id === id);
       if (!currentItem) return;
 
-      const quantityIncrease = newQuantity - currentItem.quantidade;
+      const quantityDifference = newQuantity - currentItem.quantidade;
 
       const { error } = await supabase
         .from('descartaveis_items')
@@ -109,11 +123,23 @@ export function useDescartaveisData() {
         item.id === id ? { ...item, quantidade: newQuantity } : item
       ));
 
-      if (quantityIncrease > 0) {
+      // Registrar no histórico
+      if (quantityDifference !== 0) {
+        await addHistoricoItem({
+          item_nome: currentItem.nome,
+          quantidade: Math.abs(quantityDifference),
+          unidade: currentItem.unidade,
+          categoria: currentItem.categoria,
+          tipo: quantityDifference > 0 ? 'entrada' : 'saida',
+          observacoes: quantityDifference > 0 ? 'Quantidade aumentada' : 'Quantidade reduzida'
+        });
+      }
+
+      if (quantityDifference > 0) {
         const updatedItem = { ...currentItem, quantidade: newQuantity };
         setLastAddedItem(updatedItem);
         
-        const qrCodesData = generateQRCodeData(updatedItem, 'DESC', quantityIncrease);
+        const qrCodesData = generateQRCodeData(updatedItem, 'DESC', quantityDifference);
         setQrCodes(qrCodesData);
         
         setTimeout(() => {
@@ -132,6 +158,9 @@ export function useDescartaveisData() {
 
   const deleteItem = async (id: string) => {
     try {
+      const currentItem = items.find(item => item.id === id);
+      if (!currentItem) return;
+
       const { error } = await supabase
         .from('descartaveis_items')
         .delete()
@@ -140,6 +169,17 @@ export function useDescartaveisData() {
       if (error) throw error;
 
       setItems(prev => prev.filter(item => item.id !== id));
+      
+      // Registrar no histórico
+      await addHistoricoItem({
+        item_nome: currentItem.nome,
+        quantidade: currentItem.quantidade,
+        unidade: currentItem.unidade,
+        categoria: currentItem.categoria,
+        tipo: 'saida',
+        observacoes: 'Item removido do estoque'
+      });
+
       toast({
         title: "Item removido",
         description: "Item foi removido do estoque.",

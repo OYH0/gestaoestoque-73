@@ -23,34 +23,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    let authInitialized = false;
+    let refreshInterval: NodeJS.Timeout;
 
-    // Set up auth state listener with strict duplicate prevention
+    // Set up auth state listener - much simpler approach
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
         
         console.log('Auth state change:', event, session?.user?.email);
         
-        // Ignore duplicate TOKEN_REFRESHED events after initial setup
-        if (event === 'TOKEN_REFRESHED' && authInitialized) {
-          console.log('Ignoring duplicate TOKEN_REFRESHED event');
-          return;
-        }
-        
-        // Update state
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        
-        // Mark as initialized after first successful auth event
-        if (event !== 'INITIAL_SESSION') {
-          authInitialized = true;
+        // Only handle SIGNED_IN, SIGNED_OUT, and INITIAL_SESSION
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          
+          // Set up manual token refresh if user is signed in
+          if (session && mounted) {
+            setupTokenRefresh(session);
+          } else if (refreshInterval) {
+            clearInterval(refreshInterval);
+          }
         }
       }
     );
 
-    // Get initial session with minimal retry logic
+    // Manual token refresh function
+    const setupTokenRefresh = (currentSession: Session) => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+      
+      // Refresh token every 50 minutes (before the 60-minute expiry)
+      refreshInterval = setInterval(async () => {
+        if (!mounted) return;
+        
+        try {
+          console.log('Manual token refresh attempt');
+          const { data, error } = await supabase.auth.refreshSession(currentSession);
+          
+          if (error) {
+            console.error('Token refresh failed:', error);
+            // If refresh fails, sign out the user
+            if (mounted) {
+              await supabase.auth.signOut();
+            }
+          } else if (data.session && mounted) {
+            console.log('Token refreshed successfully');
+            setSession(data.session);
+            setUser(data.session.user);
+          }
+        } catch (error) {
+          console.error('Token refresh error:', error);
+          if (mounted) {
+            await supabase.auth.signOut();
+          }
+        }
+      }, 50 * 60 * 1000); // 50 minutes
+    };
+
+    // Get initial session
     const getInitialSession = async () => {
       if (!mounted) return;
       
@@ -59,7 +91,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (error) {
           console.error('Error getting session:', error);
-          // Don't retry on rate limit errors, just set loading to false
           if (mounted) {
             setLoading(false);
           }
@@ -70,7 +101,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
-          authInitialized = true;
+          
+          if (session) {
+            setupTokenRefresh(session);
+          }
         }
       } catch (error) {
         console.error('Session check failed:', error);
@@ -80,15 +114,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Delay initial session check to avoid conflicts
-    const timeoutId = setTimeout(() => {
-      getInitialSession();
-    }, 500);
+    // Get initial session immediately
+    getInitialSession();
 
     return () => {
       mounted = false;
-      authInitialized = false;
-      clearTimeout(timeoutId);
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
       subscription.unsubscribe();
     };
   }, []);

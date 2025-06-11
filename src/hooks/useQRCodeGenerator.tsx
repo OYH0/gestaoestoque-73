@@ -98,7 +98,7 @@ export function useQRCodeGenerator() {
       const qrSize = 55;
       const margin = 20;
       const spacingX = 25;
-      const spacingY = 35;
+      const spacingY = 40; // Aumentado para dar mais espaço ao texto
       const codesPerRow = 2;
       const rowsPerPage = 3;
       const codesPerPage = 6; // FIXO: 6 QR codes por página
@@ -153,18 +153,21 @@ export function useQRCodeGenerator() {
           // Adicionar QR code ao PDF
           pdf.addImage(qrCodeDataURL, 'PNG', x, y, qrSize, qrSize);
           
-          // Adicionar texto abaixo do QR code
-          pdf.setFontSize(7);
+          // Adicionar texto abaixo do QR code com formatação melhorada
           const textY = y + qrSize + 3;
           const maxTextWidth = qrSize;
           
-          // Nome (truncado se necessário)
-          const nameText = qrData.nome.length > 15 ? qrData.nome.substring(0, 15) + '...' : qrData.nome;
+          // Nome do produto - MAIS VISÍVEL
+          pdf.setFontSize(9); // Aumentado de 7 para 9
+          pdf.setFont('helvetica', 'bold'); // Negrito para destaque
+          const nameText = qrData.nome.length > 12 ? qrData.nome.substring(0, 12) + '...' : qrData.nome;
           pdf.text(nameText, x, textY, { maxWidth: maxTextWidth });
           
-          // ID (só os últimos caracteres)
+          // ID em fonte menor e normal
+          pdf.setFontSize(6);
+          pdf.setFont('helvetica', 'normal');
           const idText = `${qrData.id.slice(-10)}`;
-          pdf.text(idText, x, textY + 5, { maxWidth: maxTextWidth });
+          pdf.text(idText, x, textY + 6, { maxWidth: maxTextWidth });
           
           qrCodesProcessados++;
           console.log(`✅ QR code ${i + 1} INCLUÍDO COM SUCESSO no PDF (${qrCodesProcessados}/${qrCodes.length})`);

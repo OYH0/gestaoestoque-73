@@ -178,7 +178,11 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
               <div className="absolute inset-0 bg-gray-900 rounded-lg flex items-center justify-center">
                 <div className="text-center text-white p-4">
                   <div className="mb-4">{cameraError}</div>
-                  <Button onClick={startCamera} variant="outline" className="text-white border-white">
+                  <Button 
+                    onClick={startCamera} 
+                    variant="outline" 
+                    className="text-white border-white hover:bg-white hover:text-gray-900"
+                  >
                     Tentar Novamente
                   </Button>
                 </div>
@@ -201,7 +205,6 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
 
           {/* Botões de teste para demonstração */}
           <div className="space-y-2">
-            <div className="text-sm text-gray-600 text-center">Para teste, clique em um dos QR codes abaixo:</div>
             <div className="flex flex-col gap-2">
               {testQRCodes.map((qrCode, index) => (
                 <Button

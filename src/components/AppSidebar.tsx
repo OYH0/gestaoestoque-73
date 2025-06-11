@@ -54,12 +54,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0 w-full md:w-64 shadow-2xl">
-      <div className="bg-gradient-to-b from-churrasco-brown via-churrasco-red to-churrasco-brown h-full">
+      <div className="bg-churrasco-gradient h-full">
         <SidebarContent className="bg-transparent flex flex-col h-full">
           <div className="flex-1">
-            <SidebarGroup className="pt-4 md:pt-8 px-2 md:px-4">
-              <SidebarGroupLabel className="text-white font-bold text-lg md:text-xl mb-4 md:mb-8 px-0 text-left">
-                Gestão Financeira
+            <SidebarGroup className="pt-6 md:pt-8 px-3 md:px-4">
+              <SidebarGroupLabel className="text-white font-bold text-lg md:text-xl mb-6 md:mb-8 px-0 text-left">
+                Companhia do Churrasco
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1 md:space-y-2">
@@ -69,14 +69,14 @@ export function AppSidebar() {
                         <NavLink 
                           to={item.url} 
                           className={({ isActive }) => 
-                            `flex items-center gap-2 md:gap-3 w-full px-2 md:px-4 py-2 md:py-3 text-white/90 hover:bg-white/10 transition-all duration-200 font-medium text-sm md:text-base h-auto rounded-lg ${
+                            `flex items-center gap-3 md:gap-4 w-full px-3 md:px-4 py-3 md:py-4 text-white/90 hover:bg-white/10 transition-all duration-200 font-medium text-sm md:text-base h-auto rounded-xl ${
                               isActive 
-                                ? "bg-gradient-to-r from-churrasco-red to-churrasco-brown text-white shadow-lg border border-white/20" 
+                                ? "bg-white/20 text-white shadow-lg border border-white/30 backdrop-blur-sm" 
                                 : ""
                             }`
                           }
                         >
-                          <item.icon className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+                          <item.icon className="h-5 w-5 md:h-6 md:w-6 shrink-0" />
                           <span className="text-sm md:text-base truncate">{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>
@@ -87,23 +87,23 @@ export function AppSidebar() {
             </SidebarGroup>
           </div>
           
-          <SidebarFooter className="p-2 md:p-4 mt-auto">
-            <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4 px-1 md:px-2">
-              <Avatar className="h-6 w-6 md:h-8 md:w-8">
-                <AvatarFallback className="bg-white/20 text-white text-xs">
+          <SidebarFooter className="p-3 md:p-4 mt-auto">
+            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 px-1 md:px-2">
+              <Avatar className="h-8 w-8 md:h-10 md:w-10">
+                <AvatarFallback className="bg-white/20 text-white text-sm border border-white/30">
                   {user?.email?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-white/90 text-xs md:text-sm truncate">
+              <span className="text-white/90 text-xs md:text-sm truncate font-medium">
                 {user?.email || 'usuário'}
               </span>
             </div>
             
             <Button 
               onClick={handleSignOut}
-              className="w-full justify-start rounded-lg px-2 md:px-4 py-2 md:py-3 text-white bg-transparent border border-white/20 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium text-sm md:text-base h-auto"
+              className="w-full justify-start rounded-xl px-3 md:px-4 py-3 md:py-4 text-white bg-white/10 border border-white/20 hover:bg-white/20 hover:text-white transition-all duration-200 font-medium text-sm md:text-base h-auto backdrop-blur-sm"
             >
-              <LogOut className="h-4 w-4 md:h-5 md:w-5 shrink-0 mr-2 md:mr-3" />
+              <LogOut className="h-5 w-5 md:h-6 md:w-6 shrink-0 mr-2 md:mr-3" />
               <span className="text-sm md:text-base">Sair</span>
             </Button>
           </SidebarFooter>

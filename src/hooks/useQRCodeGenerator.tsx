@@ -20,23 +20,38 @@ export function useQRCodeGenerator() {
   };
 
   const generateQRCodeData = (item: any, tipo: 'CF' | 'ES' | 'DESC', quantidade: number): QRCodeData[] => {
+    console.log('=== INÍCIO generateQRCodeData ===');
+    console.log('Item recebido:', item);
+    console.log('Tipo:', tipo);
+    console.log('Quantidade solicitada:', quantidade);
+    
     const qrCodes: QRCodeData[] = [];
     
+    console.log('Iniciando loop para gerar QR codes...');
     for (let i = 1; i <= quantidade; i++) {
       const qrCodeId = generateQRCodeId(tipo, item.id, i);
-      qrCodes.push({
+      const qrCodeData = {
         id: qrCodeId,
         nome: item.nome,
         categoria: item.categoria,
         tipo,
         lote: `${new Date().toISOString().split('T')[0]}-${i.toString().padStart(3, '0')}`
-      });
+      };
+      
+      qrCodes.push(qrCodeData);
+      console.log(`QR Code ${i}/${quantidade} criado:`, qrCodeId);
     }
+    
+    console.log('Total de QR codes criados:', qrCodes.length);
+    console.log('=== FIM generateQRCodeData ===');
     
     return qrCodes;
   };
 
   const generateQRCodePDF = async (qrCodes: QRCodeData[]) => {
+    console.log('=== INÍCIO generateQRCodePDF ===');
+    console.log('QR codes recebidos para PDF:', qrCodes.length);
+    
     setIsGenerating(true);
     
     try {
@@ -52,6 +67,15 @@ export function useQRCodeGenerator() {
       const rowsPerPage = 5;
       const codesPerPage = codesPerRow * rowsPerPage;
       
+      console.log('Configurações do PDF:', {
+        qrSize,
+        margin,
+        spacing,
+        codesPerRow,
+        rowsPerPage,
+        codesPerPage
+      });
+      
       for (let i = 0; i < qrCodes.length; i++) {
         const qrData = qrCodes[i];
         const pageIndex = Math.floor(i / codesPerPage);
@@ -59,9 +83,12 @@ export function useQRCodeGenerator() {
         const row = Math.floor(indexInPage / codesPerRow);
         const col = indexInPage % codesPerRow;
         
+        console.log(`Processando QR code ${i + 1}/${qrCodes.length}:`, qrData.id);
+        
         // Adicionar nova página se necessário
         if (i > 0 && indexInPage === 0) {
           pdf.addPage();
+          console.log('Nova página adicionada');
         }
         
         const x = margin + col * (qrSize + spacing + 50);
@@ -86,6 +113,9 @@ export function useQRCodeGenerator() {
       // Salvar PDF
       const fileName = `qr-codes-${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
+      
+      console.log('PDF gerado com sucesso:', fileName);
+      console.log('=== FIM generateQRCodePDF ===');
       
       return { success: true, fileName };
     } catch (error) {

@@ -55,6 +55,9 @@ export function useCamaraFriaData() {
   const addItem = async (newItem: Omit<CamaraFriaItem, 'id'>) => {
     if (!user) return;
 
+    console.log('=== INÍCIO addItem ===');
+    console.log('Item a ser adicionado:', newItem);
+
     try {
       const { data, error } = await supabase
         .from('camara_fria_items')
@@ -64,14 +67,22 @@ export function useCamaraFriaData() {
 
       if (error) throw error;
       
+      console.log('Item salvo no banco:', data);
       setItems(prev => [...prev, data]);
       setLastAddedItem(data);
       
       // Gerar QR codes para o item apenas se quantidade > 0
       if (newItem.quantidade > 0) {
-        console.log('Gerando QR codes para quantidade:', newItem.quantidade);
+        console.log('=== GERAÇÃO DE QR CODES ===');
+        console.log('Quantidade original do item:', newItem.quantidade);
+        console.log('Quantidade do item salvo no banco:', data.quantidade);
+        console.log('Chamando generateQRCodeData com quantidade:', newItem.quantidade);
+        
         const qrCodesData = generateQRCodeData(data, 'CF', newItem.quantidade);
-        console.log('QR codes gerados:', qrCodesData.length);
+        
+        console.log('QR codes retornados pela função:', qrCodesData.length);
+        console.log('Primeiros 3 QR codes gerados:', qrCodesData.slice(0, 3));
+        
         setQrCodes(qrCodesData);
         
         setTimeout(() => {
@@ -85,6 +96,8 @@ export function useCamaraFriaData() {
           ? `${newItem.nome} foi adicionado ao estoque! ${newItem.quantidade} QR codes serão gerados.`
           : `${newItem.nome} foi adicionado ao estoque!`,
       });
+      
+      console.log('=== FIM addItem ===');
     } catch (error) {
       console.error('Error adding item:', error);
       toast({
@@ -101,6 +114,11 @@ export function useCamaraFriaData() {
       if (!currentItem) return;
 
       const quantityIncrease = newQuantity - currentItem.quantidade;
+
+      console.log('=== updateItemQuantity ===');
+      console.log('Quantidade atual:', currentItem.quantidade);
+      console.log('Nova quantidade:', newQuantity);
+      console.log('Aumento de quantidade:', quantityIncrease);
 
       const { error } = await supabase
         .from('camara_fria_items')

@@ -3,93 +3,106 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* Modern Design System - Professional & Clean */
 
 @layer base {
   :root {
-    --background: 44 21% 97%;
-    --foreground: 25 25% 15%;
+    /* Modern neutral palette */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
 
-    --card: 44 21% 97%;
-    --card-foreground: 25 25% 15%;
+    /* Card backgrounds */
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
 
-    --popover: 44 21% 97%;
-    --popover-foreground: 25 25% 15%;
+    /* Popover backgrounds */
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
 
-    --primary: 14 85% 45%;
-    --primary-foreground: 44 21% 97%;
+    /* Modern primary - sophisticated blue */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 33 45% 90%;
-    --secondary-foreground: 25 25% 15%;
+    /* Clean secondary */
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    --muted: 33 35% 92%;
-    --muted-foreground: 25 15% 45%;
+    /* Subtle muted tones */
+    --muted: 210 40% 98%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 14 85% 45%;
-    --accent-foreground: 44 21% 97%;
+    /* Modern accent */
+    --accent: 210 40% 98%;
+    --accent-foreground: 222.2 84% 4.9%;
 
+    /* Refined destructive */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 33 25% 85%;
-    --input: 33 25% 85%;
-    --ring: 14 85% 45%;
+    /* Clean borders */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 53%;
 
-    --radius: 0.5rem;
+    /* Modern radius */
+    --radius: 0.75rem;
 
-    --sidebar-background: 25 35% 8%;
-    --sidebar-foreground: 33 45% 88%;
-    --sidebar-primary: 14 85% 45%;
-    --sidebar-primary-foreground: 44 21% 97%;
-    --sidebar-accent: 25 30% 15%;
-    --sidebar-accent-foreground: 33 45% 88%;
-    --sidebar-border: 25 25% 20%;
-    --sidebar-ring: 14 85% 45%;
+    /* Enhanced sidebar theme */
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 221 83% 53%;
 
-    /* Companhia do Churrasco custom colors */
-    --churrasco-brown: 25 45% 25%;
-    --churrasco-red: 14 85% 45%;
-    --churrasco-orange: 25 85% 55%;
-    --churrasco-cream: 44 35% 95%;
-    --churrasco-dark: 25 35% 8%;
+    /* Custom brand colors */
+    --brand-primary: 221 83% 53%;
+    --brand-secondary: 262 83% 58%;
+    --brand-accent: 142 71% 45%;
+    --brand-warning: 38 92% 50%;
+    --brand-success: 142 71% 45%;
+    --brand-gray: 215 16% 47%;
   }
 
   .dark {
-    --background: 25 35% 8%;
-    --foreground: 33 45% 88%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
 
-    --card: 25 35% 8%;
-    --card-foreground: 33 45% 88%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 25 35% 8%;
-    --popover-foreground: 33 45% 88%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 14 85% 45%;
-    --primary-foreground: 44 21% 97%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 25 30% 15%;
-    --secondary-foreground: 33 45% 88%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 25 30% 15%;
-    --muted-foreground: 33 25% 65%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --accent: 25 30% 15%;
-    --accent-foreground: 33 45% 88%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 25 25% 20%;
-    --input: 25 25% 20%;
-    --ring: 14 85% 45%;
-    --sidebar-background: 25 35% 8%;
-    --sidebar-foreground: 33 45% 88%;
-    --sidebar-primary: 14 85% 45%;
-    --sidebar-primary-foreground: 44 21% 97%;
-    --sidebar-accent: 25 30% 15%;
-    --sidebar-accent-foreground: 33 45% 88%;
-    --sidebar-border: 25 25% 20%;
-    --sidebar-ring: 14 85% 45%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 221 83% 53%;
+
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 221 83% 53%;
   }
 }
 
@@ -99,35 +112,89 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl lg:text-5xl;
+  }
+
+  h2 {
+    @apply text-3xl lg:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl lg:text-3xl;
   }
 }
 
 @layer utilities {
-  .bg-grid-pattern {
+  /* Modern gradient backgrounds */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-secondary)));
+  }
+
+  .bg-gradient-secondary {
+    background: linear-gradient(135deg, hsl(var(--muted)), hsl(var(--background)));
+  }
+
+  .bg-gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--brand-accent)), hsl(var(--brand-primary)));
+  }
+
+  /* Glass effect */
+  .glass-effect {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+
+  /* Modern shadows */
+  .shadow-modern {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+
+  .shadow-modern-lg {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+
+  /* Subtle patterns */
+  .bg-dot-pattern {
+    background-image: radial-gradient(circle, hsl(var(--muted-foreground) / 0.15) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .bg-grid-subtle {
     background-image: 
-      linear-gradient(rgba(139, 69, 19, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(139, 69, 19, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
+      linear-gradient(hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
-  .bg-churrasco-gradient {
-    background: linear-gradient(135deg, hsl(var(--churrasco-brown)), hsl(var(--churrasco-red)));
+  /* Brand color utilities */
+  .text-brand-primary {
+    color: hsl(var(--brand-primary));
   }
 
-  .text-churrasco-red {
-    color: hsl(var(--churrasco-red));
+  .text-brand-secondary {
+    color: hsl(var(--brand-secondary));
   }
 
-  .text-churrasco-brown {
-    color: hsl(var(--churrasco-brown));
+  .text-brand-accent {
+    color: hsl(var(--brand-accent));
   }
 
-  .bg-churrasco-red {
-    background-color: hsl(var(--churrasco-red));
+  .bg-brand-primary {
+    background-color: hsl(var(--brand-primary));
   }
 
-  .bg-churrasco-brown {
-    background-color: hsl(var(--churrasco-brown));
+  .bg-brand-secondary {
+    background-color: hsl(var(--brand-secondary));
+  }
+
+  .bg-brand-accent {
+    background-color: hsl(var(--brand-accent));
   }
 }

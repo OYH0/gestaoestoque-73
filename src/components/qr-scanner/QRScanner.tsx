@@ -21,13 +21,6 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
 
-  // Lista de QR codes de teste para demonstração
-  const testQRCodes = [
-    'CF-12345-ABC123-001',
-    'ES-67890-DEF456-002', 
-    'DESC-11111-GHI789-003'
-  ];
-
   const startCamera = async () => {
     try {
       setCameraError(null);
@@ -69,7 +62,7 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
 
     } catch (error) {
       console.error('Erro ao iniciar scanner:', error);
-      setCameraError('Não foi possível acessar a câmera. Verifique as permissões ou use os códigos de teste abaixo.');
+      setCameraError('Não foi possível acessar a câmera. Verifique as permissões.');
       setHasCamera(false);
     }
   };
@@ -135,10 +128,6 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
       }
     }
   };
-
-  const handleTestQRCode = async (qrCode: string) => {
-    await handleQRCodeDetected(qrCode);
-  };
   
   const handleClose = () => {
     stopCamera();
@@ -201,24 +190,6 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
                 )}
               </div>
             )}
-          </div>
-
-          {/* Botões de teste para demonstração */}
-          <div className="space-y-2">
-            <div className="flex flex-col gap-2">
-              {testQRCodes.map((qrCode, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleTestQRCode(qrCode)}
-                  disabled={isProcessing}
-                  className="text-xs"
-                >
-                  {qrCode}
-                </Button>
-              ))}
-            </div>
           </div>
 
           <div className="text-xs text-gray-500 text-center">

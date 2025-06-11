@@ -5,10 +5,10 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Header } from '@/components/Header';
 import { Dashboard } from '@/components/Dashboard';
-import CamaraFria from '@/components/CamaraFria';
+import { CamaraFria } from '@/components/CamaraFria';
 import { CamaraRefrigerada } from '@/components/CamaraRefrigerada';
-import EstoqueSeco from '@/components/EstoqueSeco';
-import Descartaveis from '@/components/Descartaveis';
+import { EstoqueSeco } from '@/components/EstoqueSeco';
+import { Descartaveis } from '@/components/Descartaveis';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useIsMobile } from '@/hooks/use-mobile';
 

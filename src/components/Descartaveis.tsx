@@ -5,9 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useDescartaveisData } from '@/hooks/useDescartaveisData';
 import { useDescartaveisHistorico } from '@/hooks/useDescartaveisHistorico';
-import { DescartaveisFilters } from '@/components/descartaveis/DescartaveisFilters';
 import { DescartaveisHistoryDialog } from '@/components/descartaveis/DescartaveisHistoryDialog';
-import { DescartaveisAlerts } from '@/components/descartaveis/DescartaveisAlerts';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 
 export default function Descartaveis() {
@@ -51,13 +49,25 @@ export default function Descartaveis() {
       </div>
       
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <DescartaveisFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          filterCategory={filterCategory}
-          setFilterCategory={setFilterCategory}
-          items={items}
-        />
+        <div className="flex gap-4 items-center">
+          <input
+            type="text"
+            placeholder="Buscar descartáveis..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-4 py-2 border rounded-lg"
+          />
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="px-4 py-2 border rounded-lg"
+          >
+            <option value="todas">Todas as categorias</option>
+            {Array.from(new Set(items.map(item => item.categoria))).map(categoria => (
+              <option key={categoria} value={categoria}>{categoria}</option>
+            ))}
+          </select>
+        </div>
         
         <div className="flex flex-wrap gap-2">
           <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
@@ -80,8 +90,6 @@ export default function Descartaveis() {
           </Button>
         </div>
       </div>
-
-      <DescartaveisAlerts items={items} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredItems.map((item) => (
@@ -122,7 +130,14 @@ export default function Descartaveis() {
       )}
 
       {showScanner && (
-        <QRScanner onClose={() => setShowScanner(false)} />
+        <QRScanner 
+          isOpen={showScanner}
+          onClose={() => setShowScanner(false)}
+          onSuccess={(data) => {
+            console.log('QR Code scanned:', data);
+            setShowScanner(false);
+          }}
+        />
       )}
     </div>
   );

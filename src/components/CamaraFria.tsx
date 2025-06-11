@@ -1,15 +1,12 @@
+
 import React, { useState } from 'react';
 import { Plus, History, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
-import { CamaraFriaHeader } from '@/components/camara-fria/CamaraFriaHeader';
-import { CamaraFriaFilters } from '@/components/camara-fria/CamaraFriaFilters';
-import { CamaraFriaItemCard } from '@/components/camara-fria/CamaraFriaItemCard';
 import { CamaraFriaAddDialog } from '@/components/camara-fria/CamaraFriaAddDialog';
 import { CamaraFriaHistoryDialog } from '@/components/camara-fria/CamaraFriaHistoryDialog';
-import { CamaraFriaAlerts } from '@/components/camara-fria/CamaraFriaAlerts';
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 
@@ -66,16 +63,33 @@ export default function CamaraFria() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <CamaraFriaHeader />
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-blue-100 rounded-lg">
+          <Plus className="h-6 w-6 text-blue-600" />
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Câmara Fria</h1>
+      </div>
       
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <CamaraFriaFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          filterCategory={filterCategory}
-          setFilterCategory={setFilterCategory}
-          items={items}
-        />
+        <div className="flex gap-4 items-center">
+          <input
+            type="text"
+            placeholder="Buscar carnes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-4 py-2 border rounded-lg"
+          />
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="px-4 py-2 border rounded-lg"
+          >
+            <option value="todas">Todas as categorias</option>
+            {Array.from(new Set(items.map(item => item.categoria))).map(categoria => (
+              <option key={categoria} value={categoria}>{categoria}</option>
+            ))}
+          </select>
+        </div>
         
         <div className="flex flex-wrap gap-2">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -109,16 +123,37 @@ export default function CamaraFria() {
         </div>
       </div>
 
-      <CamaraFriaAlerts items={items} />
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredItems.map((item) => (
-          <CamaraFriaItemCard
-            key={item.id}
-            item={item}
-            onUpdateQuantity={handleUpdateQuantity}
-            onDelete={deleteItem}
-          />
+          <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="font-semibold text-gray-900 text-sm">{item.nome}</h3>
+              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                {item.categoria}
+              </span>
+            </div>
+            
+            <div className="space-y-2 text-sm text-gray-600">
+              <div className="flex justify-between">
+                <span>Quantidade:</span>
+                <span className="font-medium">{item.quantidade} {item.unidade}</span>
+              </div>
+              
+              {item.data_validade && (
+                <div className="flex justify-between">
+                  <span>Validade:</span>
+                  <span>{new Date(item.data_validade).toLocaleDateString('pt-BR')}</span>
+                </div>
+              )}
+              
+              {item.fornecedor && (
+                <div className="flex justify-between">
+                  <span>Fornecedor:</span>
+                  <span>{item.fornecedor}</span>
+                </div>
+              )}
+            </div>
+          </div>
         ))}
       </div>
 
@@ -130,6 +165,7 @@ export default function CamaraFria() {
 
       {showQRGenerator && qrCodes.length > 0 && (
         <QRCodeGenerator
+          isOpen={showQRGenerator}
           qrCodes={qrCodes}
           onClose={() => setShowQRGenerator(false)}
           itemName={lastAddedItem?.nome || ''}
@@ -137,7 +173,14 @@ export default function CamaraFria() {
       )}
 
       {showScanner && (
-        <QRScanner onClose={() => setShowScanner(false)} />
+        <QRScanner 
+          isOpen={showScanner}
+          onClose={() => setShowScanner(false)}
+          onSuccess={(data) => {
+            console.log('QR Code scanned:', data);
+            setShowScanner(false);
+          }}
+        />
       )}
     </div>
   );

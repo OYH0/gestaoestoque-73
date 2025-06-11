@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -67,7 +68,7 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-center md:justify-end">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CheckCircle className="w-4 h-4 text-green-500" />
           Sistema atualizado

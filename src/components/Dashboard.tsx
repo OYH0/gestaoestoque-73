@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -92,22 +91,38 @@ export function Dashboard() {
             <div className="h-80">
               {meatTypesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={meatTypesData} margin={{ bottom: 80 }}>
+                  <BarChart 
+                    data={meatTypesData} 
+                    margin={{ 
+                      top: 20, 
+                      right: 30, 
+                      left: 20, 
+                      bottom: 60 
+                    }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis 
                       dataKey="tipo" 
                       stroke="#888" 
                       angle={-45}
                       textAnchor="end"
-                      height={80}
+                      height={60}
                       fontSize={10}
+                      interval={0}
                     />
-                    <YAxis stroke="#888" />
+                    <YAxis 
+                      stroke="#888"
+                      width={40}
+                    />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}
                       labelFormatter={(label) => `Carne: ${label}`}
                     />
-                    <Bar dataKey="quantidade" radius={[4, 4, 0, 0]}>
+                    <Bar 
+                      dataKey="quantidade" 
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={60}
+                    >
                       {meatTypesData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}

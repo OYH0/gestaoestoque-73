@@ -23,105 +23,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    let retryTimeout: NodeJS.Timeout;
-    let refreshing = false; // Prevent multiple simultaneous refresh attempts
+    let authInitialized = false;
 
-    // Set up auth state listener with improved rate limit handling
+    // Set up auth state listener with strict duplicate prevention
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!mounted) return;
         
         console.log('Auth state change:', event, session?.user?.email);
         
-        // Handle rate limiting gracefully
-        if (event === 'TOKEN_REFRESHED' && refreshing) {
-          console.log('Token refresh already in progress, ignoring duplicate');
+        // Ignore duplicate TOKEN_REFRESHED events after initial setup
+        if (event === 'TOKEN_REFRESHED' && authInitialized) {
+          console.log('Ignoring duplicate TOKEN_REFRESHED event');
           return;
         }
         
-        // Clear any existing retry timeout
-        if (retryTimeout) {
-          clearTimeout(retryTimeout);
-        }
-        
-        // Update state immediately for valid sessions
-        if (session) {
-          setSession(session);
-          setUser(session.user);
-        } else {
-          setSession(null);
-          setUser(null);
-        }
-        
+        // Update state
+        setSession(session);
+        setUser(session?.user ?? null);
         setLoading(false);
-        refreshing = false;
+        
+        // Mark as initialized after first successful auth event
+        if (event !== 'INITIAL_SESSION') {
+          authInitialized = true;
+        }
       }
     );
 
-    // Get initial session with conservative retry logic
-    const getInitialSession = async (retryCount = 0) => {
-      if (!mounted || refreshing) return;
-      
-      refreshing = true;
+    // Get initial session with minimal retry logic
+    const getInitialSession = async () => {
+      if (!mounted) return;
       
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error getting session:', error);
-          
-          // Handle rate limiting with exponential backoff (max 3 retries)
-          if ((error.message?.includes('rate limit') || error.message?.includes('429')) && retryCount < 3) {
-            const delay = Math.min(2000 * Math.pow(2, retryCount), 10000); // Max 10 seconds
-            console.log(`Rate limited - retrying in ${delay}ms (attempt ${retryCount + 1})`);
-            
-            if (mounted) {
-              retryTimeout = setTimeout(() => {
-                getInitialSession(retryCount + 1);
-              }, delay);
-            }
-            return;
-          } else {
-            // For other errors or max retries reached, stop trying
-            console.log('Stopping session check due to persistent errors');
-            if (mounted) {
-              setLoading(false);
-            }
+          // Don't retry on rate limit errors, just set loading to false
+          if (mounted) {
+            setLoading(false);
           }
+          return;
         }
         
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
+          authInitialized = true;
         }
       } catch (error) {
         console.error('Session check failed:', error);
-        if (mounted && retryCount < 2) {
-          // Only retry network errors twice
-          const delay = 3000;
-          retryTimeout = setTimeout(() => {
-            getInitialSession(retryCount + 1);
-          }, delay);
-        } else {
+        if (mounted) {
           setLoading(false);
         }
-      } finally {
-        refreshing = false;
       }
     };
 
-    // Initial session check with delay to prevent immediate rate limiting
-    setTimeout(() => {
+    // Delay initial session check to avoid conflicts
+    const timeoutId = setTimeout(() => {
       getInitialSession();
-    }, 100);
+    }, 500);
 
     return () => {
       mounted = false;
-      refreshing = false;
-      if (retryTimeout) {
-        clearTimeout(retryTimeout);
-      }
+      authInitialized = false;
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);

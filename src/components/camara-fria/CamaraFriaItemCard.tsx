@@ -46,7 +46,7 @@ export function CamaraFriaItemCard({
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
       <CardContent className="p-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export function CamaraFriaItemCard({
             </div>
           </div>
 
-          <div className={`flex ${isMobile ? 'justify-center' : 'justify-end'}`}>
+          <div className="flex flex-col gap-2">
             {isEditing ? (
               <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap justify-center">
                 <Button
@@ -144,38 +144,35 @@ export function CamaraFriaItemCard({
                 </Button>
               </div>
             ) : (
-              <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} gap-2 ${isMobile ? 'w-full items-center' : 'w-full sm:w-auto'}`}>
+              <>
                 <Button
-                  size="sm"
                   variant="outline"
                   onClick={() => onStartEdit(item.id, item.quantidade)}
-                  className="text-xs h-8 px-2 sm:px-3"
+                  className="w-full"
                 >
-                  <span className="hidden sm:inline">Ajustar Estoque</span>
-                  <span className="sm:hidden">Ajustar</span>
+                  Ajustar
                 </Button>
+                
                 {item.quantidade > 0 && (
                   <Button
-                    size="sm"
                     onClick={() => onStartThaw(item.id, 1)}
-                    className="bg-orange-500 hover:bg-orange-600 text-xs h-8 px-2 sm:px-3"
+                    className="bg-orange-500 hover:bg-orange-600 w-full"
                   >
-                    <span className="hidden sm:inline">Descongelar</span>
-                    <span className="sm:hidden">Desc.</span>
+                    Desc.
                   </Button>
                 )}
+                
                 {onDelete && (
                   <Button
-                    size="sm"
                     variant="destructive"
                     onClick={() => onDelete(item.id)}
-                    className="text-xs h-8 px-2 sm:px-3"
+                    className="w-full"
                   >
-                    <Trash2 className="w-3 h-3 sm:mr-1" />
-                    <span className="hidden sm:inline">Remover</span>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remover
                   </Button>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>

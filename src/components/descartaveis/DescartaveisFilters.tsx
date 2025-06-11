@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -34,19 +35,23 @@ export function DescartaveisFilters({
         />
       </div>
       
-      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
-        {categorias.map((categoria) => (
-          <Button
-            key={categoria}
-            variant={categoriaFiltro === categoria ? "default" : "outline"}
-            size="sm"
-            onClick={() => setCategoriaFiltro(categoria)}
-            className={`text-xs ${categoriaFiltro === categoria ? 'bg-green-500 hover:bg-green-600' : ''}`}
-          >
-            {categoria}
-          </Button>
-        ))}
-      </div>
+      <Card>
+        <CardContent className="p-4">
+          <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+            {categorias.map((categoria) => (
+              <Button
+                key={categoria}
+                variant={categoriaFiltro === categoria ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCategoriaFiltro(categoria)}
+                className={`text-xs ${categoriaFiltro === categoria ? 'bg-green-500 hover:bg-green-600' : ''}`}
+              >
+                {categoria}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

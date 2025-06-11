@@ -43,6 +43,7 @@ export function useQRCodeGenerator() {
     }
     
     console.log('Total de QR codes criados:', qrCodes.length);
+    console.log('Lista completa de QR codes:', qrCodes);
     console.log('=== FIM generateQRCodeData ===');
     
     return qrCodes;
@@ -51,6 +52,7 @@ export function useQRCodeGenerator() {
   const generateQRCodePDF = async (qrCodes: QRCodeData[]) => {
     console.log('=== INÍCIO generateQRCodePDF ===');
     console.log('QR codes recebidos para PDF:', qrCodes.length);
+    console.log('Todos os QR codes que serão processados:', qrCodes.map(qr => qr.nome));
     
     setIsGenerating(true);
     
@@ -59,21 +61,23 @@ export function useQRCodeGenerator() {
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       
-      // 2 QR codes por linha, 5 linhas por página = 10 QR codes por página
-      const qrSize = 60;
-      const margin = 20;
-      const spacing = 10;
-      const codesPerRow = 2;
-      const rowsPerPage = 5;
+      // Ajustando para 3 QR codes por linha, 6 linhas por página = 18 QR codes por página
+      const qrSize = 50;
+      const margin = 15;
+      const spacing = 8;
+      const codesPerRow = 3;
+      const rowsPerPage = 6;
       const codesPerPage = codesPerRow * rowsPerPage;
       
-      console.log('Configurações do PDF:', {
+      console.log('Configurações do PDF ajustadas:', {
         qrSize,
         margin,
         spacing,
         codesPerRow,
         rowsPerPage,
-        codesPerPage
+        codesPerPage,
+        totalQRCodes: qrCodes.length,
+        totalPaginas: Math.ceil(qrCodes.length / codesPerPage)
       });
       
       for (let i = 0; i < qrCodes.length; i++) {
@@ -83,16 +87,16 @@ export function useQRCodeGenerator() {
         const row = Math.floor(indexInPage / codesPerRow);
         const col = indexInPage % codesPerRow;
         
-        console.log(`Processando QR code ${i + 1}/${qrCodes.length}:`, qrData.id, 'Nome:', qrData.nome);
+        console.log(`Processando QR code ${i + 1}/${qrCodes.length}:`, qrData.id, 'Nome:', qrData.nome, `Página: ${pageIndex + 1}, Linha: ${row + 1}, Coluna: ${col + 1}`);
         
         // Adicionar nova página se necessário
         if (i > 0 && indexInPage === 0) {
           pdf.addPage();
-          console.log('Nova página adicionada');
+          console.log(`Nova página ${pageIndex + 1} adicionada para QR code ${i + 1}`);
         }
         
-        const x = margin + col * (qrSize + spacing + 50);
-        const y = margin + row * (qrSize + spacing + 30);
+        const x = margin + col * (qrSize + spacing + 15);
+        const y = margin + row * (qrSize + spacing + 25);
         
         // Gerar QR code como base64
         const qrCodeDataURL = await QRCode.toDataURL(qrData.id, {
@@ -103,11 +107,11 @@ export function useQRCodeGenerator() {
         // Adicionar QR code ao PDF
         pdf.addImage(qrCodeDataURL, 'PNG', x, y, qrSize, qrSize);
         
-        // Adicionar texto abaixo do QR code
-        pdf.setFontSize(8);
-        pdf.text(`${qrData.nome}`, x, y + qrSize + 5, { maxWidth: qrSize });
-        pdf.text(`ID: ${qrData.id}`, x, y + qrSize + 12, { maxWidth: qrSize });
-        pdf.text(`Lote: ${qrData.lote}`, x, y + qrSize + 19, { maxWidth: qrSize });
+        // Adicionar texto abaixo do QR code com fonte menor
+        pdf.setFontSize(7);
+        pdf.text(`${qrData.nome}`, x, y + qrSize + 4, { maxWidth: qrSize });
+        pdf.text(`ID: ${qrData.id}`, x, y + qrSize + 10, { maxWidth: qrSize });
+        pdf.text(`Lote: ${qrData.lote}`, x, y + qrSize + 16, { maxWidth: qrSize });
       }
       
       // Salvar PDF
@@ -115,6 +119,7 @@ export function useQRCodeGenerator() {
       pdf.save(fileName);
       
       console.log('PDF gerado com sucesso:', fileName);
+      console.log('Total de QR codes incluídos no PDF:', qrCodes.length);
       console.log('=== FIM generateQRCodePDF ===');
       
       return { success: true, fileName };

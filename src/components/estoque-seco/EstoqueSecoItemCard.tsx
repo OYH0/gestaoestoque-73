@@ -2,9 +2,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Save, X } from 'lucide-react';
+import { Minus, Plus, Check, X, Trash2 } from 'lucide-react';
 import { EstoqueSecoItem } from '@/hooks/useEstoqueSecoData';
 
 interface EstoqueSecoItemCardProps {
@@ -15,28 +14,37 @@ interface EstoqueSecoItemCardProps {
 
 export function EstoqueSecoItemCard({ item, onUpdateQuantity, onDelete }: EstoqueSecoItemCardProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editQuantity, setEditQuantity] = useState(item.quantidade);
+  const [editValue, setEditValue] = useState(item.quantidade);
 
-  const handleSave = () => {
-    onUpdateQuantity(item.id, editQuantity);
+  const handleStartEdit = () => {
+    setEditValue(item.quantidade);
+    setIsEditing(true);
+  };
+
+  const handleUpdateEdit = (delta: number) => {
+    setEditValue(prev => Math.max(0, prev + delta));
+  };
+
+  const handleConfirmChange = () => {
+    onUpdateQuantity(item.id, editValue);
     setIsEditing(false);
   };
 
-  const handleCancel = () => {
-    setEditQuantity(item.quantidade);
+  const handleCancelEdit = () => {
+    setEditValue(item.quantidade);
     setIsEditing(false);
   };
 
   const isLowStock = item.minimo && item.quantidade <= item.minimo;
 
   return (
-    <Card className={`${isLowStock ? 'border-red-200 bg-red-50' : 'bg-white'} shadow border`}>
+    <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-3 mb-2">
               <h3 className="font-semibold text-lg">{item.nome}</h3>
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant={isLowStock ? "destructive" : "secondary"}>
                 {item.categoria}
               </Badge>
               {isLowStock && (
@@ -46,31 +54,13 @@ export function EstoqueSecoItemCard({ item, onUpdateQuantity, onDelete }: Estoqu
               )}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <span>Quantidade:</span>
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={editQuantity}
-                    onChange={(e) => setEditQuantity(Number(e.target.value))}
-                    className="w-20 h-8 text-sm"
-                  />
-                ) : (
-                  <span className="font-medium">{item.quantidade} {item.unidade}</span>
-                )}
-              </div>
-              
-              <span>
-                Mínimo: <span className="font-medium">{item.minimo || 5} {item.unidade}</span>
-              </span>
-              
+            <div className="space-y-1 text-sm text-gray-600">
+              <p>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></p>
+              <p>Mínimo: <span className="font-medium">{item.minimo || 5} {item.unidade}</span></p>
               {item.data_validade && (
-                <span>
-                  Validade: <span className="font-medium">
-                    {new Date(item.data_validade).toLocaleDateString('pt-BR')}
-                  </span>
-                </span>
+                <p>Validade: <span className="font-medium">
+                  {new Date(item.data_validade).toLocaleDateString('pt-BR')}
+                </span></p>
               )}
             </div>
 
@@ -81,43 +71,58 @@ export function EstoqueSecoItemCard({ item, onUpdateQuantity, onDelete }: Estoqu
 
           <div className="flex gap-2 ml-4">
             {isEditing ? (
-              <>
+              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg">
                 <Button
-                  variant="outline"
                   size="sm"
-                  onClick={handleSave}
-                  className="text-green-600 border-green-200 hover:bg-green-50"
+                  variant="outline"
+                  onClick={() => handleUpdateEdit(-1)}
+                  disabled={editValue <= 0}
                 >
-                  <Save className="w-4 h-4" />
+                  <Minus className="w-4 h-4" />
+                </Button>
+                <span className="font-medium min-w-12 text-center">{editValue}</span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleUpdateEdit(1)}
+                >
+                  <Plus className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant="outline"
                   size="sm"
-                  onClick={handleCancel}
-                  className="text-gray-600"
+                  onClick={handleConfirmChange}
+                  className="bg-green-500 hover:bg-green-600"
+                >
+                  <Check className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCancelEdit}
                 >
                   <X className="w-4 h-4" />
                 </Button>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="flex gap-2">
                 <Button
-                  variant="outline"
                   size="sm"
-                  onClick={() => setIsEditing(true)}
-                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  variant="outline"
+                  onClick={handleStartEdit}
+                  className="text-xs whitespace-nowrap"
                 >
-                  <Edit className="w-4 h-4" />
+                  Ajustar Estoque
                 </Button>
                 <Button
-                  variant="outline"
                   size="sm"
+                  variant="destructive"
                   onClick={() => onDelete(item.id)}
-                  className="text-red-600 border-red-200 hover:bg-red-50"
+                  className="text-xs"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3 h-3 mr-1" />
+                  Remover
                 </Button>
-              </>
+              </div>
             )}
           </div>
         </div>

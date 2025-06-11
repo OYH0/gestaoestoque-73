@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Minus, Plus, Check, X, Trash2 } from 'lucide-react';
 import { DescartaveisItem } from '@/hooks/useDescartaveisData';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DescartaveisItemCardProps {
   item: DescartaveisItem;
@@ -16,7 +15,6 @@ interface DescartaveisItemCardProps {
 export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: DescartaveisItemCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.quantidade);
-  const isMobile = useIsMobile();
 
   const handleStartEdit = () => {
     setEditValue(item.quantidade);
@@ -66,9 +64,9 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
             )}
           </div>
 
-          <div className={`flex ${isMobile ? 'justify-center' : 'justify-end'}`}>
+          <div className="flex justify-end">
             {isEditing ? (
-              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap justify-center">
+              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap">
                 <Button
                   size="sm"
                   variant="outline"
@@ -104,7 +102,7 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
                 </Button>
               </div>
             ) : (
-              <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} gap-2 ${isMobile ? 'w-full items-center' : 'w-full sm:w-auto'}`}>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Button
                   size="sm"
                   variant="outline"

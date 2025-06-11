@@ -13,7 +13,6 @@ import { EstoqueSecoAddDialog } from '@/components/estoque-seco/EstoqueSecoAddDi
 import { EstoqueSecoItemCard } from '@/components/estoque-seco/EstoqueSecoItemCard';
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function EstoqueSeco() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, fetchItems } = useEstoqueSecoData();
@@ -30,7 +29,6 @@ export default function EstoqueSeco() {
     categoria: '',
     minimo: 0
   });
-  const isMobile = useIsMobile();
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -88,17 +86,15 @@ export default function EstoqueSeco() {
         items={items}
       />
 
-      <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-fit text-green-600 border-green-200 hover:bg-green-50"
-          onClick={() => setShowQRScanner(true)}
-        >
-          <QrCode className="w-4 h-4 mr-2" />
-          Escanear QR Code
-        </Button>
-      </div>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="w-fit text-green-600 border-green-200 hover:bg-green-50"
+        onClick={() => setShowQRScanner(true)}
+      >
+        <QrCode className="w-4 h-4 mr-2" />
+        Escanear QR Code
+      </Button>
 
       <EstoqueSecoFilters
         categorias={categories}

@@ -13,7 +13,6 @@ import { DescartaveisAddDialog } from '@/components/descartaveis/DescartaveisAdd
 import { DescartaveisItemCard } from '@/components/descartaveis/DescartaveisItemCard';
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function Descartaveis() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, fetchItems } = useDescartaveisData();
@@ -30,7 +29,6 @@ export default function Descartaveis() {
     categoria: '',
     minimo: 0
   });
-  const isMobile = useIsMobile();
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -88,17 +86,15 @@ export default function Descartaveis() {
         items={items}
       />
 
-      <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-fit text-green-600 border-green-200 hover:bg-green-50"
-          onClick={() => setShowQRScanner(true)}
-        >
-          <QrCode className="w-4 h-4 mr-2" />
-          Escanear QR Code
-        </Button>
-      </div>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="w-fit text-green-600 border-green-200 hover:bg-green-50"
+        onClick={() => setShowQRScanner(true)}
+      >
+        <QrCode className="w-4 h-4 mr-2" />
+        Escanear QR Code
+      </Button>
 
       <DescartaveisFilters
         categorias={categories}

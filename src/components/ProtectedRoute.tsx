@@ -10,6 +10,8 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
 
+  console.log('ProtectedRoute - loading:', loading, 'user:', user);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-churrasco-cream via-background to-churrasco-cream/50">
@@ -22,8 +24,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!user) {
+    console.log('No user found, showing login');
     return <Login />;
   }
 
+  console.log('User authenticated, showing protected content');
   return <>{children}</>;
 }

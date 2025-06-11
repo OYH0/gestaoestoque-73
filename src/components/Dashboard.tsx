@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Snowflake, Thermometer, Package, Trash2, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
@@ -53,39 +52,6 @@ export function Dashboard() {
   
   const temAlertas = carnesBaixoEstoque.length > 0 || estoqueBaixo.length > 0;
 
-  const statsCards = [
-    {
-      title: 'Câmara Fria',
-      value: camaraFriaItems.length.toString(),
-      description: 'Produtos armazenados',
-      icon: Snowflake,
-      progress: Math.min(100, (camaraFriaItems.length / 20) * 100),
-      trend: '+12%',
-      color: 'from-blue-500 to-blue-600',
-      bgColor: 'from-blue-50 to-blue-100',
-    },
-    {
-      title: 'Estoque Seco',
-      value: estoqueSecoItems.length.toString(),
-      description: 'Itens diversos',
-      icon: Package,
-      progress: Math.min(100, (estoqueSecoItems.length / 15) * 100),
-      trend: '-3%',
-      color: 'from-orange-500 to-orange-600',
-      bgColor: 'from-orange-50 to-orange-100',
-    },
-    {
-      title: 'Descartáveis',
-      value: descartaveisItems.length.toString(),
-      description: 'Unidades disponíveis',
-      icon: Trash2,
-      progress: Math.min(100, (descartaveisItems.length / 10) * 100),
-      trend: '+15%',
-      color: 'from-red-500 to-red-600',
-      bgColor: 'from-red-50 to-red-100',
-    },
-  ];
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -100,44 +66,6 @@ export function Dashboard() {
           Sistema atualizado
         </div>
       </div>
-
-      {/* Cards de Estatísticas */}
-      {!isMobile && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {statsCards.map((card, index) => (
-            <Card key={index} className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 group">
-              <div className={`absolute inset-0 bg-gradient-to-br ${card.bgColor} opacity-50`} />
-              <CardHeader className="relative pb-2">
-                <div className="flex items-center justify-between">
-                  <div className={`p-2 rounded-xl bg-gradient-to-br ${card.color} shadow-lg`}>
-                    <card.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div className={`text-sm font-medium px-2 py-1 rounded-full ${
-                    card.trend.startsWith('+') ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'
-                  }`}>
-                    {card.trend}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="relative">
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-2xl font-bold text-foreground">{card.value}</div>
-                    <p className="text-sm text-muted-foreground">{card.description}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span>Capacidade</span>
-                      <span>{Math.round(card.progress)}%</span>
-                    </div>
-                    <Progress value={card.progress} className="h-2" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
 
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

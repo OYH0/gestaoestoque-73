@@ -133,8 +133,8 @@ export default function Descartaveis() {
         <QRScanner 
           isOpen={showScanner}
           onClose={() => setShowScanner(false)}
-          onSuccess={(data) => {
-            console.log('QR Code scanned:', data);
+          onSuccess={() => {
+            console.log('QR Code scanned successfully');
             setShowScanner(false);
           }}
         />

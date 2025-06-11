@@ -18,6 +18,45 @@ export default function CamaraFria() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [newItem, setNewItem] = useState({
+    nome: '',
+    quantidade: 0,
+    unidade: 'kg',
+    categoria: '',
+    minimo: 5
+  });
+
+  const categorias = ['todas', 'Bovina', 'Suína', 'Aves', 'Peixes', 'Embutidos'];
+
+  const handleAddNewItem = async () => {
+    if (!newItem.nome || !newItem.categoria) return;
+    
+    await addItem({
+      nome: newItem.nome,
+      quantidade: newItem.quantidade,
+      unidade: newItem.unidade,
+      categoria: newItem.categoria,
+      minimo: newItem.minimo,
+      user_id: '', // Will be set by the hook
+      data_entrada: new Date().toISOString().split('T')[0],
+      data_validade: null,
+      fornecedor: null,
+      observacoes: null,
+      preco_unitario: null,
+      temperatura_ideal: null
+    });
+    
+    // Reset form
+    setNewItem({
+      nome: '',
+      quantidade: 0,
+      unidade: 'kg',
+      categoria: '',
+      minimo: 5
+    });
+    
+    setIsAddDialogOpen(false);
+  };
 
   const handleUpdateQuantity = async (id: string, newQuantity: number, tipo: 'entrada' | 'saida') => {
     const item = items.find(i => i.id === id);
@@ -99,7 +138,13 @@ export default function CamaraFria() {
                 Adicionar Item
               </Button>
             </DialogTrigger>
-            <CamaraFriaAddDialog onItemAdded={() => setIsAddDialogOpen(false)} addItem={addItem} />
+            <CamaraFriaAddDialog 
+              newItem={newItem}
+              setNewItem={setNewItem}
+              onAddNewItem={handleAddNewItem}
+              setDialogOpen={setIsAddDialogOpen}
+              categorias={categorias}
+            />
           </Dialog>
 
           <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
@@ -176,8 +221,8 @@ export default function CamaraFria() {
         <QRScanner 
           isOpen={showScanner}
           onClose={() => setShowScanner(false)}
-          onSuccess={(data) => {
-            console.log('QR Code scanned:', data);
+          onSuccess={() => {
+            console.log('QR Code scanned successfully');
             setShowScanner(false);
           }}
         />

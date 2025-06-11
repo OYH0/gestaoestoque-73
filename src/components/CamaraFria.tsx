@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
+import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
 import { CamaraFriaFilters } from '@/components/camara-fria/CamaraFriaFilters';
 import { CamaraFriaItemCard } from '@/components/camara-fria/CamaraFriaItemCard';
 import { CamaraFriaAddDialog } from '@/components/camara-fria/CamaraFriaAddDialog';
@@ -16,6 +17,7 @@ import { QRScanner } from '@/components/qr-scanner/QRScanner';
 export default function CamaraFria() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem } = useCamaraFriaData();
   const { historico, addHistoricoItem } = useCamaraFriaHistorico();
+  const { addItem: addCamaraRefrigeradaItem } = useCamaraRefrigeradaData();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -99,14 +101,26 @@ export default function CamaraFria() {
       const newQuantity = item.quantidade - thawQuantity;
       await updateItemQuantity(id, newQuantity);
       
-      // Registrar no histórico
+      // Adicionar item à câmara refrigerada
+      await addCamaraRefrigeradaItem({
+        nome: item.nome,
+        quantidade: thawQuantity,
+        unidade: item.unidade,
+        categoria: item.categoria,
+        status: 'descongelando',
+        data_entrada: new Date().toISOString().split('T')[0],
+        temperatura_ideal: item.temperatura_ideal,
+        observacoes: `Movido da câmara fria para descongelamento`
+      });
+      
+      // Registrar no histórico da câmara fria
       await addHistoricoItem({
         item_nome: item.nome,
         quantidade: thawQuantity,
         unidade: item.unidade,
         categoria: item.categoria,
         tipo: 'saida',
-        observacoes: 'Descongelamento'
+        observacoes: 'Movido para câmara refrigerada'
       });
       
       setThawingItems(prev => {

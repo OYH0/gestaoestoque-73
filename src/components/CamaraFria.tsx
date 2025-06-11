@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -183,7 +184,7 @@ export default function CamaraFria() {
           quantidade: 0,
           unidade: 'kg',
           categoria: '',
-          minimo: 5
+          minimo: 0
         }}
         setNewItem={() => {}}
         onAddNewItem={() => {}}

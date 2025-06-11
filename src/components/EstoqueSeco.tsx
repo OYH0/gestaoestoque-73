@@ -42,7 +42,7 @@ export default function EstoqueSeco() {
   }
 
   // Get unique categories for filter
-  const categories = Array.from(new Set(items.map(item => item.categoria)));
+  const categories = ['todas', ...Array.from(new Set(items.map(item => item.categoria)))];
   // Get low stock items
   const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
 
@@ -57,11 +57,9 @@ export default function EstoqueSeco() {
       
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <EstoqueSecoFilters
-          categories={categories}
-          selectedCategory={filterCategory}
-          setSelectedCategory={setFilterCategory}
-          searchQuery={searchTerm}
-          setSearchQuery={setSearchTerm}
+          categorias={categories}
+          categoriaFiltro={filterCategory}
+          setCategoriaFiltro={setFilterCategory}
         />
         
         <div className="flex flex-wrap gap-2">
@@ -86,7 +84,7 @@ export default function EstoqueSeco() {
         </div>
       </div>
 
-      <EstoqueSecoAlerts lowStockItems={lowStockItems} />
+      <EstoqueSecoAlerts itemsBaixoEstoque={lowStockItems} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredItems.map((item) => (

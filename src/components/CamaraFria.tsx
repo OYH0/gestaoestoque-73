@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
-import { CamaraFriaHeader } from '@/components/camara-fria/CamaraFriaHeader';
 import { CamaraFriaFilters } from '@/components/camara-fria/CamaraFriaFilters';
 import { CamaraFriaItemCard } from '@/components/camara-fria/CamaraFriaItemCard';
 import { CamaraFriaAddDialog } from '@/components/camara-fria/CamaraFriaAddDialog';
@@ -66,27 +65,23 @@ export default function CamaraFria() {
   }
 
   // Get unique categories from items
-  const categories = Array.from(new Set(items.map(item => item.categoria)));
+  const categories = ['todas', ...Array.from(new Set(items.map(item => item.categoria)))];
   const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <CamaraFriaHeader
-        itemsCount={items.length}
-        lowStockCount={lowStockItems.length}
-        historicoOpen={isHistoryDialogOpen}
-        setHistoricoOpen={setIsHistoryDialogOpen}
-        historico={historico}
-        onPrintPDF={() => {}}
-      />
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-blue-100 rounded-lg">
+          <Plus className="h-6 w-6 text-blue-600" />
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Câmara Fria</h1>
+      </div>
       
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <CamaraFriaFilters
-          categories={categories}
-          selectedCategory={filterCategory}
-          setSelectedCategory={setFilterCategory}
-          searchQuery={searchTerm}
-          setSearchQuery={setSearchTerm}
+          categorias={categories}
+          categoriaFiltro={filterCategory}
+          setCategoriaFiltro={setFilterCategory}
         />
         
         <div className="flex flex-wrap gap-2">
@@ -98,12 +93,17 @@ export default function CamaraFria() {
               </Button>
             </DialogTrigger>
             <CamaraFriaAddDialog
-              open={isAddDialogOpen}
-              onOpenChange={setIsAddDialogOpen}
-              onItemSaved={(item) => {
-                setIsAddDialogOpen(false);
-                addItem(item);
+              newItem={{
+                nome: '',
+                quantidade: 0,
+                unidade: 'kg',
+                categoria: '',
+                minimo: 5
               }}
+              setNewItem={() => {}}
+              onAddNewItem={() => {}}
+              setDialogOpen={setIsAddDialogOpen}
+              categorias={categories}
             />
           </Dialog>
 
@@ -129,8 +129,7 @@ export default function CamaraFria() {
       </div>
 
       <CamaraFriaAlerts
-        lowStockItems={lowStockItems}
-        expiringItems={items.filter(item => item.data_validade && new Date(item.data_validade) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))}
+        itemsBaixoEstoque={lowStockItems}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -138,7 +137,7 @@ export default function CamaraFria() {
           <CamaraFriaItemCard
             key={item.id}
             item={item} 
-            onUpdate={(newItem) => updateItemQuantity(item.id, newItem.quantidade)}
+            onQuantityChange={(newQuantity) => updateItemQuantity(item.id, newQuantity)}
             onDelete={() => deleteItem(item.id)}
             onShowHistory={() => setIsHistoryDialogOpen(true)}
           />

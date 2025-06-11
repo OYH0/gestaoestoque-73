@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Minus, Plus, Check, X, Trash2 } from 'lucide-react';
 import { EstoqueSecoItem } from '@/hooks/useEstoqueSecoData';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EstoqueSecoItemCardProps {
   item: EstoqueSecoItem;
@@ -15,6 +16,7 @@ interface EstoqueSecoItemCardProps {
 export function EstoqueSecoItemCard({ item, onUpdateQuantity, onDelete }: EstoqueSecoItemCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.quantidade);
+  const isMobile = useIsMobile();
 
   const handleStartEdit = () => {
     setEditValue(item.quantidade);
@@ -69,9 +71,9 @@ export function EstoqueSecoItemCard({ item, onUpdateQuantity, onDelete }: Estoqu
             )}
           </div>
 
-          <div className="flex justify-end">
+          <div className={`flex ${isMobile ? 'justify-center' : 'justify-end'}`}>
             {isEditing ? (
-              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap">
+              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap justify-center">
                 <Button
                   size="sm"
                   variant="outline"
@@ -107,7 +109,7 @@ export function EstoqueSecoItemCard({ item, onUpdateQuantity, onDelete }: Estoqu
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} gap-2 ${isMobile ? 'w-full items-center' : 'w-full sm:w-auto'}`}>
                 <Button
                   size="sm"
                   variant="outline"

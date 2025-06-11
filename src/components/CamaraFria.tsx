@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,8 +10,10 @@ import { CamaraFriaItemCard } from '@/components/camara-fria/CamaraFriaItemCard'
 import { CamaraFriaAddDialog } from '@/components/camara-fria/CamaraFriaAddDialog';
 import { CamaraFriaHistoryDialog } from '@/components/camara-fria/CamaraFriaHistoryDialog';
 import { CamaraFriaAlerts } from '@/components/camara-fria/CamaraFriaAlerts';
+import { CamaraFriaHeader } from '@/components/camara-fria/CamaraFriaHeader';
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function CamaraFria() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem } = useCamaraFriaData();
@@ -23,6 +24,7 @@ export default function CamaraFria() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const isMobile = useIsMobile();
   
   // States for managing editing and thawing
   const [editingItems, setEditingItems] = useState<Record<string, number>>({});
@@ -168,62 +170,28 @@ export default function CamaraFria() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-blue-100 rounded-lg">
-          <Plus className="h-6 w-6 text-blue-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Câmara Fria</h1>
-          <p className="text-gray-600">Carnes e produtos congelados</p>
-        </div>
-      </div>
+      <CamaraFriaHeader
+        itemsCount={items.length}
+        lowStockCount={lowStockItems.length}
+        historicoOpen={isHistoryDialogOpen}
+        setHistoricoOpen={setIsHistoryDialogOpen}
+        historico={historico}
+        dialogOpen={isAddDialogOpen}
+        setDialogOpen={setIsAddDialogOpen}
+        newItem={{
+          nome: '',
+          quantidade: 0,
+          unidade: 'kg',
+          categoria: '',
+          minimo: 5
+        }}
+        setNewItem={() => {}}
+        onAddNewItem={() => {}}
+        categorias={categories}
+        items={items}
+      />
 
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
-            {items.length} tipos
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" className="text-gray-600">
-            <FileText className="w-4 h-4 mr-2" />
-            PDF
-          </Button>
-
-          <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-gray-600">
-                <History className="w-4 h-4 mr-2" />
-                Histórico
-              </Button>
-            </DialogTrigger>
-            <CamaraFriaHistoryDialog historico={historico} />
-          </Dialog>
-
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Nova Carne
-              </Button>
-            </DialogTrigger>
-            <CamaraFriaAddDialog
-              newItem={{
-                nome: '',
-                quantidade: 0,
-                unidade: 'kg',
-                categoria: '',
-                minimo: 5
-              }}
-              setNewItem={() => {}}
-              onAddNewItem={() => {}}
-              setDialogOpen={setIsAddDialogOpen}
-              categorias={categories}
-            />
-          </Dialog>
-        </div>
-
+      <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
         <Button 
           variant="outline" 
           size="sm" 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,9 +26,34 @@ export default function CamaraFria() {
   const [showScanner, setShowScanner] = useState(false);
   const isMobile = useIsMobile();
   
+  // Estados para o formulário de adicionar item
+  const [newItem, setNewItem] = useState({
+    nome: '',
+    quantidade: 0,
+    unidade: 'kg',
+    categoria: '',
+    minimo: 0
+  });
+  
   // States for managing editing and thawing
   const [editingItems, setEditingItems] = useState<Record<string, number>>({});
   const [thawingItems, setThawingItems] = useState<Record<string, number>>({});
+
+  const handleAddNewItem = async () => {
+    if (!newItem.nome || !newItem.categoria) {
+      return;
+    }
+
+    await addItem(newItem);
+    setNewItem({
+      nome: '',
+      quantidade: 0,
+      unidade: 'kg',
+      categoria: '',
+      minimo: 0
+    });
+    setIsAddDialogOpen(false);
+  };
 
   const handleUpdateQuantity = async (id: string, newQuantity: number, tipo: 'entrada' | 'saida') => {
     const item = items.find(i => i.id === id);
@@ -179,15 +203,9 @@ export default function CamaraFria() {
         historico={historico}
         dialogOpen={isAddDialogOpen}
         setDialogOpen={setIsAddDialogOpen}
-        newItem={{
-          nome: '',
-          quantidade: 0,
-          unidade: 'kg',
-          categoria: '',
-          minimo: 0
-        }}
-        setNewItem={() => {}}
-        onAddNewItem={() => {}}
+        newItem={newItem}
+        setNewItem={setNewItem}
+        onAddNewItem={handleAddNewItem}
         categorias={categories}
         items={items}
       />

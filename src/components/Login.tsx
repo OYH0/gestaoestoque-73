@@ -19,31 +19,14 @@ export function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      return;
-    }
-    
     setLoading(true);
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password, fullName);
-        if (!error) {
-          setEmail('');
-          setPassword('');
-          setFullName('');
-          setIsSignUp(false);
-        }
+        await signUp(email, password, fullName);
       } else {
-        const { error } = await signIn(email, password);
-        if (!error) {
-          // Login successful, user will be redirected automatically by the auth state change
-          console.log('Login successful');
-        }
+        await signIn(email, password);
       }
-    } catch (error) {
-      console.error('Authentication error:', error);
     } finally {
       setLoading(false);
     }
@@ -153,7 +136,7 @@ export function Login() {
             
             <Button
               type="submit"
-              disabled={loading || !email || !password}
+              disabled={loading}
               className="w-full h-12 bg-churrasco-gradient hover:opacity-90 text-primary-foreground font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               {loading ? (

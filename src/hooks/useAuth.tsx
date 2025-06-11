@@ -23,64 +23,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    let refreshInterval: NodeJS.Timeout;
 
-    // Set up auth state listener - much simpler approach
+    // Simple auth state listener - only handle essential events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
         
         console.log('Auth state change:', event, session?.user?.email);
         
-        // Only handle SIGNED_IN, SIGNED_OUT, and INITIAL_SESSION
+        // Only handle key events, ignore TOKEN_REFRESHED to avoid loops
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
-          
-          // Set up manual token refresh if user is signed in
-          if (session && mounted) {
-            setupTokenRefresh(session);
-          } else if (refreshInterval) {
-            clearInterval(refreshInterval);
-          }
         }
       }
     );
-
-    // Manual token refresh function
-    const setupTokenRefresh = (currentSession: Session) => {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
-      
-      // Refresh token every 50 minutes (before the 60-minute expiry)
-      refreshInterval = setInterval(async () => {
-        if (!mounted) return;
-        
-        try {
-          console.log('Manual token refresh attempt');
-          const { data, error } = await supabase.auth.refreshSession(currentSession);
-          
-          if (error) {
-            console.error('Token refresh failed:', error);
-            // If refresh fails, sign out the user
-            if (mounted) {
-              await supabase.auth.signOut();
-            }
-          } else if (data.session && mounted) {
-            console.log('Token refreshed successfully');
-            setSession(data.session);
-            setUser(data.session.user);
-          }
-        } catch (error) {
-          console.error('Token refresh error:', error);
-          if (mounted) {
-            await supabase.auth.signOut();
-          }
-        }
-      }, 50 * 60 * 1000); // 50 minutes
-    };
 
     // Get initial session
     const getInitialSession = async () => {
@@ -101,10 +59,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
-          
-          if (session) {
-            setupTokenRefresh(session);
-          }
         }
       } catch (error) {
         console.error('Session check failed:', error);
@@ -114,14 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Get initial session immediately
     getInitialSession();
 
     return () => {
       mounted = false;
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
       subscription.unsubscribe();
     };
   }, []);
@@ -137,7 +87,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         console.error('Sign in error:', error);
         
-        // Handle rate limiting errors specifically
         if (error.message?.includes('rate limit') || error.message?.includes('429')) {
           toast({
             title: "Muitas tentativas de login",

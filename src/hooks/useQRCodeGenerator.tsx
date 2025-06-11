@@ -61,18 +61,22 @@ export function useQRCodeGenerator() {
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       
-      // Ajustando para 3 QR codes por linha, 6 linhas por página = 18 QR codes por página
-      const qrSize = 50;
+      // Configuração otimizada: 3 QR codes por linha, 5 linhas por página = 15 QR codes por página
+      const qrSize = 45;
       const margin = 15;
-      const spacing = 8;
+      const spacingX = 12; // Espaçamento horizontal entre QR codes
+      const spacingY = 30; // Espaçamento vertical entre linhas (maior para acomodar texto)
       const codesPerRow = 3;
-      const rowsPerPage = 6;
+      const rowsPerPage = 5;
       const codesPerPage = codesPerRow * rowsPerPage;
       
-      console.log('Configurações do PDF ajustadas:', {
+      console.log('Configurações do PDF otimizadas:', {
+        pageWidth,
+        pageHeight,
         qrSize,
         margin,
-        spacing,
+        spacingX,
+        spacingY,
         codesPerRow,
         rowsPerPage,
         codesPerPage,
@@ -95,8 +99,15 @@ export function useQRCodeGenerator() {
           console.log(`Nova página ${pageIndex + 1} adicionada para QR code ${i + 1}`);
         }
         
-        const x = margin + col * (qrSize + spacing + 15);
-        const y = margin + row * (qrSize + spacing + 25);
+        // Calcular posições com melhor distribuição
+        const availableWidth = pageWidth - (2 * margin);
+        const totalSpacingX = (codesPerRow - 1) * spacingX;
+        const actualQRSize = Math.min(qrSize, (availableWidth - totalSpacingX) / codesPerRow);
+        
+        const x = margin + col * (actualQRSize + spacingX);
+        const y = margin + row * (actualQRSize + spacingY);
+        
+        console.log(`Posicionamento QR ${i + 1}: x=${x}, y=${y}, tamanho=${actualQRSize}`);
         
         // Gerar QR code como base64
         const qrCodeDataURL = await QRCode.toDataURL(qrData.id, {
@@ -105,13 +116,14 @@ export function useQRCodeGenerator() {
         });
         
         // Adicionar QR code ao PDF
-        pdf.addImage(qrCodeDataURL, 'PNG', x, y, qrSize, qrSize);
+        pdf.addImage(qrCodeDataURL, 'PNG', x, y, actualQRSize, actualQRSize);
         
-        // Adicionar texto abaixo do QR code com fonte menor
-        pdf.setFontSize(7);
-        pdf.text(`${qrData.nome}`, x, y + qrSize + 4, { maxWidth: qrSize });
-        pdf.text(`ID: ${qrData.id}`, x, y + qrSize + 10, { maxWidth: qrSize });
-        pdf.text(`Lote: ${qrData.lote}`, x, y + qrSize + 16, { maxWidth: qrSize });
+        // Adicionar texto abaixo do QR code com fonte menor e posicionamento ajustado
+        pdf.setFontSize(6);
+        const textY = y + actualQRSize + 3;
+        pdf.text(`${qrData.nome}`, x, textY, { maxWidth: actualQRSize });
+        pdf.text(`ID: ${qrData.id}`, x, textY + 6, { maxWidth: actualQRSize });
+        pdf.text(`Lote: ${qrData.lote}`, x, textY + 12, { maxWidth: actualQRSize });
       }
       
       // Salvar PDF

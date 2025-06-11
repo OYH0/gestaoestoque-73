@@ -22,84 +22,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    let mounted = true;
-
-    // Simple auth state listener - only handle essential events
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        if (!mounted) return;
-        
-        console.log('Auth state change:', event, session?.user?.email);
-        
-        // Only handle key events, ignore TOKEN_REFRESHED to avoid loops
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
       }
     );
 
     // Get initial session
-    const getInitialSession = async () => {
-      if (!mounted) return;
-      
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          if (mounted) {
-            setLoading(false);
-          }
-          return;
-        }
-        
-        if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('Session check failed:', error);
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    getInitialSession();
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      setLoading(true);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) {
-        console.error('Sign in error:', error);
-        
-        if (error.message?.includes('rate limit') || error.message?.includes('429')) {
-          toast({
-            title: "Muitas tentativas de login",
-            description: "Aguarde alguns segundos antes de tentar novamente.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Erro no login",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Erro no login",
+          description: error.message,
+          variant: "destructive",
+        });
       } else {
         toast({
           title: "Login realizado com sucesso!",
@@ -109,21 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       return { error };
     } catch (error: any) {
-      console.error('Sign in failed:', error);
-      toast({
-        title: "Erro no login",
-        description: "Falha na conexão. Tente novamente.",
-        variant: "destructive",
-      });
       return { error };
-    } finally {
-      setLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
-      setLoading(true);
       const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
@@ -138,19 +83,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) {
-        if (error.message?.includes('rate limit') || error.message?.includes('429')) {
-          toast({
-            title: "Muitas tentativas de cadastro",
-            description: "Aguarde alguns segundos antes de tentar novamente.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Erro no cadastro",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Erro no cadastro",
+          description: error.message,
+          variant: "destructive",
+        });
       } else {
         toast({
           title: "Conta criada com sucesso!",
@@ -160,14 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       return { error };
     } catch (error: any) {
-      toast({
-        title: "Erro no cadastro",
-        description: "Falha na conexão. Tente novamente.",
-        variant: "destructive",
-      });
       return { error };
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -179,14 +109,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Até logo!",
       });
     } catch (error: any) {
-      console.error('Sign out error:', error);
-      if (!error.message?.includes('rate limit')) {
-        toast({
-          title: "Erro no logout",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Erro no logout",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 

@@ -6,30 +6,25 @@ import { QrCode, Printer, Download, Loader2 } from 'lucide-react';
 import { useQRCodeGenerator, QRCodeData } from '@/hooks/useQRCodeGenerator';
 
 interface QRCodeGeneratorProps {
-  qrCodes: QRCodeData[];
+  isOpen: boolean;
   onClose: () => void;
+  qrCodes: QRCodeData[];
   itemName: string;
 }
 
-export function QRCodeGenerator({ qrCodes, onClose, itemName }: QRCodeGeneratorProps) {
+export function QRCodeGenerator({ isOpen, onClose, qrCodes, itemName }: QRCodeGeneratorProps) {
   const { generateQRCodePDF, isGenerating } = useQRCodeGenerator();
-  const [isOpen, setIsOpen] = React.useState(true);
 
   const handleGeneratePDF = async () => {
     const result = await generateQRCodePDF(qrCodes);
     
     if (result.success) {
-      handleClose();
+      onClose();
     }
-  };
-  
-  const handleClose = () => {
-    setIsOpen(false);
-    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -76,7 +71,7 @@ export function QRCodeGenerator({ qrCodes, onClose, itemName }: QRCodeGeneratorP
             Ao escanear, o sistema automaticamente removerá 1 unidade do estoque.
           </div>
 
-          <Button variant="outline" onClick={handleClose} className="w-full">
+          <Button variant="outline" onClick={onClose} className="w-full">
             Fechar
           </Button>
         </div>

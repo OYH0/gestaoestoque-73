@@ -1,17 +1,26 @@
 
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { CamaraFriaHistoricoItem } from '@/hooks/useCamaraFriaHistorico';
+
+interface HistoricoItem {
+  id: number;
+  itemName: string;
+  tipo: 'entrada' | 'saida';
+  quantidade: number;
+  unidade: string;
+  data: string;
+  hora: string;
+}
 
 interface CamaraFriaHistoryDialogProps {
-  historico: CamaraFriaHistoricoItem[];
+  historico: HistoricoItem[];
 }
 
 export function CamaraFriaHistoryDialog({ historico }: CamaraFriaHistoryDialogProps) {
   return (
     <DialogContent className="max-w-2xl">
       <DialogHeader>
-        <DialogTitle>Histórico de Movimentações - Câmara Fria</DialogTitle>
+        <DialogTitle>Histórico de Movimentações</DialogTitle>
         <DialogDescription>
           Registro de entradas e saídas de carnes
         </DialogDescription>
@@ -25,22 +34,15 @@ export function CamaraFriaHistoryDialog({ historico }: CamaraFriaHistoryDialogPr
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${item.tipo === 'entrada' ? 'bg-green-500' : 'bg-red-500'}`} />
                 <div>
-                  <p className="font-medium">{item.item_nome}</p>
+                  <p className="font-medium">{item.itemName}</p>
                   <p className="text-sm text-gray-600">
                     {item.tipo === 'entrada' ? 'Entrada' : 'Saída'} de {item.quantidade} {item.unidade}
                   </p>
-                  {item.observacoes && (
-                    <p className="text-xs text-gray-500">{item.observacoes}</p>
-                  )}
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-600">
-                  {new Date(item.data_operacao).toLocaleDateString('pt-BR')}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {new Date(item.data_operacao).toLocaleTimeString('pt-BR')}
-                </p>
+                <p className="text-sm text-gray-600">{item.data}</p>
+                <p className="text-sm text-gray-600">{item.hora}</p>
               </div>
             </div>
           ))

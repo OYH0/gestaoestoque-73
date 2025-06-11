@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Header } from '@/components/Header';
 import { Dashboard } from '@/components/Dashboard';
@@ -10,14 +10,17 @@ import { CamaraRefrigerada } from '@/components/CamaraRefrigerada';
 import EstoqueSeco from '@/components/EstoqueSeco';
 import Descartaveis from '@/components/Descartaveis';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
+  const isMobile = useIsMobile();
+
   return (
     <ProtectedRoute>
-      <SidebarProvider defaultOpen={true}>
+      <SidebarProvider>
         <div className="min-h-screen flex w-full bg-gradient-to-br from-churrasco-cream via-background to-churrasco-cream/50">
           <AppSidebar />
-          <SidebarInset className="flex-1">
+          <div className="flex-1 flex flex-col min-w-0 h-screen">
             <Header />
             <main className="flex-1 p-4 md:p-6 relative overflow-auto">
               <div className="absolute inset-0 bg-grid-pattern opacity-30 pointer-events-none" />
@@ -31,7 +34,7 @@ const Index = () => {
                 </Routes>
               </div>
             </main>
-          </SidebarInset>
+          </div>
         </div>
       </SidebarProvider>
     </ProtectedRoute>

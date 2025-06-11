@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, History, QrCode } from 'lucide-react';
+import { Plus, History, QrCode, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useDescartaveisData } from '@/hooks/useDescartaveisData';
@@ -8,13 +8,22 @@ import { useDescartaveisHistorico } from '@/hooks/useDescartaveisHistorico';
 import { DescartaveisFilters } from '@/components/descartaveis/DescartaveisFilters';
 import { DescartaveisAlerts } from '@/components/descartaveis/DescartaveisAlerts';
 import { DescartaveisHistoryDialog } from '@/components/descartaveis/DescartaveisHistoryDialog';
+import { DescartaveisAddDialog } from '@/components/descartaveis/DescartaveisAddDialog';
 
 export default function Descartaveis() {
-  const { items, loading } = useDescartaveisData();
+  const { items, loading, addItem } = useDescartaveisData();
   const { historico } = useDescartaveisHistorico();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newItem, setNewItem] = useState({
+    nome: '',
+    quantidade: 0,
+    unidade: '',
+    categoria: '',
+    minimo: 0
+  });
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -22,6 +31,14 @@ export default function Descartaveis() {
     const matchesCategory = filterCategory === 'Todos' || item.categoria === filterCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const handleAddNewItem = async () => {
+    if (!newItem.nome || !newItem.categoria || !newItem.unidade) return;
+    
+    await addItem(newItem);
+    setNewItem({ nome: '', quantidade: 0, unidade: '', categoria: '', minimo: 0 });
+    setIsAddDialogOpen(false);
+  };
 
   if (loading) {
     return (
@@ -63,7 +80,7 @@ export default function Descartaveis() {
 
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" className="text-gray-600">
-            <div className="w-4 h-4 mr-2 bg-gray-400 rounded" />
+            <FileText className="w-4 h-4 mr-2" />
             PDF
           </Button>
 
@@ -77,10 +94,21 @@ export default function Descartaveis() {
             <DescartaveisHistoryDialog historico={historico} />
           </Dialog>
 
-          <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Item
-          </Button>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white">
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Item
+              </Button>
+            </DialogTrigger>
+            <DescartaveisAddDialog
+              newItem={newItem}
+              setNewItem={setNewItem}
+              onAddNewItem={handleAddNewItem}
+              setDialogOpen={setIsAddDialogOpen}
+              categorias={categories}
+            />
+          </Dialog>
         </div>
 
         <Button 
@@ -103,14 +131,16 @@ export default function Descartaveis() {
 
       <DescartaveisAlerts itemsBaixoEstoque={lowStockItems} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="space-y-3">
         {filteredItems.map((item) => (
-          <div key={item.id} className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
-            <h3 className="font-semibold text-lg mb-2">{item.nome}</h3>
-            <div className="space-y-1 text-sm text-gray-600">
-              <p>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></p>
-              <p>Categoria: <span className="font-medium">{item.categoria}</span></p>
-              <p>Mínimo: <span className="font-medium">{item.minimo || 10} {item.unidade}</span></p>
+          <div key={item.id} className="bg-white p-4 rounded-lg shadow border flex items-center justify-between">
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg mb-1">{item.nome}</h3>
+              <div className="flex items-center gap-4 text-sm text-gray-600">
+                <span>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></span>
+                <span>Categoria: <span className="font-medium">{item.categoria}</span></span>
+                <span>Mínimo: <span className="font-medium">{item.minimo || 10} {item.unidade}</span></span>
+              </div>
             </div>
           </div>
         ))}

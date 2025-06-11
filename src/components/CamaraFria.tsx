@@ -21,6 +21,10 @@ export default function CamaraFria() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  
+  // States for managing editing and thawing
+  const [editingItems, setEditingItems] = useState<Record<string, number>>({});
+  const [thawingItems, setThawingItems] = useState<Record<string, number>>({});
 
   const handleUpdateQuantity = async (id: string, newQuantity: number, tipo: 'entrada' | 'saida') => {
     const item = items.find(i => i.id === id);
@@ -38,6 +42,86 @@ export default function CamaraFria() {
       categoria: item.categoria,
       tipo,
       observacoes: `${tipo === 'entrada' ? 'Entrada' : 'Saída'} de estoque`
+    });
+  };
+
+  // Editing handlers
+  const handleStartEdit = (id: string, currentQuantity: number) => {
+    setEditingItems(prev => ({ ...prev, [id]: currentQuantity }));
+  };
+
+  const handleUpdateEdit = (id: string, delta: number) => {
+    setEditingItems(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) + delta)
+    }));
+  };
+
+  const handleConfirmChange = async (id: string) => {
+    const newQuantity = editingItems[id];
+    if (newQuantity !== undefined) {
+      await updateItemQuantity(id, newQuantity);
+      setEditingItems(prev => {
+        const newState = { ...prev };
+        delete newState[id];
+        return newState;
+      });
+    }
+  };
+
+  const handleCancelEdit = (id: string) => {
+    setEditingItems(prev => {
+      const newState = { ...prev };
+      delete newState[id];
+      return newState;
+    });
+  };
+
+  // Thawing handlers
+  const handleStartThaw = (id: string, quantity: number) => {
+    setThawingItems(prev => ({ ...prev, [id]: quantity }));
+  };
+
+  const handleUpdateThaw = (id: string, delta: number) => {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    
+    setThawingItems(prev => ({
+      ...prev,
+      [id]: Math.max(1, Math.min(item.quantidade, (prev[id] || 1) + delta))
+    }));
+  };
+
+  const handleConfirmThaw = async (id: string) => {
+    const thawQuantity = thawingItems[id];
+    const item = items.find(i => i.id === id);
+    if (thawQuantity !== undefined && item) {
+      const newQuantity = item.quantidade - thawQuantity;
+      await updateItemQuantity(id, newQuantity);
+      
+      // Registrar no histórico
+      await addHistoricoItem({
+        item_nome: item.nome,
+        quantidade: thawQuantity,
+        unidade: item.unidade,
+        categoria: item.categoria,
+        tipo: 'saida',
+        observacoes: 'Descongelamento'
+      });
+      
+      setThawingItems(prev => {
+        const newState = { ...prev };
+        delete newState[id];
+        return newState;
+      });
+    }
+  };
+
+  const handleCancelThaw = (id: string) => {
+    setThawingItems(prev => {
+      const newState = { ...prev };
+      delete newState[id];
+      return newState;
     });
   };
 
@@ -82,6 +166,8 @@ export default function CamaraFria() {
           categorias={categories}
           categoriaFiltro={filterCategory}
           setCategoriaFiltro={setFilterCategory}
+          searchQuery={searchTerm}
+          setSearchQuery={setSearchTerm}
         />
         
         <div className="flex flex-wrap gap-2">
@@ -136,10 +222,20 @@ export default function CamaraFria() {
         {filteredItems.map((item) => (
           <CamaraFriaItemCard
             key={item.id}
-            item={item} 
-            onQuantityChange={(newQuantity) => updateItemQuantity(item.id, newQuantity)}
-            onDelete={() => deleteItem(item.id)}
-            onShowHistory={() => setIsHistoryDialogOpen(true)}
+            item={item}
+            isEditing={editingItems.hasOwnProperty(item.id)}
+            editValue={editingItems[item.id] || item.quantidade}
+            isThawing={thawingItems.hasOwnProperty(item.id)}
+            thawValue={thawingItems[item.id] || 1}
+            onStartEdit={handleStartEdit}
+            onUpdateEdit={handleUpdateEdit}
+            onConfirmChange={handleConfirmChange}
+            onCancelEdit={handleCancelEdit}
+            onStartThaw={handleStartThaw}
+            onUpdateThaw={handleUpdateThaw}
+            onConfirmThaw={handleConfirmThaw}
+            onCancelThaw={handleCancelThaw}
+            onDelete={deleteItem}
           />
         ))}
       </div>

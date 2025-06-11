@@ -33,7 +33,6 @@ export function CamaraFriaAddDialog({
 
   const handleQuantidadeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Permite string vazia ou números válidos (incluindo 0)
     if (value === '') {
       setNewItem({...newItem, quantidade: 0});
     } else {
@@ -46,7 +45,6 @@ export function CamaraFriaAddDialog({
 
   const handleMinimoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Permite string vazia ou números válidos (incluindo 0)
     if (value === '') {
       setNewItem({...newItem, minimo: 0});
     } else {
@@ -80,8 +78,8 @@ export function CamaraFriaAddDialog({
             type="number"
             min="0"
             step="1"
-            placeholder="Ex: 0, 10, 25, 50..."
-            value={newItem.quantidade === 0 ? '0' : newItem.quantidade || ''}
+            placeholder="Digite a quantidade (pode ser 0)"
+            value={newItem.quantidade || ''}
             onChange={handleQuantidadeChange}
           />
           <p className="text-xs text-gray-500">
@@ -131,8 +129,8 @@ export function CamaraFriaAddDialog({
             type="number"
             min="0"
             step="1"
-            placeholder="Ex: 5, 10, 15..."
-            value={newItem.minimo === 0 ? '0' : newItem.minimo || ''}
+            placeholder="Digite o estoque mínimo (pode ser 0)"
+            value={newItem.minimo || ''}
             onChange={handleMinimoChange}
           />
           <p className="text-xs text-gray-500">

@@ -12,9 +12,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const items = [
   {
@@ -46,9 +48,18 @@ const items = [
 
 export function AppSidebar() {
   const { signOut, user } = useAuth();
+  const { setOpenMobile } = useSidebar();
+  const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleItemClick = () => {
+    // Fecha a sidebar automaticamente em dispositivos móveis
+    if (isMobile) {
+      setOpenMobile(false);
+    }
   };
 
   return (
@@ -64,6 +75,7 @@ export function AppSidebar() {
                       <SidebarMenuButton asChild className="w-full p-0">
                         <NavLink 
                           to={item.url} 
+                          onClick={handleItemClick}
                           className={({ isActive }) => 
                             `flex items-center gap-3 md:gap-4 w-full px-3 md:px-4 py-3 md:py-4 text-white/90 hover:bg-white/10 transition-all duration-200 font-medium text-sm md:text-base h-auto rounded-xl ${
                               isActive 

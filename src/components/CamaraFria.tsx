@@ -37,7 +37,6 @@ export default function CamaraFria() {
       unidade: newItem.unidade,
       categoria: newItem.categoria,
       minimo: newItem.minimo,
-      user_id: '', // Will be set by the hook
       data_entrada: new Date().toISOString().split('T')[0],
       data_validade: null,
       fornecedor: null,

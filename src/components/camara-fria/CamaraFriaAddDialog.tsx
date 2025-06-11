@@ -31,6 +31,32 @@ export function CamaraFriaAddDialog({
 }: CamaraFriaAddDialogProps) {
   const isFormValid = newItem.nome.trim() !== '' && newItem.categoria !== '';
 
+  const handleQuantidadeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Permite string vazia ou números válidos (incluindo 0)
+    if (value === '') {
+      setNewItem({...newItem, quantidade: 0});
+    } else {
+      const numValue = Number(value);
+      if (!isNaN(numValue) && numValue >= 0) {
+        setNewItem({...newItem, quantidade: numValue});
+      }
+    }
+  };
+
+  const handleMinimoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Permite string vazia ou números válidos (incluindo 0)
+    if (value === '') {
+      setNewItem({...newItem, minimo: 0});
+    } else {
+      const numValue = Number(value);
+      if (!isNaN(numValue) && numValue >= 0) {
+        setNewItem({...newItem, minimo: numValue});
+      }
+    }
+  };
+
   return (
     <DialogContent>
       <DialogHeader>
@@ -53,9 +79,10 @@ export function CamaraFriaAddDialog({
             id="quantidade"
             type="number"
             min="0"
+            step="1"
             placeholder="Ex: 0, 10, 25, 50..."
-            value={newItem.quantidade || ''}
-            onChange={(e) => setNewItem({...newItem, quantidade: Number(e.target.value) || 0})}
+            value={newItem.quantidade === 0 ? '0' : newItem.quantidade || ''}
+            onChange={handleQuantidadeChange}
           />
           <p className="text-xs text-gray-500">
             Você pode adicionar com quantidade zero para registrar o item no estoque
@@ -103,9 +130,10 @@ export function CamaraFriaAddDialog({
             id="minimo"
             type="number"
             min="0"
+            step="1"
             placeholder="Ex: 5, 10, 15..."
-            value={newItem.minimo || ''}
-            onChange={(e) => setNewItem({...newItem, minimo: Number(e.target.value) || 0})}
+            value={newItem.minimo === 0 ? '0' : newItem.minimo || ''}
+            onChange={handleMinimoChange}
           />
           <p className="text-xs text-gray-500">
             Quando o estoque atingir esta quantidade, será exibido um alerta

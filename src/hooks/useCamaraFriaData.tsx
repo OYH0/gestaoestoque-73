@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -57,6 +56,8 @@ export function useCamaraFriaData() {
 
     console.log('=== INÍCIO addItem ===');
     console.log('Item a ser adicionado:', newItem);
+    console.log('Quantidade do item:', newItem.quantidade);
+    console.log('Tipo da quantidade:', typeof newItem.quantidade);
 
     try {
       const { data, error } = await supabase
@@ -94,7 +95,7 @@ export function useCamaraFriaData() {
         title: "Item adicionado",
         description: newItem.quantidade > 0 
           ? `${newItem.nome} foi adicionado ao estoque! ${newItem.quantidade} QR codes serão gerados.`
-          : `${newItem.nome} foi adicionado ao estoque!`,
+          : `${newItem.nome} foi adicionado ao estoque com quantidade zero!`,
       });
       
       console.log('=== FIM addItem ===');

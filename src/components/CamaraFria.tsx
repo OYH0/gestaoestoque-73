@@ -46,6 +46,19 @@ export default function CamaraFria() {
     }
 
     await addItem(newItem);
+    
+    // Registrar no histórico apenas se a quantidade for maior que 0
+    if (newItem.quantidade > 0) {
+      await addHistoricoItem({
+        item_nome: newItem.nome,
+        quantidade: newItem.quantidade,
+        unidade: newItem.unidade,
+        categoria: newItem.categoria,
+        tipo: 'entrada',
+        observacoes: 'Adição de novo item ao estoque'
+      });
+    }
+    
     setNewItem({
       nome: '',
       quantidade: 0,
@@ -64,15 +77,17 @@ export default function CamaraFria() {
     
     await updateItemQuantity(id, newQuantity);
     
-    // Registrar no histórico
-    await addHistoricoItem({
-      item_nome: item.nome,
-      quantidade: Math.abs(quantityDifference),
-      unidade: item.unidade,
-      categoria: item.categoria,
-      tipo,
-      observacoes: `${tipo === 'entrada' ? 'Entrada' : 'Saída'} de estoque`
-    });
+    // Registrar no histórico apenas se houve mudança na quantidade
+    if (quantityDifference !== 0) {
+      await addHistoricoItem({
+        item_nome: item.nome,
+        quantidade: Math.abs(quantityDifference),
+        unidade: item.unidade,
+        categoria: item.categoria,
+        tipo,
+        observacoes: `${tipo === 'entrada' ? 'Entrada' : 'Saída'} de estoque`
+      });
+    }
   };
 
   // Editing handlers
@@ -88,9 +103,26 @@ export default function CamaraFria() {
   };
 
   const handleConfirmChange = async (id: string) => {
+    const item = items.find(i => i.id === id);
     const newQuantity = editingItems[id];
-    if (newQuantity !== undefined) {
+    
+    if (newQuantity !== undefined && item) {
+      const oldQuantity = item.quantidade;
       await updateItemQuantity(id, newQuantity);
+      
+      // Registrar no histórico o ajuste de estoque
+      if (newQuantity !== oldQuantity) {
+        const quantityDifference = newQuantity - oldQuantity;
+        await addHistoricoItem({
+          item_nome: item.nome,
+          quantidade: Math.abs(quantityDifference),
+          unidade: item.unidade,
+          categoria: item.categoria,
+          tipo: quantityDifference > 0 ? 'entrada' : 'saida',
+          observacoes: 'Ajuste manual de estoque'
+        });
+      }
+      
       setEditingItems(prev => {
         const newState = { ...prev };
         delete newState[id];
@@ -165,6 +197,25 @@ export default function CamaraFria() {
       delete newState[id];
       return newState;
     });
+  };
+
+  const handleDeleteItem = async (id: string) => {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    
+    // Registrar no histórico antes de deletar
+    if (item.quantidade > 0) {
+      await addHistoricoItem({
+        item_nome: item.nome,
+        quantidade: item.quantidade,
+        unidade: item.unidade,
+        categoria: item.categoria,
+        tipo: 'saida',
+        observacoes: 'Item removido do estoque'
+      });
+    }
+    
+    await deleteItem(id);
   };
 
   const filteredItems = items.filter(item => {
@@ -250,7 +301,7 @@ export default function CamaraFria() {
             onUpdateThaw={handleUpdateThaw}
             onConfirmThaw={handleConfirmThaw}
             onCancelThaw={handleCancelThaw}
-            onDelete={deleteItem}
+            onDelete={handleDeleteItem}
           />
         ))}
       </div>

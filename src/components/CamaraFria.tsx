@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, History, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -64,17 +65,28 @@ export default function CamaraFria() {
     );
   }
 
+  // Get unique categories from items
+  const categories = Array.from(new Set(items.map(item => item.categoria)));
+  const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
+
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <CamaraFriaHeader />
+      <CamaraFriaHeader
+        itemsCount={items.length}
+        lowStockCount={lowStockItems.length}
+        historicoOpen={isHistoryDialogOpen}
+        setHistoricoOpen={setIsHistoryDialogOpen}
+        historico={historico}
+        onPrintPDF={() => {}}
+      />
       
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <CamaraFriaFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          filterCategory={filterCategory}
-          setFilterCategory={setFilterCategory}
-          items={items}
+          categories={categories}
+          selectedCategory={filterCategory}
+          setSelectedCategory={setFilterCategory}
+          searchQuery={searchTerm}
+          setSearchQuery={setSearchTerm}
         />
         
         <div className="flex flex-wrap gap-2">
@@ -85,7 +97,14 @@ export default function CamaraFria() {
                 Adicionar Item
               </Button>
             </DialogTrigger>
-            <CamaraFriaAddDialog onItemAdded={() => setIsAddDialogOpen(false)} addItem={addItem} />
+            <CamaraFriaAddDialog
+              open={isAddDialogOpen}
+              onOpenChange={setIsAddDialogOpen}
+              onItemSaved={(item) => {
+                setIsAddDialogOpen(false);
+                addItem(item);
+              }}
+            />
           </Dialog>
 
           <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
@@ -109,15 +128,19 @@ export default function CamaraFria() {
         </div>
       </div>
 
-      <CamaraFriaAlerts items={items} />
+      <CamaraFriaAlerts
+        lowStockItems={lowStockItems}
+        expiringItems={items.filter(item => item.data_validade && new Date(item.data_validade) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredItems.map((item) => (
           <CamaraFriaItemCard
             key={item.id}
-            item={item}
-            onUpdateQuantity={handleUpdateQuantity}
-            onDelete={deleteItem}
+            item={item} 
+            onUpdate={(newItem) => updateItemQuantity(item.id, newItem.quantidade)}
+            onDelete={() => deleteItem(item.id)}
+            onShowHistory={() => setIsHistoryDialogOpen(true)}
           />
         ))}
       </div>
@@ -128,7 +151,7 @@ export default function CamaraFria() {
         </div>
       )}
 
-      {showQRGenerator && qrCodes.length > 0 && (
+      {showQRGenerator && qrCodes.length > 0 && lastAddedItem && (
         <QRCodeGenerator
           qrCodes={qrCodes}
           onClose={() => setShowQRGenerator(false)}

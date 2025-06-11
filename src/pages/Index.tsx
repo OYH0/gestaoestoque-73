@@ -6,7 +6,7 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { Header } from '@/components/Header';
 import { Dashboard } from '@/components/Dashboard';
 import CamaraFria from '@/components/CamaraFria';
-import CamaraRefrigerada from '@/components/CamaraRefrigerada';
+import { CamaraRefrigerada } from '@/components/CamaraRefrigerada';
 import EstoqueSeco from '@/components/EstoqueSeco';
 import Descartaveis from '@/components/Descartaveis';
 import { ProtectedRoute } from '@/components/ProtectedRoute';

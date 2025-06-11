@@ -8,15 +8,15 @@ import { toast } from '@/hooks/use-toast';
 import QrScanner from 'qr-scanner';
 
 interface QRScannerProps {
-  isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }
 
-export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
+export function QRScanner({ onClose }: QRScannerProps) {
   const [hasCamera, setHasCamera] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const { processQRCode, isProcessing } = useQRCodeScanner();
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
@@ -108,8 +108,7 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
           description: `Item ${result.itemName} foi removido do estoque.`,
         });
         stopCamera();
-        onClose();
-        onSuccess();
+        handleClose();
       } else {
         toast({
           title: "Erro ao processar QR Code",
@@ -140,23 +139,20 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
   const handleTestQRCode = async (qrCode: string) => {
     await handleQRCodeDetected(qrCode);
   };
+  
+  const handleClose = () => {
+    stopCamera();
+    setIsOpen(false);
+    onClose();
+  };
 
   useEffect(() => {
-    if (isOpen) {
-      startCamera();
-    } else {
-      stopCamera();
-    }
-
+    startCamera();
+    
     return () => {
       stopCamera();
     };
-  }, [isOpen]);
-
-  const handleClose = () => {
-    stopCamera();
-    onClose();
-  };
+  }, []);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

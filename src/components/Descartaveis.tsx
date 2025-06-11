@@ -41,6 +41,11 @@ export default function Descartaveis() {
     );
   }
 
+  // Get unique categories for filter
+  const categories = Array.from(new Set(items.map(item => item.categoria)));
+  // Get low stock items
+  const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
+
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
       <div className="flex items-center gap-3 mb-6">
@@ -52,11 +57,11 @@ export default function Descartaveis() {
       
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <DescartaveisFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          filterCategory={filterCategory}
-          setFilterCategory={setFilterCategory}
-          items={items}
+          categories={categories}
+          selectedCategory={filterCategory}
+          setSelectedCategory={setFilterCategory}
+          searchQuery={searchTerm}
+          setSearchQuery={setSearchTerm}
         />
         
         <div className="flex flex-wrap gap-2">
@@ -81,7 +86,7 @@ export default function Descartaveis() {
         </div>
       </div>
 
-      <DescartaveisAlerts items={items} />
+      <DescartaveisAlerts lowStockItems={lowStockItems} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredItems.map((item) => (

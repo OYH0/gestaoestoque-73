@@ -82,12 +82,6 @@ export function Login() {
           {/* Mobile logo (visible only on small screens) */}
           <div className="lg:hidden pt-8 pb-4">
             <div className="text-center space-y-4">
-              <h2 className="text-2xl font-bold text-slate-800">
-                {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
-              </h2>
-              <p className="text-slate-600 mb-4">
-                {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
-              </p>
               <div className="mx-auto w-32 h-32 flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
@@ -95,6 +89,12 @@ export function Login() {
                   className="w-full h-full object-contain"
                 />
               </div>
+              <h2 className="text-2xl font-bold text-slate-800">
+                {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
+              </h2>
+              <p className="text-slate-600 mb-4">
+                {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
+              </p>
             </div>
           </div>
           

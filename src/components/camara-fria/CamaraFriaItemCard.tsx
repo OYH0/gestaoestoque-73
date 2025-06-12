@@ -46,7 +46,7 @@ export function CamaraFriaItemCard({
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
       <CardContent className="p-4">
-        <div className="flex flex-col gap-4">
+        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row items-center'} gap-4`}>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export function CamaraFriaItemCard({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2 ${isMobile ? '' : 'min-w-fit'}`}>
             {isEditing ? (
               <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap justify-center">
                 <Button
@@ -148,7 +148,7 @@ export function CamaraFriaItemCard({
                 <Button
                   variant="outline"
                   onClick={() => onStartEdit(item.id, item.quantidade)}
-                  className="w-full"
+                  className={isMobile ? "w-full" : "min-w-20"}
                 >
                   Ajustar
                 </Button>
@@ -156,7 +156,7 @@ export function CamaraFriaItemCard({
                 {item.quantidade > 0 && (
                   <Button
                     onClick={() => onStartThaw(item.id, 1)}
-                    className="bg-orange-500 hover:bg-orange-600 w-full"
+                    className={`bg-orange-500 hover:bg-orange-600 ${isMobile ? 'w-full' : 'min-w-16'}`}
                   >
                     Desc.
                   </Button>
@@ -166,7 +166,7 @@ export function CamaraFriaItemCard({
                   <Button
                     variant="destructive"
                     onClick={() => onDelete(item.id)}
-                    className="w-full"
+                    className={isMobile ? "w-full" : "min-w-24"}
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Remover

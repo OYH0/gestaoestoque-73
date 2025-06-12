@@ -43,7 +43,7 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
       <CardContent className="p-4">
-        <div className="flex flex-col gap-4">
+        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row items-center'} gap-4`}>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h3 className="font-semibold text-lg">{item.nome}</h3>
@@ -72,7 +72,7 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
               <p className="text-sm text-gray-500">Apenas administradores podem editar</p>
             </div>
           }>
-            <div className="flex flex-col gap-2">
+            <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2 ${isMobile ? '' : 'min-w-fit'}`}>
               {isEditing ? (
                 <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap justify-center">
                   <Button
@@ -114,7 +114,7 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
                   <Button
                     variant="outline"
                     onClick={handleStartEdit}
-                    className="w-full"
+                    className={isMobile ? "w-full" : "min-w-20"}
                   >
                     Ajustar
                   </Button>
@@ -122,7 +122,7 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
                   <Button
                     variant="destructive"
                     onClick={() => onDelete(item.id)}
-                    className="w-full"
+                    className={isMobile ? "w-full" : "min-w-24"}
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Remover

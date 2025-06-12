@@ -47,10 +47,19 @@ export default function CamaraFria() {
   const [editingItems, setEditingItems] = useState<Record<string, number>>({});
   const [thawingItems, setThawingItems] = useState<Record<string, number>>({});
 
-  // Filter items by selected unit
+  // Filter items by selected unit - CORRIGIDO
   const itemsByUnidade = items.filter(item => {
     if (selectedUnidade === 'todas') return true;
+    // Usar item.unidade_item que é mapeado do campo 'unidade' do banco
     return item.unidade_item === selectedUnidade;
+  });
+
+  console.log('=== FILTRO DE UNIDADE ===');
+  console.log('Unidade selecionada:', selectedUnidade);
+  console.log('Total de itens no estado:', items.length);
+  console.log('Itens após filtro:', itemsByUnidade.length);
+  items.forEach(item => {
+    console.log(`Item: ${item.nome} - Unidade: ${item.unidade_item || 'undefined'}`);
   });
 
   const handleAddNewItem = async () => {
@@ -63,10 +72,15 @@ export default function CamaraFria() {
       return;
     }
 
+    const unidadeParaItem = selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade;
+    
     const itemWithUnidade = {
       ...newItem,
-      unidade_item: selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade as 'juazeiro_norte' | 'fortaleza'
+      unidade_item: unidadeParaItem
     };
+
+    console.log('=== ADICIONANDO NOVO ITEM ===');
+    console.log('Item com unidade:', itemWithUnidade);
 
     await addItem(itemWithUnidade);
     
@@ -79,7 +93,7 @@ export default function CamaraFria() {
         categoria: newItem.categoria,
         tipo: 'entrada',
         observacoes: 'Adição de novo item ao estoque',
-        unidade_item: itemWithUnidade.unidade_item
+        unidade_item: unidadeParaItem
       });
     }
     
@@ -89,7 +103,7 @@ export default function CamaraFria() {
       unidade: 'kg',
       categoria: '',
       minimo: 0,
-      unidade_item: selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade as 'juazeiro_norte' | 'fortaleza'
+      unidade_item: unidadeParaItem
     });
     setIsAddDialogOpen(false);
   };
@@ -115,7 +129,8 @@ export default function CamaraFria() {
         unidade: item.unidade,
         categoria: item.categoria,
         tipo,
-        observacoes: `${tipo === 'entrada' ? 'Entrada' : 'Saída'} de estoque`
+        observacoes: `${tipo === 'entrada' ? 'Entrada' : 'Saída'} de estoque`,
+        unidade_item: item.unidade_item
       });
     }
   };
@@ -154,7 +169,8 @@ export default function CamaraFria() {
           unidade: item.unidade,
           categoria: item.categoria,
           tipo: quantityDifference > 0 ? 'entrada' : 'saida',
-          observacoes: 'Ajuste manual de estoque'
+          observacoes: 'Ajuste manual de estoque',
+          unidade_item: item.unidade_item
         });
       }
       
@@ -220,7 +236,8 @@ export default function CamaraFria() {
         unidade: item.unidade,
         categoria: item.categoria,
         tipo: 'saida',
-        observacoes: 'Movido para câmara refrigerada'
+        observacoes: 'Movido para câmara refrigerada',
+        unidade_item: item.unidade_item
       });
       
       setThawingItems(prev => {
@@ -256,7 +273,8 @@ export default function CamaraFria() {
         unidade: item.unidade,
         categoria: item.categoria,
         tipo: 'saida',
-        observacoes: 'Item removido do estoque'
+        observacoes: 'Item removido do estoque',
+        unidade_item: item.unidade_item
       });
     }
     
@@ -322,6 +340,7 @@ export default function CamaraFria() {
         onAddNewItem={handleAddNewItem}
         categorias={categories}
         items={filteredItems}
+        selectedUnidade={selectedUnidade}
       />
 
       <AdminGuard fallback={null}>

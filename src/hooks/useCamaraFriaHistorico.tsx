@@ -60,18 +60,38 @@ export function useCamaraFriaHistorico() {
   const addHistoricoItem = async (item: Omit<CamaraFriaHistoricoItem, 'id' | 'data_operacao'>) => {
     if (!user) return;
 
+    console.log('=== REGISTRANDO NO HISTÓRICO ===');
+    console.log('Item para histórico:', item);
+    console.log('Unidade do item:', item.unidade_item);
+
     try {
+      // Garantir que a unidade seja sempre passada
+      const unidadeParaSalvar = item.unidade_item || 'juazeiro_norte';
+      
+      const itemParaInserir = {
+        item_nome: item.item_nome,
+        quantidade: item.quantidade,
+        categoria: item.categoria,
+        tipo: item.tipo,
+        observacoes: item.observacoes || null,
+        user_id: user.id,
+        unidade: unidadeParaSalvar
+      };
+
+      console.log('Item final para inserir no histórico:', itemParaInserir);
+
       const { data, error } = await supabase
         .from('camara_fria_historico')
-        .insert([{ 
-          ...item, 
-          user_id: user.id,
-          unidade: item.unidade_item || 'juazeiro_norte'
-        }])
+        .insert([itemParaInserir])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao inserir no histórico:', error);
+        throw error;
+      }
+      
+      console.log('✅ Histórico registrado com sucesso:', data);
       
       const mappedItem: CamaraFriaHistoricoItem = {
         id: data.id,
@@ -87,7 +107,7 @@ export function useCamaraFriaHistorico() {
       
       setHistorico(prev => [mappedItem, ...prev]);
     } catch (error) {
-      console.error('Error adding history item:', error);
+      console.error('❌ ERRO ao registrar histórico:', error);
       toast({
         title: "Erro ao registrar histórico",
         description: "Não foi possível registrar a operação no histórico.",

@@ -39,6 +39,13 @@ export function useCamaraFriaData() {
         .order('nome');
 
       if (error) throw error;
+      
+      console.log('=== DADOS CARREGADOS DO BANCO ===');
+      console.log('Total de itens:', data?.length || 0);
+      data?.forEach(item => {
+        console.log(`Item: ${item.nome} - Unidade: ${item.unidade || 'não definido'}`);
+      });
+      
       setItems(data || []);
     } catch (error) {
       console.error('Error fetching items:', error);
@@ -57,8 +64,7 @@ export function useCamaraFriaData() {
 
     console.log('=== INÍCIO addItem NO HOOK ===');
     console.log('Item recebido no hook:', newItem);
-    console.log('Quantidade recebida:', newItem.quantidade);
-    console.log('Tipo da quantidade recebida:', typeof newItem.quantidade);
+    console.log('Unidade do item:', newItem.unidade_item);
     
     // GARANTIR que quantidade seja um número inteiro válido
     let quantidadeSegura: number;
@@ -77,20 +83,32 @@ export function useCamaraFriaData() {
     }
     
     console.log('Quantidade após conversão e validação:', quantidadeSegura);
-    console.log('Tipo após conversão:', typeof quantidadeSegura);
+    
+    // Garantir que a unidade seja sempre definida
+    const unidadeSegura = newItem.unidade_item || 'juazeiro_norte';
     
     const itemParaSalvar = {
-      ...newItem,
-      quantidade: quantidadeSegura
+      nome: newItem.nome,
+      quantidade: quantidadeSegura,
+      unidade: newItem.unidade,
+      categoria: newItem.categoria,
+      minimo: newItem.minimo || 0,
+      data_entrada: newItem.data_entrada,
+      data_validade: newItem.data_validade,
+      temperatura_ideal: newItem.temperatura_ideal,
+      preco_unitario: newItem.preco_unitario,
+      fornecedor: newItem.fornecedor,
+      observacoes: newItem.observacoes,
+      user_id: user.id,
+      unidade: unidadeSegura  // Usar a coluna 'unidade' para guardar a unidade_item
     };
     
     console.log('Item final para salvar no banco:', itemParaSalvar);
-    console.log('Quantidade que será salva:', itemParaSalvar.quantidade);
 
     try {
       const { data, error } = await supabase
         .from('camara_fria_items')
-        .insert([{ ...itemParaSalvar, user_id: user.id }])
+        .insert([itemParaSalvar])
         .select()
         .single();
 
@@ -98,30 +116,20 @@ export function useCamaraFriaData() {
       
       console.log('✅ ITEM SALVO NO BANCO COM SUCESSO!');
       console.log('Dados retornados do banco:', data);
-      console.log('Quantidade salva no banco:', data.quantidade);
-      console.log('Tipo da quantidade do banco:', typeof data.quantidade);
       
-      setItems(prev => [...prev, data]);
-      setLastAddedItem(data);
+      // Mapear o campo 'unidade' do banco para 'unidade_item' no frontend
+      const itemMapeado: CamaraFriaItem = {
+        ...data,
+        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza'
+      };
+      
+      setItems(prev => [...prev, itemMapeado]);
+      setLastAddedItem(itemMapeado);
       
       // Gerar QR codes APENAS se quantidade > 0
       if (data.quantidade > 0) {
         console.log('=== INICIANDO GERAÇÃO DE QR CODES ===');
-        console.log('Quantidade para gerar QR codes:', data.quantidade);
-        console.log('DEVE GERAR EXATAMENTE:', data.quantidade, 'QR codes');
-        
-        const qrCodesData = generateQRCodeData(data, 'CF', data.quantidade);
-        
-        console.log('QR codes gerados:', qrCodesData.length);
-        console.log('VERIFICAÇÃO: Quantidade solicitada vs gerada:', data.quantidade, 'vs', qrCodesData.length);
-        
-        if (qrCodesData.length !== data.quantidade) {
-          console.error('❌ ERRO: Quantidade de QR codes não confere!');
-          console.error('Esperado:', data.quantidade, 'Gerado:', qrCodesData.length);
-        } else {
-          console.log('✅ SUCESSO: Quantidade de QR codes está correta!');
-        }
-        
+        const qrCodesData = generateQRCodeData(itemMapeado, 'CF', data.quantidade);
         setQrCodes(qrCodesData);
         
         setTimeout(() => {

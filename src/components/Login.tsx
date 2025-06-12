@@ -33,7 +33,11 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-churrasco-cream via-background to-churrasco-cream/50 p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-churrasco-wallpaper">
+      {/* Enhanced wallpaper background */}
+      <div className="absolute inset-0 bg-churrasco-wallpaper-overlay" />
+      <div className="absolute inset-0 bg-churrasco-pattern opacity-30" />
+      
       {/* Enhanced background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-grid-pattern opacity-10" />
@@ -54,7 +58,18 @@ export function Login() {
           <div className="absolute bottom-1/4 left-1/4 transform rotate-45">
             <Beef className="w-14 h-14 text-churrasco-orange" />
           </div>
+          <div className="absolute top-2/3 right-1/3 transform rotate-90">
+            <Beef className="w-10 h-10 text-churrasco-brown" />
+          </div>
+          <div className="absolute bottom-1/3 right-1/6 transform -rotate-12">
+            <Beef className="w-12 h-12 text-churrasco-red" />
+          </div>
         </div>
+        
+        {/* Additional decorative elements */}
+        <div className="absolute top-20 left-1/4 w-4 h-4 bg-churrasco-red/20 rounded-full animate-ping" style={{ animationDelay: '2s', animationDuration: '3s' }}></div>
+        <div className="absolute bottom-1/3 right-1/3 w-3 h-3 bg-churrasco-orange/25 rounded-full animate-ping" style={{ animationDelay: '4s', animationDuration: '4s' }}></div>
+        <div className="absolute top-2/3 left-1/6 w-2 h-2 bg-churrasco-brown/30 rounded-full animate-ping" style={{ animationDelay: '1s', animationDuration: '5s' }}></div>
       </div>
       
       <Card className="w-full max-w-md relative z-10 shadow-2xl border-0 bg-card/95 backdrop-blur-xl overflow-hidden">

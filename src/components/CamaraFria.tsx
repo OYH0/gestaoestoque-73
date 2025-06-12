@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -373,6 +374,17 @@ export default function CamaraFria() {
           )}
         </div>
       )}
+
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+          {filteredItems.length} tipos
+        </Badge>
+        {lowStockItems.length > 0 && (
+          <Badge variant="destructive" className="text-xs">
+            {lowStockItems.length} baixo estoque
+          </Badge>
+        )}
+      </div>
 
       <CamaraFriaFilters
         categorias={categories}

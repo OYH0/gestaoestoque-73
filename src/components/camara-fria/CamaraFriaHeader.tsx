@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, History, FileText } from 'lucide-react';
@@ -55,63 +54,50 @@ export function CamaraFriaHeader({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-          {itemsCount} tipos
-        </Badge>
-        {lowStockCount > 0 && (
-          <Badge variant="destructive" className="text-xs">
-            {lowStockCount} baixo estoque
-          </Badge>
-        )}
-      </div>
+    <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+      <Button 
+        variant="outline" 
+        size={isMobile ? "sm" : "default"}
+        className="border-gray-300"
+        onClick={handlePrintPDF}
+      >
+        <FileText className="w-4 h-4 mr-1 md:mr-2" />
+        <span className={isMobile ? "text-xs" : "text-sm"}>PDF</span>
+      </Button>
 
-      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
-        <Button 
-          variant="outline" 
-          size={isMobile ? "sm" : "default"}
-          className="border-gray-300"
-          onClick={handlePrintPDF}
-        >
-          <FileText className="w-4 h-4 mr-1 md:mr-2" />
-          <span className={isMobile ? "text-xs" : "text-sm"}>PDF</span>
-        </Button>
-
-        <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size={isMobile ? "sm" : "default"}
-              className="border-gray-300"
-            >
-              <History className="w-4 h-4 mr-1 md:mr-2" />
-              <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
-            </Button>
-          </DialogTrigger>
-          <CamaraFriaHistoryDialog historico={historico} />
-        </Dialog>
-        
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              size={isMobile ? "sm" : "default"}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              <Plus className="w-4 h-4 mr-1 md:mr-2" />
-              <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
-            </Button>
-          </DialogTrigger>
-          <CamaraFriaAddDialog 
-            newItem={newItem}
-            setNewItem={setNewItem}
-            onAddNewItem={onAddNewItem}
-            setDialogOpen={setDialogOpen}
-            categorias={categorias}
-            selectedUnidade={selectedUnidade}
-          />
-        </Dialog>
-      </div>
+      <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            variant="outline" 
+            size={isMobile ? "sm" : "default"}
+            className="border-gray-300"
+          >
+            <History className="w-4 h-4 mr-1 md:mr-2" />
+            <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
+          </Button>
+        </DialogTrigger>
+        <CamaraFriaHistoryDialog historico={historico} />
+      </Dialog>
+      
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            size={isMobile ? "sm" : "default"}
+            className="bg-blue-500 hover:bg-blue-600"
+          >
+            <Plus className="w-4 h-4 mr-1 md:mr-2" />
+            <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
+          </Button>
+        </DialogTrigger>
+        <CamaraFriaAddDialog 
+          newItem={newItem}
+          setNewItem={setNewItem}
+          onAddNewItem={onAddNewItem}
+          setDialogOpen={setDialogOpen}
+          categorias={categorias}
+          selectedUnidade={selectedUnidade}
+        />
+      </Dialog>
     </div>
   );
 }

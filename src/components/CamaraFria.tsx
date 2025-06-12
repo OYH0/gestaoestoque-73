@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { CamaraFriaTransferDialog } from '@/components/camara-fria/CamaraFriaTransferDialog';
+import { AdminGuard } from '@/components/AdminGuard';
 
 export default function CamaraFria() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, transferItemsToUnidade } = useCamaraFriaData();
@@ -353,7 +355,11 @@ export default function CamaraFria() {
         selectedUnidade={selectedUnidade}
       />
 
-      {canModify && (
+      <AdminGuard fallback={
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-500">Apenas administradores e gerentes podem realizar ações de modificação.</p>
+        </div>
+      }>
         <div className={`flex ${isMobile ? 'justify-center' : ''} gap-2 flex-wrap`}>
           <Button 
             variant="outline" 
@@ -377,7 +383,7 @@ export default function CamaraFria() {
             </Button>
           )}
         </div>
-      )}
+      </AdminGuard>
 
       <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
         <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">

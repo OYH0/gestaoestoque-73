@@ -36,29 +36,43 @@ export function CamaraRefrigerada() {
     
     const item = items.find(i => i.id === id);
     if (item) {
-      // Primeiro, adicionar o item de volta à câmara fria
-      await addCamaraFriaItem({
-        nome: item.nome,
-        quantidade: item.quantidade,
-        unidade: item.unidade,
-        categoria: item.categoria,
-        temperatura_ideal: item.temperatura_ideal,
-        observacoes: 'Retornado da câmara refrigerada',
-        data_entrada: new Date().toISOString().split('T')[0],
-        unidade_item: 'juazeiro_norte' // Definir unidade padrão
-      });
+      console.log('=== MOVENDO ITEM DE VOLTA PARA CÂMARA FRIA ===');
+      console.log('Item encontrado:', item);
 
-      // Registrar no histórico da câmara refrigerada
-      await addHistoricoItem({
-        item_nome: item.nome,
-        quantidade: item.quantidade,
-        unidade: item.unidade,
-        categoria: item.categoria,
-        tipo: 'volta_freezer'
-      });
+      try {
+        // Primeiro, adicionar o item de volta à câmara fria com todos os campos necessários
+        await addCamaraFriaItem({
+          nome: item.nome,
+          quantidade: item.quantidade,
+          unidade: item.unidade,
+          categoria: item.categoria,
+          temperatura_ideal: item.temperatura_ideal || -18,
+          observacoes: 'Retornado da câmara refrigerada',
+          data_entrada: new Date().toISOString().split('T')[0],
+          unidade_item: 'juazeiro_norte', // Definir unidade padrão
+          minimo: 5 // Valor padrão para minimo
+        });
 
-      // Por último, remover da câmara refrigerada
-      deleteItem(id);
+        console.log('✅ Item adicionado de volta à câmara fria');
+
+        // Registrar no histórico da câmara refrigerada
+        await addHistoricoItem({
+          item_nome: item.nome,
+          quantidade: item.quantidade,
+          unidade: item.unidade,
+          categoria: item.categoria,
+          tipo: 'volta_freezer'
+        });
+
+        console.log('✅ Histórico registrado');
+
+        // Por último, remover da câmara refrigerada
+        deleteItem(id);
+        
+        console.log('✅ Item removido da câmara refrigerada');
+      } catch (error) {
+        console.error('❌ ERRO ao mover item para câmara fria:', error);
+      }
     }
   };
 

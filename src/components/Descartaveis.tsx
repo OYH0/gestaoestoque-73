@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { QrCode, Plus, History, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -129,15 +130,6 @@ export default function Descartaveis() {
           selectedUnidade={selectedUnidade}
           onUnidadeChange={setSelectedUnidade}
         />
-        
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-          {filteredItems.length} itens
-        </Badge>
-        {lowStockItems.length > 0 && (
-          <Badge variant="destructive" className="text-xs">
-            {lowStockItems.length} baixo estoque
-          </Badge>
-        )}
       </div>
 
       <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
@@ -201,6 +193,17 @@ export default function Descartaveis() {
           </Button>
         </div>
       </AdminGuard>
+
+      <div className={`flex flex-wrap gap-2 items-center ${isMobile ? 'justify-center' : ''}`}>
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+          {filteredItems.length} itens
+        </Badge>
+        {lowStockItems.length > 0 && (
+          <Badge variant="destructive" className="text-xs">
+            {lowStockItems.length} baixo estoque
+          </Badge>
+        )}
+      </div>
 
       <DescartaveisFilters
         categorias={categories}

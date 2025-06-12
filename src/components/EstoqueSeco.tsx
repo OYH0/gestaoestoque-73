@@ -130,15 +130,6 @@ export default function EstoqueSeco() {
           selectedUnidade={selectedUnidade}
           onUnidadeChange={setSelectedUnidade}
         />
-        
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-          {filteredItems.length} itens
-        </Badge>
-        {lowStockItems.length > 0 && (
-          <Badge variant="destructive" className="text-xs">
-            {lowStockItems.length} baixo estoque
-          </Badge>
-        )}
       </div>
 
       <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
@@ -202,6 +193,17 @@ export default function EstoqueSeco() {
           </Button>
         </div>
       </AdminGuard>
+
+      <div className={`flex flex-wrap gap-2 items-center ${isMobile ? 'justify-center' : ''}`}>
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+          {filteredItems.length} itens
+        </Badge>
+        {lowStockItems.length > 0 && (
+          <Badge variant="destructive" className="text-xs">
+            {lowStockItems.length} baixo estoque
+          </Badge>
+        )}
+      </div>
 
       <EstoqueSecoFilters
         categorias={categories}

@@ -54,6 +54,16 @@ export function Header() {
     <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
       <SidebarTrigger className="-ml-1" />
       
+      {/* Desktop: title on the left after sidebar trigger */}
+      {!isMobile && currentRoute && (
+        <div className="flex items-center gap-3 ml-4">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <IconComponent className="w-4 h-4 text-primary-foreground" />
+          </div>
+          <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
+        </div>
+      )}
+
       {/* Mobile: centered title */}
       {isMobile && currentRoute && (
         <div className="flex-1 flex justify-center">
@@ -66,19 +76,8 @@ export function Header() {
         </div>
       )}
 
-      {/* Desktop: title on the right */}
-      {!isMobile && (
-        <div className="flex-1 flex justify-end">
-          {currentRoute && (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <IconComponent className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Spacer for desktop to push user menu to the right */}
+      {!isMobile && <div className="flex-1" />}
 
       <div className="flex items-center gap-2">
         <DropdownMenu>

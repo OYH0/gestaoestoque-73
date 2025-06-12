@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Beef } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export function Login() {
@@ -33,45 +33,72 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-churrasco-cream via-background to-churrasco-cream/50 p-4">
-      {/* Background decorative elements with churrasco theme */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-churrasco-cream via-background to-churrasco-cream/50 p-4 relative overflow-hidden">
+      {/* Enhanced background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-grid-pattern opacity-20" />
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-churrasco-red/20 to-churrasco-orange/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-churrasco-brown/20 to-churrasco-red/20 rounded-full blur-3xl"></div>
+        <div className="absolute inset-0 bg-grid-pattern opacity-10" />
+        
+        {/* Floating elements with churrasco theme */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-churrasco-red/30 to-churrasco-orange/30 rounded-full blur-2xl animate-pulse"></div>
+        <div className="absolute top-1/4 -left-32 w-64 h-64 bg-gradient-to-tr from-churrasco-brown/20 to-churrasco-red/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-32 right-1/4 w-48 h-48 bg-gradient-to-bl from-churrasco-orange/25 to-churrasco-cream/30 rounded-full blur-2xl"></div>
+        
+        {/* Subtle meat/grill pattern overlay */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-10 left-10 transform rotate-12">
+            <Beef className="w-16 h-16 text-churrasco-brown" />
+          </div>
+          <div className="absolute top-1/3 right-20 transform -rotate-45">
+            <Beef className="w-12 h-12 text-churrasco-red" />
+          </div>
+          <div className="absolute bottom-1/4 left-1/4 transform rotate-45">
+            <Beef className="w-14 h-14 text-churrasco-orange" />
+          </div>
+        </div>
       </div>
       
-      <Card className="w-full max-w-md relative z-10 shadow-2xl border-border bg-card/90 backdrop-blur-xl">
-        <CardHeader className="text-center space-y-6 pb-8">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-churrasco-brown tracking-wider">
-                COMPANHIA
-              </h1>
-              <div className="flex items-center justify-center space-x-2">
-                <div className="h-px bg-churrasco-red flex-1 max-w-12"></div>
-                <span className="text-lg font-semibold text-churrasco-red px-2">DO</span>
-                <div className="h-px bg-churrasco-red flex-1 max-w-12"></div>
+      <Card className="w-full max-w-md relative z-10 shadow-2xl border-0 bg-card/95 backdrop-blur-xl overflow-hidden">
+        {/* Enhanced header with better branding */}
+        <CardHeader className="text-center space-y-6 pb-8 bg-gradient-to-b from-churrasco-brown/5 to-transparent">
+          <div className="space-y-6">
+            {/* Logo area with enhanced styling */}
+            <div className="space-y-3">
+              <div className="mx-auto w-16 h-16 bg-churrasco-gradient rounded-full flex items-center justify-center shadow-lg">
+                <Beef className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-churrasco-brown tracking-wider">
-                CHURRASCO
-              </h1>
+              
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-churrasco-brown tracking-wider">
+                  COMPANHIA
+                </h1>
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="h-px bg-gradient-to-r from-transparent via-churrasco-red to-transparent flex-1 max-w-16"></div>
+                  <span className="text-xl font-bold text-churrasco-red px-3 bg-gradient-to-r from-churrasco-red/10 to-churrasco-orange/10 rounded-full py-1">
+                    DO
+                  </span>
+                  <div className="h-px bg-gradient-to-r from-transparent via-churrasco-red to-transparent flex-1 max-w-16"></div>
+                </div>
+                <h1 className="text-3xl font-bold text-churrasco-brown tracking-wider">
+                  CHURRASCO
+                </h1>
+              </div>
             </div>
+            
             <CardTitle className="text-xl font-medium text-foreground">
-              {isSignUp ? 'Crie sua conta' : 'Faça login para acessar sua conta'}
+              {isSignUp ? 'Crie sua conta' : 'Acesse sua conta'}
             </CardTitle>
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 px-8 pb-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-sm font-medium text-foreground">
+              <div className="space-y-3">
+                <Label htmlFor="fullName" className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <User className="w-4 h-4 text-churrasco-red" />
                   Nome Completo
                 </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <div className="relative group">
                   <Input
                     id="fullName"
                     type="text"
@@ -79,18 +106,18 @@ export function Login() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required={isSignUp}
-                    className="pl-10 h-12 border-border focus:border-churrasco-red focus:ring-churrasco-red/20 transition-all duration-200"
+                    className="h-12 pl-4 border-2 border-border hover:border-churrasco-red/50 focus:border-churrasco-red focus:ring-churrasco-red/20 transition-all duration-300 bg-background/50"
                   />
                 </div>
               </div>
             )}
             
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-foreground">
+            <div className="space-y-3">
+              <Label htmlFor="email" className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Mail className="w-4 h-4 text-churrasco-red" />
                 E-mail
               </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <div className="relative group">
                 <Input
                   id="email"
                   type="email"
@@ -98,17 +125,17 @@ export function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="pl-10 h-12 border-border focus:border-churrasco-red focus:ring-churrasco-red/20 transition-all duration-200"
+                  className="h-12 pl-4 border-2 border-border hover:border-churrasco-red/50 focus:border-churrasco-red focus:ring-churrasco-red/20 transition-all duration-300 bg-background/50"
                 />
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-foreground">
+            <div className="space-y-3">
+              <Label htmlFor="password" className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Lock className="w-4 h-4 text-churrasco-red" />
                 Senha
               </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <div className="relative group">
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -116,19 +143,19 @@ export function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pl-10 pr-12 h-12 border-border focus:border-churrasco-red focus:ring-churrasco-red/20 transition-all duration-200"
+                  className="h-12 pl-4 pr-12 border-2 border-border hover:border-churrasco-red/50 focus:border-churrasco-red focus:ring-churrasco-red/20 transition-all duration-300 bg-background/50"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-accent"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-churrasco-red/10 text-muted-foreground hover:text-churrasco-red transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="w-4 h-4 text-muted-foreground" />
+                    <EyeOff className="w-4 h-4" />
                   ) : (
-                    <Eye className="w-4 h-4 text-muted-foreground" />
+                    <Eye className="w-4 h-4" />
                   )}
                 </Button>
               </div>
@@ -137,28 +164,42 @@ export function Login() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-churrasco-gradient hover:opacity-90 text-primary-foreground font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="w-full h-12 bg-churrasco-gradient hover:opacity-90 hover:scale-[1.02] text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border-0"
             >
               {loading ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   {isSignUp ? 'Criando conta...' : 'Entrando...'}
                 </div>
               ) : (
-                isSignUp ? 'Criar Conta' : 'Entrar'
+                <div className="flex items-center gap-2">
+                  {isSignUp ? (
+                    <>
+                      <User className="w-4 h-4" />
+                      Criar Conta
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4" />
+                      Entrar
+                    </>
+                  )}
+                </div>
               )}
             </Button>
           </form>
           
-          <div className="text-center text-sm text-muted-foreground">
-            {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}{' '}
-            <Button 
-              variant="link" 
-              className="text-churrasco-red hover:text-churrasco-red/80 p-0 h-auto font-medium"
-              onClick={() => setIsSignUp(!isSignUp)}
-            >
-              {isSignUp ? 'Fazer login' : 'Criar conta'}
-            </Button>
+          <div className="text-center pt-4 border-t border-border/50">
+            <div className="text-sm text-muted-foreground">
+              {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}{' '}
+              <Button 
+                variant="link" 
+                className="text-churrasco-red hover:text-churrasco-red/80 p-0 h-auto font-semibold hover:underline transition-colors"
+                onClick={() => setIsSignUp(!isSignUp)}
+              >
+                {isSignUp ? 'Fazer login' : 'Criar conta'}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

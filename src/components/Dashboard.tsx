@@ -182,7 +182,7 @@ export function Dashboard() {
                     <Legend 
                       verticalAlign="bottom"
                       height={36}
-                      formatter={(value) => `${value}`}
+                      formatter={(value, entry) => entry.payload.nome}
                     />
                   </PieChart>
                 </ResponsiveContainer>

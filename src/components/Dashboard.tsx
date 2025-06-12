@@ -77,7 +77,7 @@ export function Dashboard() {
 
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gráfico de Barras - Todos os tipos de carne e quantidades */}
+        {/* Gráfico de Barras Horizontais - Todos os tipos de carne e quantidades */}
         <Card className="shadow-md border-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -94,27 +94,27 @@ export function Dashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={meatTypesData} 
+                    layout="horizontal"
                     margin={{ 
-                      top: 20, 
+                      top: 10, 
                       right: 30, 
-                      left: 20, 
-                      bottom: 100 
+                      left: 80, 
+                      bottom: 10 
                     }}
-                    barCategoryGap="15%"
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis 
-                      dataKey="tipo" 
-                      stroke="#888" 
-                      angle={-90}
-                      textAnchor="end"
-                      height={100}
-                      fontSize={11}
-                      interval={0}
+                      type="number"
+                      stroke="#888"
+                      fontSize={12}
                     />
                     <YAxis 
-                      stroke="#888"
-                      width={50}
+                      type="category"
+                      dataKey="tipo" 
+                      stroke="#888" 
+                      fontSize={11}
+                      width={70}
+                      tick={{ textAnchor: 'end' }}
                     />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}
@@ -122,8 +122,8 @@ export function Dashboard() {
                     />
                     <Bar 
                       dataKey="quantidade" 
-                      radius={[2, 2, 0, 0]}
-                      maxBarSize={35}
+                      radius={[0, 4, 4, 0]}
+                      height={20}
                     >
                       {meatTypesData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />

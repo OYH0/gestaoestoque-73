@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -42,8 +41,7 @@ const routeConfig = {
     icon: FileText
   },
   '/configuracoes': {
-    title: 'Gerenciamento de Usuários',
-    description: 'Configure permissões e unidades responsáveis para cada usuário',
+    title: 'Configurações',
     icon: Settings
   }
 };

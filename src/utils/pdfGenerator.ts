@@ -47,8 +47,8 @@ export const generateInventoryPDF = (
   // Cabeçalhos das colunas
   pdf.setFont(undefined, 'bold');
   pdf.text('Item', margin, yPosition);
-  pdf.text('Categoria', margin + 80, yPosition);
-  pdf.text('Quantidade', margin + 130, yPosition);
+  pdf.text('Qtd. Atual', margin + 70, yPosition);
+  pdf.text('Qtd. a Comprar', margin + 130, yPosition);
   
   yPosition += 5;
   pdf.line(margin, yPosition, pageWidth - margin, yPosition);
@@ -68,8 +68,8 @@ export const generateInventoryPDF = (
       // Repetir cabeçalhos na nova página
       pdf.setFont(undefined, 'bold');
       pdf.text('Item', margin, yPosition);
-      pdf.text('Categoria', margin + 80, yPosition);
-      pdf.text('Quantidade', margin + 130, yPosition);
+      pdf.text('Qtd. Atual', margin + 70, yPosition);
+      pdf.text('Qtd. a Comprar', margin + 130, yPosition);
       
       yPosition += 5;
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
@@ -78,15 +78,15 @@ export const generateInventoryPDF = (
     }
     
     // Nome do item
-    const maxWidth = 70;
+    const maxWidth = 60;
     const lines = pdf.splitTextToSize(item.nome, maxWidth);
     pdf.text(lines[0], margin, yPosition);
     
-    // Categoria
-    pdf.text(item.categoria, margin + 80, yPosition);
+    // Quantidade atual
+    pdf.text(`${item.quantidade} ${item.unidade}`, margin + 70, yPosition);
     
-    // Quantidade
-    pdf.text(`${item.quantidade} ${item.unidade}`, margin + 130, yPosition);
+    // Linha para preenchimento manual da quantidade a comprar
+    pdf.line(margin + 130, yPosition + 2, pageWidth - margin - 10, yPosition + 2);
     
     yPosition += 12;
     
@@ -94,10 +94,31 @@ export const generateInventoryPDF = (
     const isLowStock = item.minimo && item.quantidade <= item.minimo;
     if (isLowStock) {
       pdf.setTextColor(255, 0, 0);
-      pdf.text('⚠ Baixo estoque', margin + 130, yPosition - 6);
+      pdf.text('⚠ Baixo estoque', margin + 70, yPosition - 6);
       pdf.setTextColor(0, 0, 0);
     }
   });
+  
+  // Adicionar algumas linhas extras em branco para novos itens
+  yPosition += 15;
+  pdf.setFont(undefined, 'bold');
+  pdf.text('Novos itens:', margin, yPosition);
+  yPosition += 10;
+  pdf.setFont(undefined, 'normal');
+  
+  for (let i = 0; i < 8; i++) {
+    if (yPosition > 250) {
+      pdf.addPage();
+      yPosition = 30;
+    }
+    
+    // Linhas para preenchimento manual de novos itens
+    pdf.line(margin, yPosition + 2, margin + 60, yPosition + 2);
+    pdf.line(margin + 70, yPosition + 2, margin + 120, yPosition + 2);
+    pdf.line(margin + 130, yPosition + 2, pageWidth - margin - 10, yPosition + 2);
+    
+    yPosition += 15;
+  }
   
   // Rodapé
   const pageCount = pdf.getNumberOfPages();

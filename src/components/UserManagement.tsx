@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, Shield, MapPin, RefreshCw } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface UserProfile {
   id: string;
@@ -22,6 +23,7 @@ export function UserManagement() {
   const { isAdmin, loading: permissionsLoading } = useUserPermissions();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   const fetchUsers = async () => {
     try {
@@ -167,7 +169,7 @@ export function UserManagement() {
 
   if (permissionsLoading || loading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4 md:p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 rounded w-64"></div>
           <div className="h-32 bg-gray-200 rounded"></div>
@@ -178,17 +180,17 @@ export function UserManagement() {
 
   return (
     <AdminGuard>
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground space-y-1">
-            <p>Usuários encontrados: {users.length}</p>
-            <div className="space-y-1">
+      <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+        <div className="flex flex-col space-y-4 md:flex-row md:items-start md:justify-between md:space-y-0">
+          <div className="text-sm text-muted-foreground space-y-2">
+            <p className="font-medium">Usuários encontrados: {users.length}</p>
+            <div className="space-y-1 text-xs md:text-sm">
               <p><strong>Admin:</strong> Pode ver e modificar dados de todas as unidades + transferir itens</p>
               <p><strong>Gerente:</strong> Pode ver dados de todas as unidades, mas só pode modificar itens da sua unidade</p>
               <p><strong>Visualizador:</strong> Só pode visualizar dados de todas as unidades</p>
             </div>
           </div>
-          <Button onClick={fetchUsers} variant="outline">
+          <Button onClick={fetchUsers} variant="outline" size={isMobile ? "sm" : "default"}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
           </Button>
@@ -197,18 +199,18 @@ export function UserManagement() {
         <div className="grid gap-4">
           {users.map((user) => (
             <Card key={user.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{user.full_name || user.email}</CardTitle>
-                    <CardDescription>{user.email}</CardDescription>
+              <CardHeader className="pb-3">
+                <div className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base md:text-lg truncate">{user.full_name || user.email}</CardTitle>
+                    <CardDescription className="text-sm truncate">{user.email}</CardDescription>
                   </div>
-                  <div className="flex gap-2">
-                    <Badge variant={getUserTypeBadgeVariant(user.user_type)}>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant={getUserTypeBadgeVariant(user.user_type)} className="text-xs">
                       <Shield className="h-3 w-3 mr-1" />
                       {getUserTypeLabel(user.user_type)}
                     </Badge>
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="text-xs">
                       <MapPin className="h-3 w-3 mr-1" />
                       {user.unidade_responsavel === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza'}
                     </Badge>
@@ -216,14 +218,14 @@ export function UserManagement() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Tipo de Usuário</label>
                     <Select
                       value={user.user_type}
                       onValueChange={(value: 'admin' | 'viewer' | 'gerente') => updateUserType(user.id, value)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -240,7 +242,7 @@ export function UserManagement() {
                       value={user.unidade_responsavel}
                       onValueChange={(value: 'juazeiro_norte' | 'fortaleza') => updateUserUnidade(user.id, value)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -251,7 +253,7 @@ export function UserManagement() {
                   </div>
                 </div>
 
-                <div className="pt-2 text-xs text-muted-foreground">
+                <div className="pt-2 text-xs text-muted-foreground border-t">
                   Conta criada em: {new Date(user.created_at).toLocaleDateString('pt-BR')}
                 </div>
               </CardContent>

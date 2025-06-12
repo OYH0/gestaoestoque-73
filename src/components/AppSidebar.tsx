@@ -76,7 +76,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0 w-full md:w-64 shadow-2xl">
-      <div className="bg-primary h-full">
+      <div className="bg-gradient-to-r from-churrasco-red to-churrasco-orange h-full">
         <SidebarContent className="bg-transparent flex flex-col h-full">
           <div className="flex-1">
             <SidebarGroup className="pt-6 md:pt-8 px-3 md:px-4">

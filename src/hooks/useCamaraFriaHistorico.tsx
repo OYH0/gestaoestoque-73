@@ -13,6 +13,7 @@ export interface CamaraFriaHistoricoItem {
   tipo: 'entrada' | 'saida';
   data_operacao: string;
   observacoes?: string;
+  unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
 export function useCamaraFriaHistorico() {
@@ -40,6 +41,7 @@ export function useCamaraFriaHistorico() {
         tipo: item.tipo as 'entrada' | 'saida',
         data_operacao: item.data_operacao,
         observacoes: item.observacoes,
+        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
       }));
       
       setHistorico(mappedHistorico);
@@ -63,7 +65,8 @@ export function useCamaraFriaHistorico() {
         .from('camara_fria_historico')
         .insert([{ 
           ...item, 
-          user_id: user.id
+          user_id: user.id,
+          unidade: item.unidade_item || 'juazeiro_norte'
         }])
         .select()
         .single();
@@ -79,6 +82,7 @@ export function useCamaraFriaHistorico() {
         tipo: data.tipo as 'entrada' | 'saida',
         data_operacao: data.data_operacao,
         observacoes: data.observacoes,
+        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
       setHistorico(prev => [mappedItem, ...prev]);

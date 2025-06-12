@@ -15,12 +15,15 @@ import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
+import { UnidadeSelector } from '@/components/UnidadeSelector';
+import { AdminGuard } from '@/components/AdminGuard';
 
 export default function Descartaveis() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, fetchItems } = useDescartaveisData();
   const { historico } = useDescartaveisHistorico();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
+  const [selectedUnidade, setSelectedUnidade] = useState<'juazeiro_norte' | 'fortaleza' | 'todas'>('todas');
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
@@ -37,13 +40,20 @@ export default function Descartaveis() {
     const matchesSearch = item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.categoria.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'Todos' || item.categoria === filterCategory;
-    return matchesSearch && matchesCategory;
+    const matchesUnidade = selectedUnidade === 'todas' || 
+                          (item as any).unidade === selectedUnidade;
+    return matchesSearch && matchesCategory && matchesUnidade;
   });
 
   const handleAddNewItem = async () => {
     if (!newItem.nome || !newItem.categoria || !newItem.unidade) return;
     
-    await addItem(newItem);
+    const itemWithUnidade = {
+      ...newItem,
+      unidade_item: selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade
+    };
+    
+    await addItem(itemWithUnidade);
     setNewItem({ nome: '', quantidade: 0, unidade: '', categoria: '', minimo: 0 });
     setIsAddDialogOpen(false);
   };
@@ -54,9 +64,15 @@ export default function Descartaveis() {
 
   const handlePrintPDF = () => {
     try {
+      const unidadeText = selectedUnidade === 'todas' 
+        ? 'Todas as Unidades' 
+        : selectedUnidade === 'juazeiro_norte' 
+        ? 'Juazeiro do Norte' 
+        : 'Fortaleza';
+        
       generateInventoryPDF(
-        items,
-        'Relatório - Descartáveis',
+        filteredItems,
+        `Relatório - Descartáveis - ${unidadeText}`,
         'Inventário de produtos descartáveis'
       );
     } catch (error) {
@@ -82,13 +98,18 @@ export default function Descartaveis() {
 
   // Categorias predefinidas para descartáveis
   const categories = ['Todos', 'Pratos e Talheres', 'Copos e Bebidas', 'Embalagens', 'Guardanapos e Toalhas', 'Sacolas e Sacos', 'Recipientes', 'Descartáveis Diversos'];
-  const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
+  const lowStockItems = filteredItems.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+      <div className={`flex flex-wrap gap-2 items-center ${isMobile ? 'justify-center' : ''}`}>
+        <UnidadeSelector 
+          selectedUnidade={selectedUnidade}
+          onUnidadeChange={setSelectedUnidade}
+        />
+        
         <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-          {items.length} itens
+          {filteredItems.length} itens
         </Badge>
         {lowStockItems.length > 0 && (
           <Badge variant="destructive" className="text-xs">
@@ -122,37 +143,42 @@ export default function Descartaveis() {
           <DescartaveisHistoryDialog historico={historico} />
         </Dialog>
         
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              size={isMobile ? "sm" : "default"}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              <Plus className="w-4 h-4 mr-1 md:mr-2" />
-              <span className={isMobile ? "text-xs" : "text-sm"}>Novo Item</span>
-            </Button>
-          </DialogTrigger>
-          <DescartaveisAddDialog 
-            newItem={newItem}
-            setNewItem={setNewItem}
-            onAddNewItem={handleAddNewItem}
-            setDialogOpen={setIsAddDialogOpen}
-            categorias={categories}
-          />
-        </Dialog>
+        <AdminGuard>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                size={isMobile ? "sm" : "default"}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                <Plus className="w-4 h-4 mr-1 md:mr-2" />
+                <span className={isMobile ? "text-xs" : "text-sm"}>Novo Item</span>
+              </Button>
+            </DialogTrigger>
+            <DescartaveisAddDialog 
+              newItem={newItem}
+              setNewItem={setNewItem}
+              onAddNewItem={handleAddNewItem}
+              setDialogOpen={setIsAddDialogOpen}
+              categorias={categories}
+              selectedUnidade={selectedUnidade}
+            />
+          </Dialog>
+        </AdminGuard>
       </div>
 
-      <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-fit text-green-600 border-green-200 hover:bg-green-50"
-          onClick={() => setShowQRScanner(true)}
-        >
-          <QrCode className="w-4 h-4 mr-2" />
-          Escanear QR Code
-        </Button>
-      </div>
+      <AdminGuard fallback={null}>
+        <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-fit text-green-600 border-green-200 hover:bg-green-50"
+            onClick={() => setShowQRScanner(true)}
+          >
+            <QrCode className="w-4 h-4 mr-2" />
+            Escanear QR Code
+          </Button>
+        </div>
+      </AdminGuard>
 
       <DescartaveisFilters
         categorias={categories}

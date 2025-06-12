@@ -13,6 +13,7 @@ export interface EstoqueSecoHistoricoItem {
   tipo: 'entrada' | 'saida';
   data_operacao: string;
   observacoes?: string;
+  unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
 export function useEstoqueSecoHistorico() {
@@ -27,7 +28,6 @@ export function useEstoqueSecoHistorico() {
       const { data, error } = await supabase
         .from('estoque_seco_historico')
         .select('*')
-        .eq('user_id', user.id)
         .order('data_operacao', { ascending: false });
 
       if (error) throw error;
@@ -41,6 +41,7 @@ export function useEstoqueSecoHistorico() {
         tipo: item.tipo as 'entrada' | 'saida',
         data_operacao: item.data_operacao,
         observacoes: item.observacoes,
+        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
       }));
       
       setHistorico(mappedHistorico);
@@ -71,7 +72,8 @@ export function useEstoqueSecoHistorico() {
           categoria: item.categoria,
           tipo: item.tipo,
           observacoes: item.observacoes,
-          user_id: user.id
+          user_id: user.id,
+          unidade: item.unidade_item || 'juazeiro_norte'
         }])
         .select()
         .single();
@@ -92,6 +94,7 @@ export function useEstoqueSecoHistorico() {
         tipo: data.tipo as 'entrada' | 'saida',
         data_operacao: data.data_operacao,
         observacoes: data.observacoes,
+        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
       setHistorico(prev => [mappedItem, ...prev]);

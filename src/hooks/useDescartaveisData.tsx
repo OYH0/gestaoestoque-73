@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +16,7 @@ export interface DescartaveisItem {
   preco_unitario?: number;
   fornecedor?: string;
   observacoes?: string;
+  unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
 export function useDescartaveisData() {
@@ -39,7 +39,13 @@ export function useDescartaveisData() {
         .order('nome');
 
       if (error) throw error;
-      setItems(data || []);
+      
+      const mappedItems = (data || []).map(item => ({
+        ...item,
+        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza'
+      }));
+      
+      setItems(mappedItems);
     } catch (error) {
       console.error('Error fetching items:', error);
       toast({
@@ -52,20 +58,33 @@ export function useDescartaveisData() {
     }
   };
 
-  const addItem = async (newItem: Omit<DescartaveisItem, 'id'>) => {
+  const addItem = async (newItem: Omit<DescartaveisItem, 'id'> & { unidade_item?: 'juazeiro_norte' | 'fortaleza' }) => {
     if (!user) return;
 
     try {
+      const itemToInsert = {
+        ...newItem,
+        user_id: user.id,
+        unidade: newItem.unidade_item || 'juazeiro_norte'
+      };
+      
+      delete (itemToInsert as any).unidade_item;
+
       const { data, error } = await supabase
         .from('descartaveis_items')
-        .insert([{ ...newItem, user_id: user.id }])
+        .insert([itemToInsert])
         .select()
         .single();
 
       if (error) throw error;
       
-      setItems(prev => [...prev, data]);
-      setLastAddedItem(data);
+      const mappedData = {
+        ...data,
+        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza'
+      };
+      
+      setItems(prev => [...prev, mappedData]);
+      setLastAddedItem(mappedData);
       
       // Registrar no histórico
       if (newItem.quantidade > 0) {
@@ -75,13 +94,14 @@ export function useDescartaveisData() {
           unidade: newItem.unidade,
           categoria: newItem.categoria,
           tipo: 'entrada',
-          observacoes: 'Item adicionado ao estoque'
+          observacoes: 'Item adicionado ao estoque',
+          unidade_item: newItem.unidade_item || 'juazeiro_norte'
         });
       }
       
       // Gerar QR codes para o item apenas se quantidade > 0
       if (newItem.quantidade > 0) {
-        const qrCodesData = generateQRCodeData(data, 'DESC', newItem.quantidade);
+        const qrCodesData = generateQRCodeData(mappedData, 'DESC', newItem.quantidade);
         setQrCodes(qrCodesData);
         
         setTimeout(() => {
@@ -131,7 +151,8 @@ export function useDescartaveisData() {
           unidade: currentItem.unidade,
           categoria: currentItem.categoria,
           tipo: quantityDifference > 0 ? 'entrada' : 'saida',
-          observacoes: quantityDifference > 0 ? 'Quantidade aumentada' : 'Quantidade reduzida'
+          observacoes: quantityDifference > 0 ? 'Quantidade aumentada' : 'Quantidade reduzida',
+          unidade_item: currentItem.unidade_item || 'juazeiro_norte'
         });
       }
 
@@ -177,7 +198,8 @@ export function useDescartaveisData() {
         unidade: currentItem.unidade,
         categoria: currentItem.categoria,
         tipo: 'saida',
-        observacoes: 'Item removido do estoque'
+        observacoes: 'Item removido do estoque',
+        unidade_item: currentItem.unidade_item || 'juazeiro_norte'
       });
 
       toast({

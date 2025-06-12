@@ -366,21 +366,27 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          unidade_responsavel: Database["public"]["Enums"]["unidade"] | null
           updated_at: string
+          user_type: Database["public"]["Enums"]["user_type"] | null
         }
         Insert: {
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          unidade_responsavel?: Database["public"]["Enums"]["unidade"] | null
           updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"] | null
         }
         Update: {
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          unidade_responsavel?: Database["public"]["Enums"]["unidade"] | null
           updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"] | null
         }
         Relationships: []
       }
@@ -389,10 +395,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      unidade: "juazeiro_norte" | "fortaleza"
+      user_type: "admin" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -507,6 +517,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      unidade: ["juazeiro_norte", "fortaleza"],
+      user_type: ["admin", "viewer"],
+    },
   },
 } as const

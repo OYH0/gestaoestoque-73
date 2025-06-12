@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, History, QrCode, FileText } from 'lucide-react';
+import { Plus, History, QrCode, FileText, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
@@ -19,9 +19,10 @@ import { Badge } from '@/components/ui/badge';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
 import { AdminGuard } from '@/components/AdminGuard';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { CamaraFriaTransferDialog } from '@/components/camara-fria/CamaraFriaTransferDialog';
 
 export default function CamaraFria() {
-  const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem } = useCamaraFriaData();
+  const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, transferItemsToUnidade } = useCamaraFriaData();
   const { historico, addHistoricoItem } = useCamaraFriaHistorico();
   const { addItem: addCamaraRefrigeradaItem } = useCamaraRefrigeradaData();
   const { isAdmin } = useUserPermissions();
@@ -31,6 +32,7 @@ export default function CamaraFria() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
   const isMobile = useIsMobile();
   
   // Estados para o formulário de adicionar item
@@ -288,6 +290,15 @@ export default function CamaraFria() {
     return matchesSearch && matchesCategory;
   });
 
+  const handleTransferItems = async (itemIds: string[], targetUnidade: 'juazeiro_norte' | 'fortaleza') => {
+    if (!isAdmin) {
+      console.error('Acesso negado: apenas administradores podem transferir itens');
+      return;
+    }
+    
+    await transferItemsToUnidade(itemIds, targetUnidade);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-4 md:p-6 space-y-6">
@@ -344,7 +355,7 @@ export default function CamaraFria() {
       />
 
       <AdminGuard fallback={null}>
-        <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
+        <div className={`flex ${isMobile ? 'justify-center' : ''} gap-2 flex-wrap`}>
           <Button 
             variant="outline" 
             size="sm" 
@@ -353,6 +364,16 @@ export default function CamaraFria() {
           >
             <QrCode className="w-4 h-4 mr-2" />
             Escanear QR Code
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-fit text-blue-600 border-blue-200 hover:bg-blue-50"
+            onClick={() => setShowTransferDialog(true)}
+          >
+            <ArrowRight className="w-4 h-4 mr-2" />
+            Transferir Itens
           </Button>
         </div>
       </AdminGuard>
@@ -406,6 +427,14 @@ export default function CamaraFria() {
       {showScanner && (
         <QRScanner onClose={() => setShowScanner(false)} />
       )}
+
+      <CamaraFriaTransferDialog
+        open={showTransferDialog}
+        onOpenChange={setShowTransferDialog}
+        items={items}
+        onTransfer={handleTransferItems}
+        currentUnidade={selectedUnidade}
+      />
     </div>
   );
 }

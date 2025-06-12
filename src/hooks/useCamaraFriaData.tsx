@@ -65,6 +65,59 @@ export function useCamaraFriaData() {
     }
   };
 
+  const transferItemsToUnidade = async (itemIds: string[], targetUnidade: 'juazeiro_norte' | 'fortaleza') => {
+    if (!user) return;
+
+    console.log('=== TRANSFERINDO ITENS PARA NOVA UNIDADE ===');
+    console.log('Item IDs:', itemIds);
+    console.log('Unidade de destino:', targetUnidade);
+
+    try {
+      const { error } = await supabase
+        .from('camara_fria_items')
+        .update({ unidade: targetUnidade })
+        .in('id', itemIds);
+
+      if (error) throw error;
+
+      // Atualizar o estado local
+      setItems(prev => prev.map(item => 
+        itemIds.includes(item.id) 
+          ? { ...item, unidade_item: targetUnidade }
+          : item
+      ));
+
+      // Registrar no histórico para cada item transferido
+      const transferredItems = items.filter(item => itemIds.includes(item.id));
+      
+      for (const item of transferredItems) {
+        await addHistoricoItem({
+          item_nome: item.nome,
+          quantidade: item.quantidade,
+          unidade: item.unidade,
+          categoria: item.categoria,
+          tipo: 'entrada',
+          observacoes: `Transferido para ${targetUnidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza'}`,
+          unidade_item: targetUnidade
+        });
+      }
+
+      toast({
+        title: "Transferência realizada",
+        description: `${transferredItems.length} itens foram transferidos para ${targetUnidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza'}`,
+      });
+
+      console.log('✅ Transferência concluída com sucesso');
+    } catch (error) {
+      console.error('❌ ERRO na transferência:', error);
+      toast({
+        title: "Erro na transferência",
+        description: "Não foi possível transferir os itens.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const addItem = async (newItem: Omit<CamaraFriaItem, 'id'>) => {
     if (!user) return;
 
@@ -252,6 +305,7 @@ export function useCamaraFriaData() {
     qrCodes,
     showQRGenerator,
     setShowQRGenerator,
-    lastAddedItem
+    lastAddedItem,
+    transferItemsToUnidade
   };
 }

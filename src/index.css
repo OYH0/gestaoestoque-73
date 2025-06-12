@@ -115,58 +115,56 @@
     background: linear-gradient(135deg, hsl(var(--churrasco-brown)), hsl(var(--churrasco-red)));
   }
 
-  /* Custom churrasco wallpaper */
+  /* Custom churrasco wallpaper - moved to utilities layer */
   .bg-churrasco-wallpaper {
     background: linear-gradient(
       135deg,
-      hsl(var(--churrasco-cream)) 0%,
-      hsl(var(--churrasco-cream)/0.9) 25%,
-      hsl(var(--background)) 50%,
-      hsl(var(--churrasco-cream)/0.8) 75%,
-      hsl(var(--churrasco-cream)/0.6) 100%
-    );
+      hsl(44 35% 95%) 0%,
+      hsl(44 35% 95% / 0.9) 25%,
+      hsl(44 21% 97%) 50%,
+      hsl(44 35% 95% / 0.8) 75%,
+      hsl(44 35% 95% / 0.6) 100%
+    ) !important;
   }
 
   .bg-churrasco-wallpaper-overlay {
     background: radial-gradient(
       ellipse at center,
       transparent 0%,
-      hsl(var(--churrasco-cream)/0.1) 35%,
-      hsl(var(--churrasco-red)/0.05) 70%,
-      hsl(var(--churrasco-brown)/0.1) 100%
-    );
+      hsl(44 35% 95% / 0.1) 35%,
+      hsl(14 85% 45% / 0.05) 70%,
+      hsl(25 45% 25% / 0.1) 100%
+    ) !important;
   }
 
   .bg-churrasco-pattern {
     background-image: 
-      /* Grill marks pattern */
       repeating-linear-gradient(
         45deg,
         transparent 0px,
         transparent 4px,
-        hsl(var(--churrasco-brown)/0.03) 4px,
-        hsl(var(--churrasco-brown)/0.03) 8px
+        hsl(25 45% 25% / 0.03) 4px,
+        hsl(25 45% 25% / 0.03) 8px
       ),
       repeating-linear-gradient(
         -45deg,
         transparent 0px,
         transparent 4px,
-        hsl(var(--churrasco-red)/0.02) 4px,
-        hsl(var(--churrasco-red)/0.02) 8px
+        hsl(14 85% 45% / 0.02) 4px,
+        hsl(14 85% 45% / 0.02) 8px
       ),
-      /* Subtle dots pattern */
       radial-gradient(
         circle at 25% 25%,
-        hsl(var(--churrasco-orange)/0.05) 1px,
+        hsl(25 85% 55% / 0.05) 1px,
         transparent 1px
       ),
       radial-gradient(
         circle at 75% 75%,
-        hsl(var(--churrasco-brown)/0.03) 1px,
+        hsl(25 45% 25% / 0.03) 1px,
         transparent 1px
-      );
-    background-size: 40px 40px, 40px 40px, 60px 60px, 80px 80px;
-    background-position: 0 0, 0 0, 30px 30px, 40px 40px;
+      ) !important;
+    background-size: 40px 40px, 40px 40px, 60px 60px, 80px 80px !important;
+    background-position: 0 0, 0 0, 30px 30px, 40px 40px !important;
   }
 
   .text-churrasco-red {

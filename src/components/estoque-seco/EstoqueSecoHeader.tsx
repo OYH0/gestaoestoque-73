@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,7 @@ interface EstoqueSecoHeaderProps {
   onAddNewItem: () => void;
   categorias: string[];
   items: any[];
+  selectedUnidade: 'juazeiro_norte' | 'fortaleza' | 'todas';
 }
 
 export function EstoqueSecoHeader({
@@ -36,7 +36,8 @@ export function EstoqueSecoHeader({
   setNewItem,
   onAddNewItem,
   categorias,
-  items
+  items,
+  selectedUnidade
 }: EstoqueSecoHeaderProps) {
   const isMobile = useIsMobile();
 
@@ -116,6 +117,7 @@ export function EstoqueSecoHeader({
             onAddNewItem={onAddNewItem}
             setDialogOpen={setDialogOpen}
             categorias={categorias}
+            selectedUnidade={selectedUnidade}
           />
         </Dialog>
       </div>

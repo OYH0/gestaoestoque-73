@@ -15,7 +15,7 @@ import { AdminGuard } from '@/components/AdminGuard';
 export function CamaraRefrigerada() {
   const { items, loading, updateItemStatus, deleteItem } = useCamaraRefrigeradaData();
   const { historico, loading: historicoLoading, addHistoricoItem } = useCamaraRefrigeradaHistorico();
-  const { addItem: addCamaraFriaItem } = useCamaraFriaData();
+  const { items: camaraFriaItems, addItem: addCamaraFriaItem, updateItemQuantity } = useCamaraFriaData();
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const isMobile = useIsMobile();
   const { canModify } = useUserPermissions();
@@ -40,20 +40,39 @@ export function CamaraRefrigerada() {
       console.log('Item encontrado:', item);
 
       try {
-        // Primeiro, adicionar o item de volta à câmara fria com todos os campos necessários
-        await addCamaraFriaItem({
-          nome: item.nome,
-          quantidade: item.quantidade,
-          unidade: item.unidade,
-          categoria: item.categoria,
-          temperatura_ideal: item.temperatura_ideal || -18,
-          observacoes: 'Retornado da câmara refrigerada',
-          data_entrada: new Date().toISOString().split('T')[0],
-          unidade_item: 'juazeiro_norte', // Definir unidade padrão
-          minimo: 5 // Valor padrão para minimo
-        });
+        // Verificar se já existe um item com o mesmo nome na câmara fria
+        const existingItem = camaraFriaItems.find(friaItem => 
+          friaItem.nome.toLowerCase().trim() === item.nome.toLowerCase().trim() &&
+          friaItem.categoria === item.categoria
+        );
 
-        console.log('✅ Item adicionado de volta à câmara fria');
+        if (existingItem) {
+          console.log('✅ Item já existe na câmara fria, atualizando quantidade');
+          console.log('Item existente:', existingItem);
+          
+          // Atualizar a quantidade do item existente
+          const newQuantity = existingItem.quantidade + item.quantidade;
+          await updateItemQuantity(existingItem.id, newQuantity);
+          
+          console.log(`✅ Quantidade atualizada de ${existingItem.quantidade} para ${newQuantity}`);
+        } else {
+          console.log('➕ Item não existe na câmara fria, criando novo');
+          
+          // Criar um novo item na câmara fria
+          await addCamaraFriaItem({
+            nome: item.nome,
+            quantidade: item.quantidade,
+            unidade: item.unidade,
+            categoria: item.categoria,
+            temperatura_ideal: item.temperatura_ideal || -18,
+            observacoes: 'Retornado da câmara refrigerada',
+            data_entrada: new Date().toISOString().split('T')[0],
+            unidade_item: 'juazeiro_norte', // Definir unidade padrão
+            minimo: 5 // Valor padrão para minimo
+          });
+          
+          console.log('✅ Novo item criado na câmara fria');
+        }
 
         // Registrar no histórico da câmara refrigerada
         await addHistoricoItem({

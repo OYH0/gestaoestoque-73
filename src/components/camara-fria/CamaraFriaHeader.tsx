@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { CamaraFriaHistoryDialog } from './CamaraFriaHistoryDialog';
 import { CamaraFriaAddDialog } from './CamaraFriaAddDialog';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
+import { AdminGuard } from '@/components/AdminGuard';
 
 interface CamaraFriaHeaderProps {
   itemsCount: number;
@@ -84,25 +85,27 @@ export function CamaraFriaHeader({
         />
       </Dialog>
       
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogTrigger asChild>
-          <Button 
-            size={isMobile ? "sm" : "default"}
-            className="bg-blue-500 hover:bg-blue-600"
-          >
-            <Plus className="w-4 h-4 mr-1 md:mr-2" />
-            <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
-          </Button>
-        </DialogTrigger>
-        <CamaraFriaAddDialog 
-          newItem={newItem}
-          setNewItem={setNewItem}
-          onAddNewItem={onAddNewItem}
-          setDialogOpen={setDialogOpen}
-          categorias={categorias}
-          selectedUnidade={selectedUnidade}
-        />
-      </Dialog>
+      <AdminGuard>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              size={isMobile ? "sm" : "default"}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              <Plus className="w-4 h-4 mr-1 md:mr-2" />
+              <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
+            </Button>
+          </DialogTrigger>
+          <CamaraFriaAddDialog 
+            newItem={newItem}
+            setNewItem={setNewItem}
+            onAddNewItem={onAddNewItem}
+            setDialogOpen={setDialogOpen}
+            categorias={categorias}
+            selectedUnidade={selectedUnidade}
+          />
+        </Dialog>
+      </AdminGuard>
     </div>
   );
 }

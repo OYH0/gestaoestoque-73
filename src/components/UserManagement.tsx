@@ -28,35 +28,10 @@ export function UserManagement() {
     try {
       console.log('Buscando todos os usuários...');
       
-      // Primeira tentativa: busca normal
-      let { data, error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
-
-      console.log('Primeira consulta - data:', data, 'error:', error);
-
-      // Se não trouxe todos os usuários ou deu erro de RLS, tenta com RPC
-      if (error || !data || data.length < 2) {
-        console.log('Tentando busca alternativa...');
-        
-        // Busca usando uma função administrativa (contorna RLS)
-        const { data: rpcData, error: rpcError } = await supabase
-          .rpc('get_all_profiles');
-          
-        if (rpcError) {
-          console.error('Erro na função RPC:', rpcError);
-          // Se RPC falhar, usa a consulta original
-          if (!error && data) {
-            setUsers(data);
-            return;
-          }
-        } else if (rpcData) {
-          console.log('Dados via RPC:', rpcData);
-          setUsers(rpcData);
-          return;
-        }
-      }
 
       if (error) throw error;
       

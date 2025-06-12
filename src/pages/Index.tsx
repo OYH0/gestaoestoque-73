@@ -9,6 +9,7 @@ import CamaraFria from '@/components/CamaraFria';
 import { CamaraRefrigerada } from '@/components/CamaraRefrigerada';
 import EstoqueSeco from '@/components/EstoqueSeco';
 import Descartaveis from '@/components/Descartaveis';
+import { UserManagement } from '@/components/UserManagement';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -31,6 +32,7 @@ const Index = () => {
                   <Route path="/camara-refrigerada" element={<CamaraRefrigerada />} />
                   <Route path="/estoque-seco" element={<EstoqueSeco />} />
                   <Route path="/descartaveis" element={<Descartaveis />} />
+                  <Route path="/configuracoes" element={<UserManagement />} />
                 </Routes>
               </div>
             </main>

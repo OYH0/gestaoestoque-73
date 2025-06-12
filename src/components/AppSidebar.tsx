@@ -1,8 +1,9 @@
 
 import React from "react"
-import { Home, Snowflake, Thermometer, Package2, FileText, LogOut } from "lucide-react"
+import { Home, Snowflake, Thermometer, Package2, FileText, LogOut, Settings } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
+import { useUserPermissions } from "@/hooks/useUserPermissions"
 import {
   Sidebar,
   SidebarContent,
@@ -46,8 +47,17 @@ const items = [
   },
 ]
 
+const adminItems = [
+  {
+    title: "Configurações",
+    url: "/configuracoes",
+    icon: Settings,
+  },
+]
+
 export function AppSidebar() {
   const { signOut, user } = useAuth();
+  const { isAdmin } = useUserPermissions();
   const { setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
 
@@ -62,6 +72,8 @@ export function AppSidebar() {
     }
   };
 
+  const allItems = [...items, ...(isAdmin ? adminItems : [])];
+
   return (
     <Sidebar className="border-r-0 w-full md:w-64 shadow-2xl">
       <div className="bg-churrasco-gradient h-full">
@@ -70,7 +82,7 @@ export function AppSidebar() {
             <SidebarGroup className="pt-6 md:pt-8 px-3 md:px-4">
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1 md:space-y-2">
-                  {items.map((item) => (
+                  {allItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className="w-full p-0">
                         <NavLink 

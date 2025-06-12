@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -19,6 +20,13 @@ const CHART_COLORS = [
 const PIE_COLORS = [
   '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'
 ];
+
+// Configuração do chart moderno
+const chartConfig = {
+  quantidade: {
+    label: "Quantidade (kg)",
+  },
+} as const;
 
 export function Dashboard() {
   const isMobile = useIsMobile();
@@ -79,65 +87,77 @@ export function Dashboard() {
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de Barras - Todos os tipos de carne e quantidades */}
-        <Card className="shadow-md border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
+        <Card className="shadow-lg border-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <TrendingUp className="w-6 h-6 text-blue-500" />
               Estoque por Tipo de Carne
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-base">
               Quantidade disponível de cada tipo de carne (kg)
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-96">
+          <CardContent className="pb-6">
+            <div className="h-[400px]">
               {meatTypesData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ChartContainer config={chartConfig}>
                   <BarChart 
                     data={meatTypesData} 
                     margin={{ 
                       top: 20, 
-                      right: 30, 
+                      right: 20, 
                       left: 20, 
-                      bottom: 100 
+                      bottom: 80 
                     }}
-                    barCategoryGap="20%"
+                    barCategoryGap="15%"
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis 
                       dataKey="tipo" 
-                      stroke="#888" 
-                      angle={-50}
+                      className="text-xs"
+                      angle={-45}
                       textAnchor="end"
-                      height={100}
-                      fontSize={10}
+                      height={80}
                       interval={0}
-                      tick={{ fontSize: 10 }}
+                      tick={{ 
+                        fontSize: 12,
+                        fill: 'hsl(var(--muted-foreground))'
+                      }}
                     />
                     <YAxis 
-                      stroke="#888"
-                      width={60}
+                      className="text-xs"
+                      tick={{ 
+                        fontSize: 12,
+                        fill: 'hsl(var(--muted-foreground))'
+                      }}
                     />
-                    <Tooltip 
-                      formatter={(value) => [`${value}kg`, 'Quantidade']}
-                      labelFormatter={(label) => `${label}`}
+                    <ChartTooltip 
+                      content={<ChartTooltipContent />}
+                      formatter={(value: any) => [
+                        `${value.toLocaleString()}kg`, 
+                        'Quantidade em Estoque'
+                      ]}
                     />
                     <Bar 
                       dataKey="quantidade" 
-                      radius={[2, 2, 0, 0]}
-                      maxBarSize={40}
+                      radius={[4, 4, 0, 0]}
+                      className="fill-primary"
                     >
                       {meatTypesData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={CHART_COLORS[index % CHART_COLORS.length]} 
+                        />
                       ))}
                     </Bar>
                   </BarChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
-                    <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum item na câmara fria</p>
+                    <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium">Nenhum item na câmara fria</p>
+                    <p className="text-sm">Adicione itens para ver o gráfico</p>
                   </div>
                 </div>
               )}
@@ -146,18 +166,18 @@ export function Dashboard() {
         </Card>
 
         {/* Gráfico de Pizza - Top 5 carnes mais utilizadas baseado no histórico real */}
-        <Card className="shadow-md border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-green-500" />
+        <Card className="shadow-lg border-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Package className="w-6 h-6 text-green-500" />
               Top 5 Carnes Mais Utilizadas
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-base">
               Carnes com maior quantidade de saídas registradas
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-96">
+          <CardContent className="pb-6">
+            <div className="h-[400px]">
               {top5MeatUsage.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -166,12 +186,12 @@ export function Dashboard() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      outerRadius={120}
-                      innerRadius={60}
+                      outerRadius={130}
+                      innerRadius={70}
                       fill="#8884d8"
                       dataKey="totalSaidas"
-                      strokeWidth={2}
-                      stroke="#ffffff"
+                      strokeWidth={3}
+                      stroke="hsl(var(--background))"
                     >
                       {top5MeatUsage.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
@@ -179,10 +199,20 @@ export function Dashboard() {
                     </Pie>
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Total de Saídas']}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
                     />
                     <Legend 
                       verticalAlign="bottom"
-                      height={36}
+                      height={50}
+                      wrapperStyle={{
+                        fontSize: '14px',
+                        paddingTop: '20px'
+                      }}
                       formatter={(value, entry) => {
                         const dataEntry = top5MeatUsage.find(item => item.totalSaidas === value);
                         return dataEntry ? dataEntry.nome : value;
@@ -193,8 +223,9 @@ export function Dashboard() {
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
-                    <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhuma movimentação de saída registrada</p>
+                    <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium">Nenhuma movimentação registrada</p>
+                    <p className="text-sm">Registre saídas para ver o gráfico</p>
                   </div>
                 </div>
               )}
@@ -205,7 +236,7 @@ export function Dashboard() {
 
       {/* Alertas */}
       {temAlertas && (
-        <Card className="shadow-md border-0 border-l-4 border-l-orange-500">
+        <Card className="shadow-lg border-0 border-l-4 border-l-orange-500">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-600">
               <AlertTriangle className="w-5 h-5" />

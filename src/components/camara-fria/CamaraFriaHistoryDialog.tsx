@@ -2,7 +2,7 @@
 import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, ArrowUp, ArrowDown } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { CamaraFriaHistoricoItem } from '@/hooks/useCamaraFriaHistorico';
 
 interface CamaraFriaHistoryDialogProps {
@@ -23,71 +23,52 @@ export function CamaraFriaHistoryDialog({ historico, loading = false }: CamaraFr
   return (
     <DialogContent className="max-w-2xl">
       <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <Calendar className="w-5 h-5" />
-          Histórico de Movimentações - Câmara Fria
+        <DialogTitle className="flex items-center gap-2 text-lg">
+          <Calendar className="w-4 h-4" />
+          Histórico de Movimentações
         </DialogTitle>
         <DialogDescription>
           Registro de entradas e saídas de carnes
         </DialogDescription>
       </DialogHeader>
       
-      <div className="max-h-96 overflow-y-auto space-y-3">
+      <div className="max-h-96 overflow-y-auto space-y-2">
         {loading ? (
           <div className="text-center py-4">
-            <p className="text-gray-500">Carregando histórico...</p>
+            <p className="text-gray-500 text-sm">Carregando histórico...</p>
           </div>
         ) : historico.length === 0 ? (
           <div className="text-center py-8">
-            <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p className="text-gray-500">Nenhuma movimentação registrada</p>
-            <p className="text-sm text-gray-400">As operações aparecerão aqui quando forem realizadas</p>
+            <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-gray-500 text-sm">Nenhuma movimentação registrada</p>
           </div>
         ) : (
           historico.map((item) => (
-            <div key={item.id} className="bg-gray-50 rounded-lg p-4 border-l-4 border-l-blue-400">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="flex items-center gap-2">
-                      {item.tipo === 'entrada' ? (
-                        <ArrowUp className="w-4 h-4 text-green-500" />
-                      ) : (
-                        <ArrowDown className="w-4 h-4 text-red-500" />
-                      )}
-                      <h3 className="font-semibold text-gray-900">{item.item_nome}</h3>
-                    </div>
-                    <Badge 
-                      variant={item.tipo === 'entrada' ? 'default' : 'destructive'}
-                      className="text-xs"
-                    >
-                      {item.tipo === 'entrada' ? 'Entrada' : 'Saída'}
-                    </Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-2">
-                    <div>
-                      <span className="font-medium">Quantidade:</span> {item.quantidade} {item.unidade}
-                    </div>
-                    <div>
-                      <span className="font-medium">Categoria:</span> {item.categoria}
-                    </div>
-                    <div>
-                      <span className="font-medium">Unidade:</span> {getUnidadeLabel(item.unidade)}
-                    </div>
-                  </div>
-                  
-                  {item.observacoes && (
-                    <div className="text-sm text-gray-600 mb-2">
-                      <span className="font-medium">Observações:</span> {item.observacoes}
-                    </div>
-                  )}
+            <div key={item.id} className="bg-gray-50 rounded p-3 text-sm">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-900">{item.item_nome}</span>
+                  <Badge 
+                    variant={item.tipo === 'entrada' ? 'default' : 'destructive'}
+                    className="text-xs px-2 py-0"
+                  >
+                    {item.tipo === 'entrada' ? 'Entrada' : 'Saída'}
+                  </Badge>
                 </div>
-                
-                <div className="text-right ml-4">
-                  <p className="text-sm text-gray-500">{formatDate(item.data_operacao)}</p>
-                </div>
+                <span className="text-xs text-gray-500">{formatDate(item.data_operacao)}</span>
               </div>
+              
+              <div className="flex items-center gap-4 text-xs text-gray-600">
+                <span>{item.quantidade} {item.unidade}</span>
+                <span>{item.categoria}</span>
+                <span>{getUnidadeLabel(item.unidade)}</span>
+              </div>
+              
+              {item.observacoes && (
+                <div className="mt-1 text-xs text-gray-500">
+                  {item.observacoes}
+                </div>
+              )}
             </div>
           ))
         )}

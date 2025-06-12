@@ -20,23 +20,20 @@ interface UserProfile {
 }
 
 export function UserManagement() {
-  const { isAdmin, loading: permissionsLoading, userProfile } = useUserPermissions();
+  const { isAdmin, loading: permissionsLoading } = useUserPermissions();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
-  console.log('UserManagement - isAdmin:', isAdmin, 'permissionsLoading:', permissionsLoading, 'userProfile:', userProfile);
-
   const fetchUsers = async () => {
-    console.log('Fetching users...');
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      console.log('Users data:', data, 'error:', error);
-
       if (error) throw error;
+      
+      console.log('Todos os usuários encontrados:', data);
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -105,7 +102,6 @@ export function UserManagement() {
   };
 
   useEffect(() => {
-    console.log('UserManagement useEffect - permissionsLoading:', permissionsLoading, 'isAdmin:', isAdmin);
     if (!permissionsLoading) {
       if (isAdmin) {
         fetchUsers();
@@ -115,10 +111,7 @@ export function UserManagement() {
     }
   }, [isAdmin, permissionsLoading]);
 
-  console.log('UserManagement render - permissionsLoading:', permissionsLoading, 'loading:', loading, 'isAdmin:', isAdmin);
-
   if (permissionsLoading || loading) {
-    console.log('Showing loading state');
     return (
       <div className="container mx-auto p-6">
         <div className="animate-pulse space-y-4">

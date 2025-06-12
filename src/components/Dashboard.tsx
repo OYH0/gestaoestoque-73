@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -99,7 +98,7 @@ export function Dashboard() {
                       top: 20, 
                       right: 30, 
                       left: 20, 
-                      bottom: 80 
+                      bottom: 100 
                     }}
                     barCategoryGap="15%"
                   >
@@ -107,9 +106,9 @@ export function Dashboard() {
                     <XAxis 
                       dataKey="tipo" 
                       stroke="#888" 
-                      angle={-45}
+                      angle={-90}
                       textAnchor="end"
-                      height={80}
+                      height={100}
                       fontSize={11}
                       interval={0}
                     />

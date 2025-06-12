@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Eye, EyeOff, Mail, Lock, User, Beef, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export function Login() {
@@ -49,17 +49,6 @@ export function Login() {
         <div className="absolute inset-0 opacity-5">
           <div className="w-full h-full bg-grid-pattern"></div>
         </div>
-        
-        {/* Decorative icons */}
-        <div className="absolute top-1/4 left-1/6 opacity-10">
-          <Beef className="w-8 h-8 text-churrasco-red transform rotate-12" />
-        </div>
-        <div className="absolute top-2/3 right-1/4 opacity-10">
-          <Beef className="w-6 h-6 text-churrasco-orange transform -rotate-45" />
-        </div>
-        <div className="absolute bottom-1/3 left-1/3 opacity-10">
-          <Beef className="w-10 h-10 text-churrasco-brown transform rotate-90" />
-        </div>
       </div>
       
       {/* Left side - Branding */}
@@ -67,24 +56,12 @@ export function Login() {
         <div className="max-w-md text-center space-y-8">
           {/* Logo */}
           <div className="space-y-6">
-            <div className="mx-auto w-24 h-24 bg-gradient-to-br from-churrasco-red to-churrasco-orange rounded-2xl flex items-center justify-center shadow-2xl transform hover:scale-105 transition-transform duration-300">
-              <Beef className="w-12 h-12 text-white" />
-            </div>
-            
-            <div className="space-y-4">
-              <h1 className="text-5xl font-bold text-white tracking-wide">
-                COMPANHIA
-              </h1>
-              <div className="flex items-center justify-center space-x-4">
-                <div className="h-px bg-gradient-to-r from-transparent via-churrasco-red to-transparent flex-1 max-w-20"></div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-churrasco-red to-churrasco-orange bg-clip-text text-transparent px-4">
-                  DO
-                </span>
-                <div className="h-px bg-gradient-to-r from-transparent via-churrasco-red to-transparent flex-1 max-w-20"></div>
-              </div>
-              <h1 className="text-5xl font-bold text-white tracking-wide">
-                CHURRASCO
-              </h1>
+            <div className="mx-auto w-48 h-48 flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/1d164f09-b5e5-4655-b51a-e2c96a970f3c.png" 
+                alt="Companhia do Churrasco Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
           
@@ -106,17 +83,23 @@ export function Login() {
           {/* Mobile logo (visible only on small screens) */}
           <div className="lg:hidden pt-8 pb-4">
             <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-churrasco-red to-churrasco-orange rounded-xl flex items-center justify-center shadow-lg">
-                <Beef className="w-8 h-8 text-white" />
-              </div>
-              <div className="space-y-2">
-                <h1 className="text-2xl font-bold text-slate-800">COMPANHIA</h1>
-                <p className="text-lg font-bold text-churrasco-red">DO CHURRASCO</p>
+              <h2 className="text-2xl font-bold text-slate-800">
+                {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
+              </h2>
+              <p className="text-slate-600 mb-4">
+                {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
+              </p>
+              <div className="mx-auto w-32 h-32 flex items-center justify-center">
+                <img 
+                  src="/lovable-uploads/1d164f09-b5e5-4655-b51a-e2c96a970f3c.png" 
+                  alt="Companhia do Churrasco Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
             </div>
           </div>
           
-          <CardHeader className="text-center space-y-2 pb-6">
+          <CardHeader className="text-center space-y-2 pb-6 lg:block hidden">
             <h2 className="text-2xl font-bold text-slate-800">
               {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
             </h2>

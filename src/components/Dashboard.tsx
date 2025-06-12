@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -41,6 +42,10 @@ export function Dashboard() {
       return acc;
     }, [] as any[])
     .sort((a, b) => b.quantidade - a.quantidade);
+
+  // Debug: log dos dados para verificar
+  console.log('Câmara Fria Items:', camaraFriaItems);
+  console.log('Meat Types Data:', meatTypesData);
 
   // Top 5 carnes mais utilizadas baseado no histórico real de saídas
   const top5MeatUsage = camaraFriaHistorico
@@ -90,7 +95,7 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="h-96">
-              {meatTypesData.length > 0 ? (
+              {meatTypesData && meatTypesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={meatTypesData} 
@@ -98,7 +103,7 @@ export function Dashboard() {
                     margin={{ 
                       top: 10, 
                       right: 30, 
-                      left: 80, 
+                      left: 100, 
                       bottom: 10 
                     }}
                   >
@@ -107,13 +112,14 @@ export function Dashboard() {
                       type="number"
                       stroke="#888"
                       fontSize={12}
+                      domain={[0, 'dataMax + 5']}
                     />
                     <YAxis 
                       type="category"
                       dataKey="tipo" 
                       stroke="#888" 
                       fontSize={11}
-                      width={70}
+                      width={90}
                       tick={{ textAnchor: 'end' }}
                     />
                     <Tooltip 
@@ -123,7 +129,7 @@ export function Dashboard() {
                     <Bar 
                       dataKey="quantidade" 
                       radius={[0, 4, 4, 0]}
-                      height={20}
+                      fill="#8884d8"
                     >
                       {meatTypesData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
@@ -136,6 +142,7 @@ export function Dashboard() {
                   <div className="text-center">
                     <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p>Nenhum item na câmara fria</p>
+                    <p className="text-xs mt-1">Total de itens: {camaraFriaItems?.length || 0}</p>
                   </div>
                 </div>
               )}

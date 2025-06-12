@@ -12,6 +12,7 @@ interface NewItem {
   unidade: string;
   categoria: string;
   minimo: number;
+  unidade_item: 'juazeiro_norte' | 'fortaleza';
 }
 
 interface CamaraFriaAddDialogProps {
@@ -20,6 +21,7 @@ interface CamaraFriaAddDialogProps {
   onAddNewItem: () => void;
   setDialogOpen: (open: boolean) => void;
   categorias: string[];
+  selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas';
 }
 
 export function CamaraFriaAddDialog({
@@ -27,7 +29,8 @@ export function CamaraFriaAddDialog({
   setNewItem,
   onAddNewItem,
   setDialogOpen,
-  categorias
+  categorias,
+  selectedUnidade
 }: CamaraFriaAddDialogProps) {
   const isFormValid = newItem.nome.trim() !== '' && newItem.categoria !== '';
 

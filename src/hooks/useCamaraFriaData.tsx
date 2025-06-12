@@ -17,6 +17,7 @@ export interface CamaraFriaItem {
   preco_unitario?: number;
   fornecedor?: string;
   observacoes?: string;
+  unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
 export function useCamaraFriaData() {

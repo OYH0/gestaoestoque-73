@@ -182,7 +182,10 @@ export function Dashboard() {
                     <Legend 
                       verticalAlign="bottom"
                       height={36}
-                      formatter={(value, entry) => entry.payload.nome}
+                      formatter={(value, entry) => {
+                        const dataEntry = top5MeatUsage.find(item => item.totalSaidas === value);
+                        return dataEntry ? dataEntry.nome : value;
+                      }}
                     />
                   </PieChart>
                 </ResponsiveContainer>

@@ -20,6 +20,7 @@ interface EstoqueSecoAddDialogProps {
   onAddNewItem: () => void;
   setDialogOpen: (open: boolean) => void;
   categorias: string[];
+  selectedUnidade: 'juazeiro_norte' | 'fortaleza' | 'todas';
 }
 
 export function EstoqueSecoAddDialog({
@@ -27,7 +28,8 @@ export function EstoqueSecoAddDialog({
   setNewItem,
   onAddNewItem,
   setDialogOpen,
-  categorias
+  categorias,
+  selectedUnidade
 }: EstoqueSecoAddDialogProps) {
   return (
     <DialogContent>

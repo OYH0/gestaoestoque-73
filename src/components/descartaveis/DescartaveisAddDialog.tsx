@@ -20,6 +20,7 @@ interface DescartaveisAddDialogProps {
   onAddNewItem: () => void;
   setDialogOpen: (open: boolean) => void;
   categorias: string[];
+  selectedUnidade: 'juazeiro_norte' | 'fortaleza' | 'todas';
 }
 
 export function DescartaveisAddDialog({
@@ -27,7 +28,8 @@ export function DescartaveisAddDialog({
   setNewItem,
   onAddNewItem,
   setDialogOpen,
-  categorias
+  categorias,
+  selectedUnidade
 }: DescartaveisAddDialogProps) {
   return (
     <DialogContent>

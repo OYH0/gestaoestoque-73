@@ -68,7 +68,6 @@ export function useEstoqueSecoHistorico() {
         .insert([{ 
           item_nome: item.item_nome,
           quantidade: item.quantidade,
-          unidade: item.unidade,
           categoria: item.categoria,
           tipo: item.tipo,
           observacoes: item.observacoes,

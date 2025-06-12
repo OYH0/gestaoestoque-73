@@ -22,6 +22,7 @@ interface CamaraFriaHeaderProps {
   onAddNewItem: () => void;
   categorias: string[];
   items: any[];
+  selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas';
 }
 
 export function CamaraFriaHeader({
@@ -36,7 +37,8 @@ export function CamaraFriaHeader({
   setNewItem,
   onAddNewItem,
   categorias,
-  items
+  items,
+  selectedUnidade = 'todas'
 }: CamaraFriaHeaderProps) {
   const isMobile = useIsMobile();
 
@@ -116,6 +118,7 @@ export function CamaraFriaHeader({
             onAddNewItem={onAddNewItem}
             setDialogOpen={setDialogOpen}
             categorias={categorias}
+            selectedUnidade={selectedUnidade}
           />
         </Dialog>
       </div>

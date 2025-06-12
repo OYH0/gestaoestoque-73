@@ -10,8 +10,10 @@ import { CamaraFriaItemCard } from '@/components/camara-fria/CamaraFriaItemCard'
 import { CamaraFriaAddDialog } from '@/components/camara-fria/CamaraFriaAddDialog';
 import { CamaraFriaHistoryDialog } from '@/components/camara-fria/CamaraFriaHistoryDialog';
 import { CamaraFriaAlerts } from '@/components/camara-fria/CamaraFriaAlerts';
+import { CamaraFriaHeader } from '@/components/camara-fria/CamaraFriaHeader';
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
+import { UnidadeSelector } from '@/components/UnidadeSelector';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
@@ -25,6 +27,7 @@ export default function CamaraFria() {
   const { isAdmin } = useUserPermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
+  const [selectedUnidade, setSelectedUnidade] = useState<'juazeiro_norte' | 'fortaleza' | 'todas'>('todas');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
@@ -36,12 +39,19 @@ export default function CamaraFria() {
     quantidade: 0,
     unidade: 'kg',
     categoria: '',
-    minimo: 0
+    minimo: 0,
+    unidade_item: selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade as 'juazeiro_norte' | 'fortaleza'
   });
   
   // States for managing editing and thawing
   const [editingItems, setEditingItems] = useState<Record<string, number>>({});
   const [thawingItems, setThawingItems] = useState<Record<string, number>>({});
+
+  // Filter items by selected unit
+  const itemsByUnidade = items.filter(item => {
+    if (selectedUnidade === 'todas') return true;
+    return item.unidade_item === selectedUnidade;
+  });
 
   const handleAddNewItem = async () => {
     if (!isAdmin) {
@@ -53,7 +63,12 @@ export default function CamaraFria() {
       return;
     }
 
-    await addItem(newItem);
+    const itemWithUnidade = {
+      ...newItem,
+      unidade_item: selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade as 'juazeiro_norte' | 'fortaleza'
+    };
+
+    await addItem(itemWithUnidade);
     
     // Registrar no histórico apenas se a quantidade for maior que 0
     if (newItem.quantidade > 0) {
@@ -63,7 +78,8 @@ export default function CamaraFria() {
         unidade: newItem.unidade,
         categoria: newItem.categoria,
         tipo: 'entrada',
-        observacoes: 'Adição de novo item ao estoque'
+        observacoes: 'Adição de novo item ao estoque',
+        unidade_item: itemWithUnidade.unidade_item
       });
     }
     
@@ -72,7 +88,8 @@ export default function CamaraFria() {
       quantidade: 0,
       unidade: 'kg',
       categoria: '',
-      minimo: 0
+      minimo: 0,
+      unidade_item: selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade as 'juazeiro_norte' | 'fortaleza'
     });
     setIsAddDialogOpen(false);
   };
@@ -246,7 +263,7 @@ export default function CamaraFria() {
     await deleteItem(id);
   };
 
-  const filteredItems = items.filter(item => {
+  const filteredItems = itemsByUnidade.filter(item => {
     const matchesSearch = item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.categoria.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'Todos' || item.categoria === filterCategory;
@@ -271,7 +288,7 @@ export default function CamaraFria() {
 
   // Get unique categories from items, but ensure the main categories are always available
   const categories = ['Todos', 'Bovina', 'Suína', 'Aves', 'Embutidos'];
-  const lowStockItems = items.filter(item => item.minimo && item.quantidade <= item.minimo);
+  const lowStockItems = filteredItems.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   const handlePrintPDF = () => {
     try {
@@ -287,63 +304,25 @@ export default function CamaraFria() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-          {items.length} tipos
-        </Badge>
-        {lowStockItems.length > 0 && (
-          <Badge variant="destructive" className="text-xs">
-            {lowStockItems.length} baixo estoque
-          </Badge>
-        )}
-      </div>
+      <UnidadeSelector 
+        selectedUnidade={selectedUnidade}
+        onUnidadeChange={setSelectedUnidade}
+      />
 
-      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
-        <Button 
-          variant="outline" 
-          size={isMobile ? "sm" : "default"}
-          className="border-gray-300"
-          onClick={handlePrintPDF}
-        >
-          <FileText className="w-4 h-4 mr-1 md:mr-2" />
-          <span className={isMobile ? "text-xs" : "text-sm"}>PDF</span>
-        </Button>
-
-        <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size={isMobile ? "sm" : "default"}
-              className="border-gray-300"
-            >
-              <History className="w-4 h-4 mr-1 md:mr-2" />
-              <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
-            </Button>
-          </DialogTrigger>
-          <CamaraFriaHistoryDialog historico={historico} />
-        </Dialog>
-        
-        <AdminGuard>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                size={isMobile ? "sm" : "default"}
-                className="bg-blue-500 hover:bg-blue-600"
-              >
-                <Plus className="w-4 h-4 mr-1 md:mr-2" />
-                <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
-              </Button>
-            </DialogTrigger>
-            <CamaraFriaAddDialog 
-              newItem={newItem}
-              setNewItem={setNewItem}
-              onAddNewItem={handleAddNewItem}
-              setDialogOpen={setIsAddDialogOpen}
-              categorias={categories}
-            />
-          </Dialog>
-        </AdminGuard>
-      </div>
+      <CamaraFriaHeader
+        itemsCount={filteredItems.length}
+        lowStockCount={lowStockItems.length}
+        historicoOpen={isHistoryDialogOpen}
+        setHistoricoOpen={setIsHistoryDialogOpen}
+        historico={historico}
+        dialogOpen={isAddDialogOpen}
+        setDialogOpen={setIsAddDialogOpen}
+        newItem={newItem}
+        setNewItem={setNewItem}
+        onAddNewItem={handleAddNewItem}
+        categorias={categories}
+        items={filteredItems}
+      />
 
       <AdminGuard fallback={null}>
         <div className={`flex ${isMobile ? 'justify-center' : ''}`}>

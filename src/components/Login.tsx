@@ -92,7 +92,7 @@ export function Login() {
               <h2 className="text-2xl font-bold text-slate-800">
                 {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
               </h2>
-              <p className="text-slate-600 mb-4">
+              <p className="text-slate-600">
                 {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
               </p>
             </div>

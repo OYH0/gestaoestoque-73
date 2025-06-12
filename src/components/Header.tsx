@@ -5,6 +5,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { LogOut, User, Home, Snowflake, Thermometer, Package2, FileText } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +46,7 @@ const routeConfig = {
 export function Header() {
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const isMobile = useIsMobile();
   const currentRoute = routeConfig[location.pathname as keyof typeof routeConfig];
   const IconComponent = currentRoute?.icon || Home;
 
@@ -52,16 +54,31 @@ export function Header() {
     <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
       <SidebarTrigger className="-ml-1" />
       
-      <div className="flex-1 flex justify-center">
-        {currentRoute && (
+      {/* Mobile: centered title */}
+      {isMobile && currentRoute && (
+        <div className="flex-1 flex justify-center">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <IconComponent className="w-4 h-4 text-primary-foreground" />
             </div>
             <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Desktop: title on the right */}
+      {!isMobile && (
+        <div className="flex-1 flex justify-end">
+          {currentRoute && (
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <IconComponent className="w-4 h-4 text-primary-foreground" />
+              </div>
+              <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <DropdownMenu>

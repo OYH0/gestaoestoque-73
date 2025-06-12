@@ -26,16 +26,37 @@ export function UserManagement() {
 
   const fetchUsers = async () => {
     try {
-      console.log('Buscando todos os usuários...');
+      console.log('=== INÍCIO DA BUSCA DE USUÁRIOS ===');
+      console.log('User autenticado:', await supabase.auth.getUser());
       
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('=== RESULTADO DA CONSULTA ===');
+      console.log('Error:', error);
+      console.log('Data raw:', data);
+      console.log('Número de usuários retornados:', data?.length || 0);
       
-      console.log('Usuários encontrados:', data?.length || 0, data);
+      if (data) {
+        data.forEach((user, index) => {
+          console.log(`Usuário ${index + 1}:`, {
+            id: user.id,
+            email: user.email,
+            full_name: user.full_name,
+            user_type: user.user_type,
+            unidade_responsavel: user.unidade_responsavel
+          });
+        });
+      }
+
+      if (error) {
+        console.error('Erro na consulta:', error);
+        throw error;
+      }
+      
+      console.log('Setando usuários no estado:', data?.length || 0, 'usuários');
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -135,6 +156,9 @@ export function UserManagement() {
             </h1>
             <p className="text-muted-foreground mt-2">
               Configure permissões e unidades responsáveis para cada usuário
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Usuários encontrados: {users.length}
             </p>
           </div>
           <Button onClick={fetchUsers} variant="outline">

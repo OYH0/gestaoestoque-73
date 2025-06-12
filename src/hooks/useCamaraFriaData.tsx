@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -94,13 +93,16 @@ export function useCamaraFriaData() {
     // Garantir que a unidade seja sempre definida
     const unidadeSegura = newItem.unidade_item || 'juazeiro_norte';
     
+    // Garantir que data_entrada seja sempre definida
+    const dataEntradaSegura = newItem.data_entrada || new Date().toISOString().split('T')[0];
+    
     const itemParaSalvar = {
       nome: newItem.nome,
       quantidade: quantidadeSegura,
       unidade: unidadeSegura,  // Usar a coluna 'unidade' para guardar a unidade_item
       categoria: newItem.categoria,
       minimo: newItem.minimo || 0,
-      data_entrada: newItem.data_entrada,
+      data_entrada: dataEntradaSegura,  // GARANTIR que data_entrada seja sempre definida
       data_validade: newItem.data_validade,
       temperatura_ideal: newItem.temperatura_ideal,
       preco_unitario: newItem.preco_unitario,

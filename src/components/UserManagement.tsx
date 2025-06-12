@@ -14,7 +14,7 @@ interface UserProfile {
   id: string;
   email: string;
   full_name: string;
-  user_type: 'admin' | 'viewer';
+  user_type: 'admin' | 'viewer' | 'gerente';
   unidade_responsavel: 'juazeiro_norte' | 'fortaleza';
   created_at: string;
 }
@@ -70,7 +70,7 @@ export function UserManagement() {
     }
   };
 
-  const updateUserType = async (userId: string, newType: 'admin' | 'viewer') => {
+  const updateUserType = async (userId: string, newType: 'admin' | 'viewer' | 'gerente') => {
     try {
       const { error } = await supabase
         .from('profiles')
@@ -83,9 +83,15 @@ export function UserManagement() {
         user.id === userId ? { ...user, user_type: newType } : user
       ));
 
+      const typeLabels = {
+        admin: 'administrador',
+        gerente: 'gerente',
+        viewer: 'visualizador'
+      };
+
       toast({
         title: "Permissão atualizada",
-        description: `Usuário agora é ${newType === 'admin' ? 'administrador' : 'visualizador'}`,
+        description: `Usuário agora é ${typeLabels[newType]}`,
       });
     } catch (error) {
       console.error('Error updating user type:', error);
@@ -124,6 +130,32 @@ export function UserManagement() {
     }
   };
 
+  const getUserTypeLabel = (userType: 'admin' | 'viewer' | 'gerente') => {
+    switch (userType) {
+      case 'admin':
+        return 'Administrador';
+      case 'gerente':
+        return 'Gerente';
+      case 'viewer':
+        return 'Visualizador';
+      default:
+        return 'Visualizador';
+    }
+  };
+
+  const getUserTypeBadgeVariant = (userType: 'admin' | 'viewer' | 'gerente') => {
+    switch (userType) {
+      case 'admin':
+        return 'default';
+      case 'gerente':
+        return 'secondary';
+      case 'viewer':
+        return 'outline';
+      default:
+        return 'outline';
+    }
+  };
+
   useEffect(() => {
     if (!permissionsLoading) {
       if (isAdmin) {
@@ -157,9 +189,14 @@ export function UserManagement() {
             <p className="text-muted-foreground mt-2">
               Configure permissões e unidades responsáveis para cada usuário
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Usuários encontrados: {users.length}
-            </p>
+            <div className="text-sm text-muted-foreground mt-1 space-y-1">
+              <p>Usuários encontrados: {users.length}</p>
+              <div className="space-y-1">
+                <p><strong>Admin:</strong> Pode ver e modificar dados de todas as unidades + transferir itens</p>
+                <p><strong>Gerente:</strong> Pode ver dados de todas as unidades, mas só pode modificar itens da sua unidade</p>
+                <p><strong>Visualizador:</strong> Só pode visualizar dados de todas as unidades</p>
+              </div>
+            </div>
           </div>
           <Button onClick={fetchUsers} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -177,9 +214,9 @@ export function UserManagement() {
                     <CardDescription>{user.email}</CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Badge variant={user.user_type === 'admin' ? 'default' : 'secondary'}>
+                    <Badge variant={getUserTypeBadgeVariant(user.user_type)}>
                       <Shield className="h-3 w-3 mr-1" />
-                      {user.user_type === 'admin' ? 'Administrador' : 'Visualizador'}
+                      {getUserTypeLabel(user.user_type)}
                     </Badge>
                     <Badge variant="outline">
                       <MapPin className="h-3 w-3 mr-1" />
@@ -194,13 +231,14 @@ export function UserManagement() {
                     <label className="text-sm font-medium">Tipo de Usuário</label>
                     <Select
                       value={user.user_type}
-                      onValueChange={(value: 'admin' | 'viewer') => updateUserType(user.id, value)}
+                      onValueChange={(value: 'admin' | 'viewer' | 'gerente') => updateUserType(user.id, value)}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="admin">Administrador</SelectItem>
+                        <SelectItem value="gerente">Gerente</SelectItem>
                         <SelectItem value="viewer">Visualizador</SelectItem>
                       </SelectContent>
                     </Select>

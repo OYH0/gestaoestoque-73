@@ -17,7 +17,6 @@ import { UnidadeSelector } from '@/components/UnidadeSelector';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
-import { AdminGuard } from '@/components/AdminGuard';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { CamaraFriaTransferDialog } from '@/components/camara-fria/CamaraFriaTransferDialog';
 
@@ -25,7 +24,7 @@ export default function CamaraFria() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, transferItemsToUnidade } = useCamaraFriaData();
   const { historico, addHistoricoItem } = useCamaraFriaHistorico();
   const { addItem: addCamaraRefrigeradaItem } = useCamaraRefrigeradaData();
-  const { isAdmin } = useUserPermissions();
+  const { canModify, canTransferItems } = useUserPermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
   const [selectedUnidade, setSelectedUnidade] = useState<'juazeiro_norte' | 'fortaleza' | 'todas'>('todas');
@@ -65,8 +64,8 @@ export default function CamaraFria() {
   });
 
   const handleAddNewItem = async () => {
-    if (!isAdmin) {
-      console.error('Acesso negado: apenas administradores podem adicionar itens');
+    if (!canModify) {
+      console.error('Acesso negado: apenas administradores e gerentes podem adicionar itens');
       return;
     }
     
@@ -111,8 +110,8 @@ export default function CamaraFria() {
   };
 
   const handleUpdateQuantity = async (id: string, newQuantity: number, tipo: 'entrada' | 'saida') => {
-    if (!isAdmin) {
-      console.error('Acesso negado: apenas administradores podem atualizar quantidades');
+    if (!canModify) {
+      console.error('Acesso negado: apenas administradores e gerentes podem atualizar quantidades');
       return;
     }
     
@@ -150,8 +149,8 @@ export default function CamaraFria() {
   };
 
   const handleConfirmChange = async (id: string) => {
-    if (!isAdmin) {
-      console.error('Acesso negado: apenas administradores podem editar itens');
+    if (!canModify) {
+      console.error('Acesso negado: apenas administradores e gerentes podem editar itens');
       return;
     }
     
@@ -162,7 +161,6 @@ export default function CamaraFria() {
       const oldQuantity = item.quantidade;
       await updateItemQuantity(id, newQuantity);
       
-      // Registrar no histórico o ajuste de estoque
       if (newQuantity !== oldQuantity) {
         const quantityDifference = newQuantity - oldQuantity;
         await addHistoricoItem({
@@ -208,8 +206,8 @@ export default function CamaraFria() {
   };
 
   const handleConfirmThaw = async (id: string) => {
-    if (!isAdmin) {
-      console.error('Acesso negado: apenas administradores podem descongelar itens');
+    if (!canModify) {
+      console.error('Acesso negado: apenas administradores e gerentes podem descongelar itens');
       return;
     }
     
@@ -219,7 +217,6 @@ export default function CamaraFria() {
       const newQuantity = item.quantidade - thawQuantity;
       await updateItemQuantity(id, newQuantity);
       
-      // Adicionar item à câmara refrigerada
       await addCamaraRefrigeradaItem({
         nome: item.nome,
         quantidade: thawQuantity,
@@ -231,7 +228,6 @@ export default function CamaraFria() {
         observacoes: `Movido da câmara fria para descongelamento`
       });
       
-      // Registrar no histórico da câmara fria
       await addHistoricoItem({
         item_nome: item.nome,
         quantidade: thawQuantity,
@@ -259,15 +255,14 @@ export default function CamaraFria() {
   };
 
   const handleDeleteItem = async (id: string) => {
-    if (!isAdmin) {
-      console.error('Acesso negado: apenas administradores podem deletar itens');
+    if (!canModify) {
+      console.error('Acesso negado: apenas administradores e gerentes podem deletar itens');
       return;
     }
     
     const item = items.find(i => i.id === id);
     if (!item) return;
     
-    // Registrar no histórico antes de deletar
     if (item.quantidade > 0) {
       await addHistoricoItem({
         item_nome: item.nome,
@@ -291,7 +286,7 @@ export default function CamaraFria() {
   });
 
   const handleTransferItems = async (itemIds: string[], targetUnidade: 'juazeiro_norte' | 'fortaleza') => {
-    if (!isAdmin) {
+    if (!canTransferItems()) {
       console.error('Acesso negado: apenas administradores podem transferir itens');
       return;
     }
@@ -315,7 +310,6 @@ export default function CamaraFria() {
     );
   }
 
-  // Get unique categories from items, but ensure the main categories are always available
   const categories = ['Todos', 'Bovina', 'Suína', 'Aves', 'Embutidos'];
   const lowStockItems = filteredItems.filter(item => item.minimo && item.quantidade <= item.minimo);
 
@@ -354,7 +348,7 @@ export default function CamaraFria() {
         selectedUnidade={selectedUnidade}
       />
 
-      <AdminGuard fallback={null}>
+      {canModify && (
         <div className={`flex ${isMobile ? 'justify-center' : ''} gap-2 flex-wrap`}>
           <Button 
             variant="outline" 
@@ -366,17 +360,19 @@ export default function CamaraFria() {
             Escanear QR Code
           </Button>
           
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-fit text-blue-600 border-blue-200 hover:bg-blue-50"
-            onClick={() => setShowTransferDialog(true)}
-          >
-            <ArrowRight className="w-4 h-4 mr-2" />
-            Transferir Itens
-          </Button>
+          {canTransferItems() && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-fit text-blue-600 border-blue-200 hover:bg-blue-50"
+              onClick={() => setShowTransferDialog(true)}
+            >
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Transferir Itens
+            </Button>
+          )}
         </div>
-      </AdminGuard>
+      )}
 
       <CamaraFriaFilters
         categorias={categories}
@@ -428,13 +424,15 @@ export default function CamaraFria() {
         <QRScanner onClose={() => setShowScanner(false)} />
       )}
 
-      <CamaraFriaTransferDialog
-        open={showTransferDialog}
-        onOpenChange={setShowTransferDialog}
-        items={items}
-        onTransfer={handleTransferItems}
-        currentUnidade={selectedUnidade}
-      />
+      {canTransferItems() && (
+        <CamaraFriaTransferDialog
+          open={showTransferDialog}
+          onOpenChange={setShowTransferDialog}
+          items={items}
+          onTransfer={handleTransferItems}
+          currentUnidade={selectedUnidade}
+        />
+      )}
     </div>
   );
 }

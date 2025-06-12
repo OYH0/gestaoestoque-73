@@ -31,7 +31,7 @@ export function useCamaraFriaData() {
   const { user } = useAuth();
   const { generateQRCodeData } = useQRCodeGenerator();
   const { addHistoricoItem } = useCamaraFriaHistorico();
-  const { getFilterForUserUnidade, canModifyUnidade } = useUserPermissions();
+  const { getFilterForUserUnidade, canModifyUnidade, canTransferItems } = useUserPermissions();
 
   const fetchItems = async () => {
     if (!user) return;
@@ -54,7 +54,7 @@ export function useCamaraFriaData() {
       
       console.log('=== DADOS CARREGADOS DO BANCO ===');
       console.log('Total de itens:', data?.length || 0);
-      console.log('Filtro aplicado para unidade:', unidadeFilter || 'nenhum (admin)');
+      console.log('Filtro aplicado para unidade:', unidadeFilter || 'nenhum (todos podem ver todas as unidades)');
       
       // Mapear o campo 'unidade' do banco para 'unidade_item' no frontend
       const itemsMapeados: CamaraFriaItem[] = (data || []).map(item => ({
@@ -286,7 +286,7 @@ export function useCamaraFriaData() {
     if (!user) return;
 
     // Verificar se o usuário pode fazer transferências (apenas admins)
-    if (!canModifyUnidade('juazeiro_norte') || !canModifyUnidade('fortaleza')) {
+    if (!canTransferItems()) {
       toast({
         title: "Acesso negado",
         description: "Apenas administradores podem transferir itens entre unidades.",

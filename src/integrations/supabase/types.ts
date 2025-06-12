@@ -395,7 +395,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_modify: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_gerente: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

@@ -7,13 +7,15 @@ export interface UserProfile {
   id: string;
   email: string | null;
   full_name: string | null;
-  user_type: 'admin' | 'viewer';
+  user_type: 'admin' | 'viewer' | 'gerente';
   unidade_responsavel: 'juazeiro_norte' | 'fortaleza';
 }
 
 export function useUserPermissions() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isGerente, setIsGerente] = useState(false);
+  const [canModify, setCanModify] = useState(false);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
@@ -21,6 +23,8 @@ export function useUserPermissions() {
     if (!user) {
       setUserProfile(null);
       setIsAdmin(false);
+      setIsGerente(false);
+      setCanModify(false);
       setLoading(false);
       return;
     }
@@ -36,14 +40,20 @@ export function useUserPermissions() {
         console.error('Error fetching user profile:', error);
         setUserProfile(null);
         setIsAdmin(false);
+        setIsGerente(false);
+        setCanModify(false);
       } else {
         setUserProfile(data);
         setIsAdmin(data.user_type === 'admin');
+        setIsGerente(data.user_type === 'gerente');
+        setCanModify(data.user_type === 'admin' || data.user_type === 'gerente');
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
       setUserProfile(null);
       setIsAdmin(false);
+      setIsGerente(false);
+      setCanModify(false);
     } finally {
       setLoading(false);
     }
@@ -55,18 +65,23 @@ export function useUserPermissions() {
     // Administradores podem modificar qualquer unidade
     if (userProfile.user_type === 'admin') return true;
     
-    // Outros usuários só podem modificar sua própria unidade
-    return userProfile.unidade_responsavel === itemUnidade;
+    // Gerentes só podem modificar sua própria unidade
+    if (userProfile.user_type === 'gerente') {
+      return userProfile.unidade_responsavel === itemUnidade;
+    }
+    
+    // Viewers não podem modificar nada
+    return false;
+  };
+
+  const canTransferItems = () => {
+    // Apenas administradores podem transferir itens entre unidades
+    return userProfile?.user_type === 'admin';
   };
 
   const getFilterForUserUnidade = () => {
-    if (!userProfile) return null;
-    
-    // Administradores podem ver todas as unidades
-    if (userProfile.user_type === 'admin') return null;
-    
-    // Outros usuários só veem sua própria unidade
-    return userProfile.unidade_responsavel;
+    // Todos os usuários (admin, gerente, viewer) podem ver dados de todas as unidades
+    return null;
   };
 
   useEffect(() => {
@@ -76,9 +91,12 @@ export function useUserPermissions() {
   return {
     userProfile,
     isAdmin,
+    isGerente,
+    canModify,
     loading,
     refetchProfile: fetchUserProfile,
     canModifyUnidade,
+    canTransferItems,
     getFilterForUserUnidade
   };
 }

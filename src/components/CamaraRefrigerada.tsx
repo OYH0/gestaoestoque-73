@@ -9,18 +9,30 @@ import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
 import { useCamaraRefrigeradaHistorico } from '@/hooks/useCamaraRefrigeradaHistorico';
 import { CamaraRefrigeradaHistoryDialog } from '@/components/camara-refrigerada/CamaraRefrigeradaHistoryDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { AdminGuard } from '@/components/AdminGuard';
 
 export function CamaraRefrigerada() {
   const { items, loading, updateItemStatus, deleteItem } = useCamaraRefrigeradaData();
   const { historico, loading: historicoLoading, addHistoricoItem } = useCamaraRefrigeradaHistorico();
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { canModify } = useUserPermissions();
 
   const moveToReady = (id: string) => {
+    if (!canModify) {
+      console.error('Acesso negado: apenas administradores e gerentes podem alterar status');
+      return;
+    }
     updateItemStatus(id, 'pronto');
   };
 
   const moveToFreezer = async (id: string) => {
+    if (!canModify) {
+      console.error('Acesso negado: apenas administradores e gerentes podem mover itens');
+      return;
+    }
+    
     const item = items.find(i => i.id === id);
     if (item) {
       // Registrar no histórico antes de remover
@@ -36,6 +48,11 @@ export function CamaraRefrigerada() {
   };
 
   const removeFromChamber = async (id: string) => {
+    if (!canModify) {
+      console.error('Acesso negado: apenas administradores e gerentes podem remover itens');
+      return;
+    }
+    
     const item = items.find(i => i.id === id);
     if (item) {
       // Registrar no histórico antes de remover
@@ -99,139 +116,156 @@ export function CamaraRefrigerada() {
         </Dialog>
       </div>
 
-      {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-orange-800 flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              Descongelando
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {items.filter(item => item.status === 'descongelando').length}
+      <AdminGuard fallback={
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-orange-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
             </div>
-            <p className="text-sm text-orange-700">Itens em processo</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-green-200 bg-green-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-green-800 flex items-center gap-2">
-              <Thermometer className="w-4 h-4" />
-              Prontos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {items.filter(item => item.status === 'pronto').length}
+            <div className="ml-3">
+              <p className="text-sm text-orange-800">
+                Apenas administradores podem realizar esta ação.
+              </p>
             </div>
-            <p className="text-sm text-green-700">Prontos para uso</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Lista de itens */}
-      <div className="grid gap-4">
-        {sortedItems.length === 0 ? (
-          <Card className="border-gray-200">
-            <CardContent className="p-6 text-center">
-              <div className="text-gray-500">
-                <Thermometer className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">Nenhum item na câmara refrigerada</h3>
-                <p className="text-sm">Os itens aparecerão aqui quando forem movidos da câmara fria para descongelamento.</p>
+          </div>
+        </div>
+      }>
+        {/* Status Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="border-orange-200 bg-orange-50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-orange-800 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Descongelando
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">
+                {items.filter(item => item.status === 'descongelando').length}
               </div>
+              <p className="text-sm text-orange-700">Itens em processo</p>
             </CardContent>
           </Card>
-        ) : (
-          sortedItems.map((item) => (
-            <Card 
-              key={item.id} 
-              className={`${
-                item.status === 'pronto' 
-                  ? 'border-green-200 bg-green-50' 
-                  : 'border-orange-200 bg-orange-50'
-              }`}
-            >
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-gray-900">{item.nome}</h3>
-                      <Badge 
-                        variant={item.status === 'pronto' ? 'default' : 'secondary'}
-                        className={
-                          item.status === 'pronto' 
-                            ? 'bg-green-500 text-white' 
-                            : 'bg-orange-500 text-white'
-                        }
-                      >
-                        {item.status === 'pronto' ? 'Pronto' : 'Descongelando'}
-                      </Badge>
-                    </div>
-                    <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">
-                      <span>{item.quantidade} {item.unidade}</span>
-                      {item.tempo_descongelamento && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {item.tempo_descongelamento}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {item.status === 'descongelando' ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => moveToReady(item.id)}
-                        className="text-green-600 border-green-300 hover:bg-green-50"
-                      >
-                        <ArrowRight className="w-3 h-3 mr-1" />
-                        Marcar como Pronto
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeFromChamber(item.id)}
-                        className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                      >
-                        Retirar da Câmara
-                      </Button>
-                    )}
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => moveToFreezer(item.id)}
-                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                    >
-                      <ArrowLeft className="w-3 h-3 mr-1" />
-                      Voltar ao Freezer
-                    </Button>
-                  </div>
+
+          <Card className="border-green-200 bg-green-50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-green-800 flex items-center gap-2">
+                <Thermometer className="w-4 h-4" />
+                Prontos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {items.filter(item => item.status === 'pronto').length}
+              </div>
+              <p className="text-sm text-green-700">Prontos para uso</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Lista de itens */}
+        <div className="grid gap-4">
+          {sortedItems.length === 0 ? (
+            <Card className="border-gray-200">
+              <CardContent className="p-6 text-center">
+                <div className="text-gray-500">
+                  <Thermometer className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">Nenhum item na câmara refrigerada</h3>
+                  <p className="text-sm">Os itens aparecerão aqui quando forem movidos da câmara fria para descongelamento.</p>
                 </div>
               </CardContent>
             </Card>
-          ))
-        )}
-      </div>
+          ) : (
+            sortedItems.map((item) => (
+              <Card 
+                key={item.id} 
+                className={`${
+                  item.status === 'pronto' 
+                    ? 'border-green-200 bg-green-50' 
+                    : 'border-orange-200 bg-orange-50'
+                }`}
+              >
+                <CardContent className="p-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-semibold text-gray-900">{item.nome}</h3>
+                        <Badge 
+                          variant={item.status === 'pronto' ? 'default' : 'secondary'}
+                          className={
+                            item.status === 'pronto' 
+                              ? 'bg-green-500 text-white' 
+                              : 'bg-orange-500 text-white'
+                          }
+                        >
+                          {item.status === 'pronto' ? 'Pronto' : 'Descongelando'}
+                        </Badge>
+                      </div>
+                      <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">
+                        <span>{item.quantidade} {item.unidade}</span>
+                        {item.tempo_descongelamento && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {item.tempo_descongelamento}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      {item.status === 'descongelando' ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => moveToReady(item.id)}
+                          className="text-green-600 border-green-300 hover:bg-green-50"
+                        >
+                          <ArrowRight className="w-3 h-3 mr-1" />
+                          Marcar como Pronto
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeFromChamber(item.id)}
+                          className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                        >
+                          Retirar da Câmara
+                        </Button>
+                      )}
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => moveToFreezer(item.id)}
+                        className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                      >
+                        <ArrowLeft className="w-3 h-3 mr-1" />
+                        Voltar ao Freezer
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
 
-      {/* Instruções */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardContent className="p-4">
-          <h4 className="font-semibold text-blue-900 mb-2">Instruções de Descongelamento</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Carnes pequenas (até 2kg): 30-45 minutos</li>
-            <li>• Carnes médias (2-5kg): 1-2 horas</li>
-            <li>• Carnes grandes (acima de 5kg): 3-4 horas</li>
-            <li>• Sempre manter na temperatura de 2-4°C</li>
-          </ul>
-        </CardContent>
-      </Card>
+        {/* Instruções */}
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="p-4">
+            <h4 className="font-semibold text-blue-900 mb-2">Instruções de Descongelamento</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Carnes pequenas (até 2kg): 30-45 minutos</li>
+              <li>• Carnes médias (2-5kg): 1-2 horas</li>
+              <li>• Carnes grandes (acima de 5kg): 3-4 horas</li>
+              <li>• Sempre manter na temperatura de 2-4°C</li>
+            </ul>
+          </CardContent>
+        </Card>
+      </AdminGuard>
     </div>
   );
 }

@@ -51,7 +51,7 @@ export function Header() {
   const IconComponent = currentRoute?.icon || Home;
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
       <SidebarTrigger className="-ml-1" />
       
       {/* Desktop: title on the left after sidebar trigger */}

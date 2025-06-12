@@ -104,7 +104,7 @@ export default function Descartaveis() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4 md:p-6 space-y-6">
+      <div className="space-y-6">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
           <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
@@ -123,7 +123,7 @@ export default function Descartaveis() {
   const lowStockItems = filteredItems.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
+    <div className="space-y-6">
       <div className={`flex flex-wrap gap-2 items-center ${isMobile ? 'justify-center' : ''}`}>
         <UnidadeSelector 
           selectedUnidade={selectedUnidade}

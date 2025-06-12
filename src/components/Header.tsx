@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -65,7 +66,7 @@ export function Header() {
           </div>
           <div>
             <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
-            {currentRoute.description && (
+            {'description' in currentRoute && currentRoute.description && (
               <p className="text-sm text-muted-foreground">{currentRoute.description}</p>
             )}
           </div>
@@ -81,7 +82,7 @@ export function Header() {
             </div>
             <div className="text-center">
               <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
-              {currentRoute.description && (
+              {'description' in currentRoute && currentRoute.description && (
                 <p className="text-xs text-muted-foreground">{currentRoute.description}</p>
               )}
             </div>

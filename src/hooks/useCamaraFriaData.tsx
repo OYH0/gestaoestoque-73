@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { useQRCodeGenerator } from '@/hooks/useQRCodeGenerator';
+import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
 
 export interface CamaraFriaItem {
   id: string;
@@ -28,6 +29,7 @@ export function useCamaraFriaData() {
   const [lastAddedItem, setLastAddedItem] = useState<CamaraFriaItem | null>(null);
   const { user } = useAuth();
   const { generateQRCodeData } = useQRCodeGenerator();
+  const { addHistoricoItem } = useCamaraFriaHistorico();
 
   const fetchItems = async () => {
     if (!user) return;

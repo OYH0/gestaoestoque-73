@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -79,7 +80,7 @@ export function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de Barras - Todos os tipos de carne e quantidades */}
         <Card className="shadow-md border-0">
-          <CardHeader>
+          <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-blue-500" />
               Estoque por Tipo de Carne
@@ -88,19 +89,19 @@ export function Dashboard() {
               Quantidade disponível de cada tipo de carne (kg)
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-96">
+          <CardContent className="pb-4">
+            <div className="h-[400px]">
               {meatTypesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={meatTypesData} 
                     margin={{ 
-                      top: 20, 
-                      right: 30, 
-                      left: 20, 
-                      bottom: 100 
+                      top: 10, 
+                      right: 10, 
+                      left: 10, 
+                      bottom: 120 
                     }}
-                    barCategoryGap="15%"
+                    barCategoryGap="10%"
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis 
@@ -108,13 +109,14 @@ export function Dashboard() {
                       stroke="#888" 
                       angle={-90}
                       textAnchor="end"
-                      height={100}
-                      fontSize={11}
+                      height={120}
+                      fontSize={10}
                       interval={0}
                     />
                     <YAxis 
                       stroke="#888"
-                      width={50}
+                      width={40}
+                      fontSize={10}
                     />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}
@@ -123,7 +125,7 @@ export function Dashboard() {
                     <Bar 
                       dataKey="quantidade" 
                       radius={[2, 2, 0, 0]}
-                      maxBarSize={35}
+                      maxBarSize={30}
                     >
                       {meatTypesData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
@@ -145,7 +147,7 @@ export function Dashboard() {
 
         {/* Gráfico de Pizza - Top 5 carnes mais utilizadas baseado no histórico real */}
         <Card className="shadow-md border-0">
-          <CardHeader>
+          <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2">
               <Package className="w-5 h-5 text-green-500" />
               Top 5 Carnes Mais Utilizadas
@@ -154,18 +156,18 @@ export function Dashboard() {
               Carnes com maior quantidade de saídas registradas
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-96">
+          <CardContent className="pb-4">
+            <div className="h-[400px]">
               {top5MeatUsage.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                  <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                     <Pie
                       data={top5MeatUsage}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      outerRadius={120}
-                      innerRadius={60}
+                      outerRadius={130}
+                      innerRadius={70}
                       fill="#8884d8"
                       dataKey="totalSaidas"
                       strokeWidth={2}

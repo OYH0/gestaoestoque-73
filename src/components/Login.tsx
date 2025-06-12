@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,7 +57,7 @@ export function Login() {
           <div className="space-y-6">
             <div className="mx-auto w-48 h-48 flex items-center justify-center">
               <img 
-                src="/lovable-uploads/1d164f09-b5e5-4655-b51a-e2c96a970f3c.png" 
+                src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
                 alt="Companhia do Churrasco Logo"
                 className="w-full h-full object-contain"
               />
@@ -91,7 +90,7 @@ export function Login() {
               </p>
               <div className="mx-auto w-32 h-32 flex items-center justify-center">
                 <img 
-                  src="/lovable-uploads/1d164f09-b5e5-4655-b51a-e2c96a970f3c.png" 
+                  src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
                   alt="Companhia do Churrasco Logo"
                   className="w-full h-full object-contain"
                 />

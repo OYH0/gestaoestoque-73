@@ -37,14 +37,14 @@ export function DescartaveisFilters({
       
       <Card>
         <CardContent className="p-4">
-          <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+          <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : 'justify-start'}`}>
             {categorias.map((categoria) => (
               <Button
                 key={categoria}
                 variant={categoriaFiltro === categoria ? "default" : "outline"}
                 size="sm"
                 onClick={() => setCategoriaFiltro(categoria)}
-                className={`text-xs ${categoriaFiltro === categoria ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                className={`text-xs ${categoriaFiltro === categoria ? 'bg-green-500 hover:bg-green-600' : ''} ${isMobile ? 'min-w-[80px]' : ''}`}
               >
                 {categoria}
               </Button>

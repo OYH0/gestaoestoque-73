@@ -2,6 +2,7 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface UnidadeSelectorProps {
   selectedUnidade: 'juazeiro_norte' | 'fortaleza' | 'todas';
@@ -9,6 +10,8 @@ interface UnidadeSelectorProps {
 }
 
 export function UnidadeSelector({ selectedUnidade, onUnidadeChange }: UnidadeSelectorProps) {
+  const isMobile = useIsMobile();
+
   const getUnidadeLabel = (unidade: string) => {
     switch (unidade) {
       case 'juazeiro_norte':
@@ -34,12 +37,12 @@ export function UnidadeSelector({ selectedUnidade, onUnidadeChange }: UnidadeSel
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Badge variant="outline" className="text-xs">
+    <div className={`flex items-center gap-2 ${isMobile ? 'justify-center flex-col sm:flex-row' : ''}`}>
+      <Badge variant="outline" className="text-xs whitespace-nowrap">
         Unidade:
       </Badge>
       <Select value={selectedUnidade} onValueChange={onUnidadeChange}>
-        <SelectTrigger className="w-48">
+        <SelectTrigger className={`${isMobile ? 'w-full max-w-xs' : 'w-48'}`}>
           <SelectValue>
             <Badge className={`text-xs ${getUnidadeBadgeColor(selectedUnidade)}`}>
               {getUnidadeLabel(selectedUnidade)}

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { QrCode, Plus, History } from 'lucide-react';
+import { QrCode, Plus, History, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ import { EstoqueSecoItemCard } from '@/components/estoque-seco/EstoqueSecoItemCa
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { generateInventoryPDF } from '@/utils/pdfGenerator';
 
 export default function EstoqueSeco() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, fetchItems } = useEstoqueSecoData();
@@ -51,6 +52,18 @@ export default function EstoqueSeco() {
     fetchItems(); // Recarregar os dados após scan bem-sucedido
   };
 
+  const handlePrintPDF = () => {
+    try {
+      generateInventoryPDF(
+        items,
+        'Relatório - Estoque Seco',
+        'Inventário de produtos secos e não perecíveis'
+      );
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-4 md:p-6 space-y-6">
@@ -85,6 +98,16 @@ export default function EstoqueSeco() {
       </div>
 
       <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Button 
+          variant="outline" 
+          size={isMobile ? "sm" : "default"}
+          className="border-gray-300"
+          onClick={handlePrintPDF}
+        >
+          <FileText className="w-4 h-4 mr-1 md:mr-2" />
+          <span className={isMobile ? "text-xs" : "text-sm"}>PDF</span>
+        </Button>
+
         <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
           <DialogTrigger asChild>
             <Button 

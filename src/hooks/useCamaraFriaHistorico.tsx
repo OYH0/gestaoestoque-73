@@ -16,7 +16,7 @@ export interface CamaraFriaHistoricoItem {
   unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
-export function useCamaraFriaHistorico() {
+export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas') {
   const [historico, setHistorico] = useState<CamaraFriaHistoricoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -25,10 +25,17 @@ export function useCamaraFriaHistorico() {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('camara_fria_historico')
         .select('*')
         .order('data_operacao', { ascending: false });
+
+      // Aplicar filtro por unidade se não for "todas"
+      if (selectedUnidade && selectedUnidade !== 'todas') {
+        query = query.eq('unidade', selectedUnidade);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -118,7 +125,7 @@ export function useCamaraFriaHistorico() {
 
   useEffect(() => {
     fetchHistorico();
-  }, [user]);
+  }, [user, selectedUnidade]);
 
   return {
     historico,

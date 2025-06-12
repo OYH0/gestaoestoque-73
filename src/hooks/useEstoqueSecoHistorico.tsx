@@ -16,7 +16,7 @@ export interface EstoqueSecoHistoricoItem {
   unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
-export function useEstoqueSecoHistorico() {
+export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas') {
   const [historico, setHistorico] = useState<EstoqueSecoHistoricoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -25,10 +25,17 @@ export function useEstoqueSecoHistorico() {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('estoque_seco_historico')
         .select('*')
         .order('data_operacao', { ascending: false });
+
+      // Aplicar filtro por unidade se não for "todas"
+      if (selectedUnidade && selectedUnidade !== 'todas') {
+        query = query.eq('unidade', selectedUnidade);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -109,7 +116,7 @@ export function useEstoqueSecoHistorico() {
 
   useEffect(() => {
     fetchHistorico();
-  }, [user]);
+  }, [user, selectedUnidade]);
 
   return {
     historico,

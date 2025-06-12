@@ -22,6 +22,7 @@ interface CamaraFriaHeaderProps {
   categorias: string[];
   items: any[];
   selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas';
+  loading?: boolean;
 }
 
 export function CamaraFriaHeader({
@@ -37,7 +38,8 @@ export function CamaraFriaHeader({
   onAddNewItem,
   categorias,
   items,
-  selectedUnidade = 'todas'
+  selectedUnidade = 'todas',
+  loading = false
 }: CamaraFriaHeaderProps) {
   const isMobile = useIsMobile();
 
@@ -76,7 +78,10 @@ export function CamaraFriaHeader({
             <span className={isMobile ? "text-xs" : "text-sm"}>Histórico</span>
           </Button>
         </DialogTrigger>
-        <CamaraFriaHistoryDialog historico={historico} />
+        <CamaraFriaHistoryDialog 
+          historico={historico} 
+          loading={loading}
+        />
       </Dialog>
       
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

@@ -16,7 +16,7 @@ export interface DescartaveisHistoricoItem {
   unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
-export function useDescartaveisHistorico() {
+export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas') {
   const [historico, setHistorico] = useState<DescartaveisHistoricoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -25,10 +25,17 @@ export function useDescartaveisHistorico() {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('descartaveis_historico')
         .select('*')
         .order('data_operacao', { ascending: false });
+
+      // Aplicar filtro por unidade se não for "todas"
+      if (selectedUnidade && selectedUnidade !== 'todas') {
+        query = query.eq('unidade', selectedUnidade);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -109,7 +116,7 @@ export function useDescartaveisHistorico() {
 
   useEffect(() => {
     fetchHistorico();
-  }, [user]);
+  }, [user, selectedUnidade]);
 
   return {
     historico,

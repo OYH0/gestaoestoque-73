@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,16 +20,21 @@ interface UserProfile {
 }
 
 export function UserManagement() {
-  const { isAdmin, loading: permissionsLoading } = useUserPermissions();
+  const { isAdmin, loading: permissionsLoading, userProfile } = useUserPermissions();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
+  console.log('UserManagement - isAdmin:', isAdmin, 'permissionsLoading:', permissionsLoading, 'userProfile:', userProfile);
+
   const fetchUsers = async () => {
+    console.log('Fetching users...');
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
+
+      console.log('Users data:', data, 'error:', error);
 
       if (error) throw error;
       setUsers(data || []);
@@ -99,12 +105,20 @@ export function UserManagement() {
   };
 
   useEffect(() => {
-    if (!permissionsLoading && isAdmin) {
-      fetchUsers();
+    console.log('UserManagement useEffect - permissionsLoading:', permissionsLoading, 'isAdmin:', isAdmin);
+    if (!permissionsLoading) {
+      if (isAdmin) {
+        fetchUsers();
+      } else {
+        setLoading(false);
+      }
     }
   }, [isAdmin, permissionsLoading]);
 
+  console.log('UserManagement render - permissionsLoading:', permissionsLoading, 'loading:', loading, 'isAdmin:', isAdmin);
+
   if (permissionsLoading || loading) {
+    console.log('Showing loading state');
     return (
       <div className="container mx-auto p-6">
         <div className="animate-pulse space-y-4">
@@ -198,7 +212,7 @@ export function UserManagement() {
           ))}
         </div>
 
-        {users.length === 0 && (
+        {users.length === 0 && !loading && (
           <Card>
             <CardContent className="text-center py-8">
               <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

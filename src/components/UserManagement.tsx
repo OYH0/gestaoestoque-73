@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Shield, MapPin, Refresh } from 'lucide-react';
+import { Users, Shield, MapPin, RefreshCw } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -130,7 +129,7 @@ export function UserManagement() {
             </p>
           </div>
           <Button onClick={fetchUsers} variant="outline">
-            <Refresh className="h-4 w-4 mr-2" />
+            <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
           </Button>
         </div>

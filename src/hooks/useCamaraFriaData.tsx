@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -46,7 +47,13 @@ export function useCamaraFriaData() {
         console.log(`Item: ${item.nome} - Unidade: ${item.unidade || 'não definido'}`);
       });
       
-      setItems(data || []);
+      // Mapear o campo 'unidade' do banco para 'unidade_item' no frontend
+      const itemsMapeados: CamaraFriaItem[] = (data || []).map(item => ({
+        ...item,
+        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza'
+      }));
+      
+      setItems(itemsMapeados);
     } catch (error) {
       console.error('Error fetching items:', error);
       toast({
@@ -90,7 +97,7 @@ export function useCamaraFriaData() {
     const itemParaSalvar = {
       nome: newItem.nome,
       quantidade: quantidadeSegura,
-      unidade: newItem.unidade,
+      unidade: unidadeSegura,  // Usar a coluna 'unidade' para guardar a unidade_item
       categoria: newItem.categoria,
       minimo: newItem.minimo || 0,
       data_entrada: newItem.data_entrada,
@@ -99,8 +106,7 @@ export function useCamaraFriaData() {
       preco_unitario: newItem.preco_unitario,
       fornecedor: newItem.fornecedor,
       observacoes: newItem.observacoes,
-      user_id: user.id,
-      unidade: unidadeSegura  // Usar a coluna 'unidade' para guardar a unidade_item
+      user_id: user.id
     };
     
     console.log('Item final para salvar no banco:', itemParaSalvar);

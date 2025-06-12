@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,12 +22,17 @@ import { CamaraFriaTransferDialog } from '@/components/camara-fria/CamaraFriaTra
 
 export default function CamaraFria() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, transferItemsToUnidade } = useCamaraFriaData();
-  const { historico, addHistoricoItem } = useCamaraFriaHistorico();
+  
+  // Estado para unidade selecionada
+  const [selectedUnidade, setSelectedUnidade] = useState<'juazeiro_norte' | 'fortaleza' | 'todas'>('todas');
+  
+  // Passar selectedUnidade para o hook de histórico
+  const { historico, addHistoricoItem } = useCamaraFriaHistorico(selectedUnidade);
+  
   const { addItem: addCamaraRefrigeradaItem } = useCamaraRefrigeradaData();
   const { canModify, canTransferItems } = useUserPermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
-  const [selectedUnidade, setSelectedUnidade] = useState<'juazeiro_norte' | 'fortaleza' | 'todas'>('todas');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);

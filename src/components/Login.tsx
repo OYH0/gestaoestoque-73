@@ -106,14 +106,6 @@ export function Login() {
           {/* Mobile logo (visible only on small screens) */}
           <div className="lg:hidden pt-8 pb-4">
             <div className="text-center space-y-4">
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-slate-800">
-                  {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
-                </h2>
-                <p className="text-slate-600">
-                  {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
-                </p>
-              </div>
               <div className="mx-auto w-16 h-16 bg-gradient-to-br from-churrasco-red to-churrasco-orange rounded-xl flex items-center justify-center shadow-lg">
                 <Beef className="w-8 h-8 text-white" />
               </div>
@@ -124,7 +116,7 @@ export function Login() {
             </div>
           </div>
           
-          <CardHeader className="text-center space-y-2 pb-6 lg:block hidden">
+          <CardHeader className="text-center space-y-2 pb-6">
             <h2 className="text-2xl font-bold text-slate-800">
               {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
             </h2>

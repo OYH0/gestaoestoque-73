@@ -89,10 +89,10 @@ export function AppSidebar() {
                           to={item.url} 
                           onClick={handleItemClick}
                           className={({ isActive }) => 
-                            `flex items-center gap-3 md:gap-4 w-full px-3 md:px-4 py-3 md:py-4 text-white/60 hover:text-white/80 transition-all duration-200 font-medium text-sm md:text-base h-auto rounded-xl ${
+                            `flex items-center gap-3 md:gap-4 w-full px-3 md:px-4 py-3 md:py-4 text-white/90 hover:bg-white/10 transition-all duration-200 font-medium text-sm md:text-base h-auto rounded-xl ${
                               isActive 
                                 ? "bg-white/20 text-white shadow-lg border border-white/30 backdrop-blur-sm" 
-                                : "hover:bg-white/5"
+                                : ""
                             }`
                           }
                         >
@@ -121,7 +121,7 @@ export function AppSidebar() {
             
             <Button 
               onClick={handleSignOut}
-              className="w-full justify-start rounded-xl px-3 md:px-4 py-3 md:py-4 text-white/80 bg-white/10 border border-white/20 hover:bg-white/20 hover:text-white transition-all duration-200 font-medium text-sm md:text-base h-auto backdrop-blur-sm"
+              className="w-full justify-start rounded-xl px-3 md:px-4 py-3 md:py-4 text-white bg-white/10 border border-white/20 hover:bg-white/20 hover:text-white transition-all duration-200 font-medium text-sm md:text-base h-auto backdrop-blur-sm"
             >
               <LogOut className="h-5 w-5 md:h-6 md:w-6 shrink-0 mr-2 md:mr-3" />
               <span className="text-sm md:text-base">Sair</span>

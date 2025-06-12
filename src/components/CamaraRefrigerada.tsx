@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -134,18 +135,6 @@ export function CamaraRefrigerada() {
   return (
     <div className="space-y-6">
       <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
-        <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-          {items.length} itens descongelando
-        </Badge>
-        <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
-          {items.filter(item => item.status === 'descongelando').length} em processo
-        </Badge>
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-          {items.filter(item => item.status === 'pronto').length} prontos
-        </Badge>
-      </div>
-
-      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
         <Dialog open={historicoOpen} onOpenChange={setHistoricoOpen}>
           <DialogTrigger asChild>
             <Button 
@@ -162,6 +151,18 @@ export function CamaraRefrigerada() {
             loading={historicoLoading}
           />
         </Dialog>
+      </div>
+
+      <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
+        <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+          {items.length} itens descongelando
+        </Badge>
+        <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
+          {items.filter(item => item.status === 'descongelando').length} em processo
+        </Badge>
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+          {items.filter(item => item.status === 'pronto').length} prontos
+        </Badge>
       </div>
 
       <AdminGuard fallback={

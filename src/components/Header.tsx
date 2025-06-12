@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { LogOut, User, Home, Snowflake, Thermometer, Package2, FileText } from 'lucide-react';
+import { LogOut, User, Home, Snowflake, Thermometer, Package2, FileText, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -40,6 +40,11 @@ const routeConfig = {
     title: 'Descartáveis',
     description: 'Materiais descartáveis',
     icon: FileText
+  },
+  '/configuracoes': {
+    title: 'Gerenciamento de Usuários',
+    description: 'Configure permissões e unidades responsáveis para cada usuário',
+    icon: Settings
   }
 };
 
@@ -60,7 +65,12 @@ export function Header() {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <IconComponent className="w-4 h-4 text-primary-foreground" />
           </div>
-          <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
+          <div>
+            <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
+            {currentRoute.description && (
+              <p className="text-sm text-muted-foreground">{currentRoute.description}</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -71,7 +81,12 @@ export function Header() {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <IconComponent className="w-4 h-4 text-primary-foreground" />
             </div>
-            <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
+            <div className="text-center">
+              <h1 className="text-lg font-semibold text-foreground">{currentRoute.title}</h1>
+              {currentRoute.description && (
+                <p className="text-xs text-muted-foreground">{currentRoute.description}</p>
+              )}
+            </div>
           </div>
         </div>
       )}

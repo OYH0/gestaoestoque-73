@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { supabase } from '@/integrations/supabase/client';
@@ -181,21 +180,12 @@ export function UserManagement() {
     <AdminGuard>
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Users className="h-8 w-8" />
-              Gerenciamento de Usuários
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Configure permissões e unidades responsáveis para cada usuário
-            </p>
-            <div className="text-sm text-muted-foreground mt-1 space-y-1">
-              <p>Usuários encontrados: {users.length}</p>
-              <div className="space-y-1">
-                <p><strong>Admin:</strong> Pode ver e modificar dados de todas as unidades + transferir itens</p>
-                <p><strong>Gerente:</strong> Pode ver dados de todas as unidades, mas só pode modificar itens da sua unidade</p>
-                <p><strong>Visualizador:</strong> Só pode visualizar dados de todas as unidades</p>
-              </div>
+          <div className="text-sm text-muted-foreground space-y-1">
+            <p>Usuários encontrados: {users.length}</p>
+            <div className="space-y-1">
+              <p><strong>Admin:</strong> Pode ver e modificar dados de todas as unidades + transferir itens</p>
+              <p><strong>Gerente:</strong> Pode ver dados de todas as unidades, mas só pode modificar itens da sua unidade</p>
+              <p><strong>Visualizador:</strong> Só pode visualizar dados de todas as unidades</p>
             </div>
           </div>
           <Button onClick={fetchUsers} variant="outline">

@@ -156,9 +156,9 @@ export function CamaraFriaItemCard({
                 {item.quantidade > 0 && (
                   <Button
                     onClick={() => onStartThaw(item.id, 1)}
-                    className={`bg-orange-500 hover:bg-orange-600 ${isMobile ? 'w-full' : 'min-w-16'}`}
+                    className={`bg-orange-500 hover:bg-orange-600 ${isMobile ? 'w-full' : 'min-w-28'}`}
                   >
-                    Desc.
+                    Descongelar
                   </Button>
                 )}
                 

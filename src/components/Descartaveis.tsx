@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { QrCode, Plus, History, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,10 +16,12 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
 import { UnidadeSelector } from '@/components/UnidadeSelector';
 import { AdminGuard } from '@/components/AdminGuard';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export default function Descartaveis() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, fetchItems } = useDescartaveisData();
   const { historico } = useDescartaveisHistorico();
+  const { isAdmin } = useUserPermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
   const [selectedUnidade, setSelectedUnidade] = useState<'juazeiro_norte' | 'fortaleza' | 'todas'>('todas');
@@ -46,6 +47,11 @@ export default function Descartaveis() {
   });
 
   const handleAddNewItem = async () => {
+    if (!isAdmin) {
+      console.error('Acesso negado: apenas administradores podem adicionar itens');
+      return;
+    }
+    
     if (!newItem.nome || !newItem.categoria || !newItem.unidade) return;
     
     const itemWithUnidade = {
@@ -56,6 +62,22 @@ export default function Descartaveis() {
     await addItem(itemWithUnidade);
     setNewItem({ nome: '', quantidade: 0, unidade: '', categoria: '', minimo: 0 });
     setIsAddDialogOpen(false);
+  };
+
+  const handleUpdateQuantity = async (id: string, newQuantity: number) => {
+    if (!isAdmin) {
+      console.error('Acesso negado: apenas administradores podem atualizar quantidades');
+      return;
+    }
+    await updateItemQuantity(id, newQuantity);
+  };
+
+  const handleDeleteItem = async (id: string) => {
+    if (!isAdmin) {
+      console.error('Acesso negado: apenas administradores podem deletar itens');
+      return;
+    }
+    await deleteItem(id);
   };
 
   const handleQRScanSuccess = () => {
@@ -195,8 +217,8 @@ export default function Descartaveis() {
           <DescartaveisItemCard
             key={item.id}
             item={item}
-            onUpdateQuantity={updateItemQuantity}
-            onDelete={deleteItem}
+            onUpdateQuantity={handleUpdateQuantity}
+            onDelete={handleDeleteItem}
           />
         ))}
       </div>

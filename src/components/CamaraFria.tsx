@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,11 +15,14 @@ import { QRScanner } from '@/components/qr-scanner/QRScanner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
+import { AdminGuard } from '@/components/AdminGuard';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export default function CamaraFria() {
   const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem } = useCamaraFriaData();
   const { historico, addHistoricoItem } = useCamaraFriaHistorico();
   const { addItem: addCamaraRefrigeradaItem } = useCamaraRefrigeradaData();
+  const { isAdmin } = useUserPermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -42,6 +44,11 @@ export default function CamaraFria() {
   const [thawingItems, setThawingItems] = useState<Record<string, number>>({});
 
   const handleAddNewItem = async () => {
+    if (!isAdmin) {
+      console.error('Acesso negado: apenas administradores podem adicionar itens');
+      return;
+    }
+    
     if (!newItem.nome.trim() || !newItem.categoria) {
       return;
     }
@@ -71,6 +78,11 @@ export default function CamaraFria() {
   };
 
   const handleUpdateQuantity = async (id: string, newQuantity: number, tipo: 'entrada' | 'saida') => {
+    if (!isAdmin) {
+      console.error('Acesso negado: apenas administradores podem atualizar quantidades');
+      return;
+    }
+    
     const item = items.find(i => i.id === id);
     if (!item) return;
 
@@ -104,6 +116,11 @@ export default function CamaraFria() {
   };
 
   const handleConfirmChange = async (id: string) => {
+    if (!isAdmin) {
+      console.error('Acesso negado: apenas administradores podem editar itens');
+      return;
+    }
+    
     const item = items.find(i => i.id === id);
     const newQuantity = editingItems[id];
     
@@ -156,6 +173,11 @@ export default function CamaraFria() {
   };
 
   const handleConfirmThaw = async (id: string) => {
+    if (!isAdmin) {
+      console.error('Acesso negado: apenas administradores podem descongelar itens');
+      return;
+    }
+    
     const thawQuantity = thawingItems[id];
     const item = items.find(i => i.id === id);
     if (thawQuantity !== undefined && item) {
@@ -201,6 +223,11 @@ export default function CamaraFria() {
   };
 
   const handleDeleteItem = async (id: string) => {
+    if (!isAdmin) {
+      console.error('Acesso negado: apenas administradores podem deletar itens');
+      return;
+    }
+    
     const item = items.find(i => i.id === id);
     if (!item) return;
     
@@ -296,37 +323,41 @@ export default function CamaraFria() {
           <CamaraFriaHistoryDialog historico={historico} />
         </Dialog>
         
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              size={isMobile ? "sm" : "default"}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              <Plus className="w-4 h-4 mr-1 md:mr-2" />
-              <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
-            </Button>
-          </DialogTrigger>
-          <CamaraFriaAddDialog 
-            newItem={newItem}
-            setNewItem={setNewItem}
-            onAddNewItem={handleAddNewItem}
-            setDialogOpen={setIsAddDialogOpen}
-            categorias={categories}
-          />
-        </Dialog>
+        <AdminGuard>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                size={isMobile ? "sm" : "default"}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                <Plus className="w-4 h-4 mr-1 md:mr-2" />
+                <span className={isMobile ? "text-xs" : "text-sm"}>Nova Carne</span>
+              </Button>
+            </DialogTrigger>
+            <CamaraFriaAddDialog 
+              newItem={newItem}
+              setNewItem={setNewItem}
+              onAddNewItem={handleAddNewItem}
+              setDialogOpen={setIsAddDialogOpen}
+              categorias={categories}
+            />
+          </Dialog>
+        </AdminGuard>
       </div>
 
-      <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-fit text-green-600 border-green-200 hover:bg-green-50"
-          onClick={() => setShowScanner(true)}
-        >
-          <QrCode className="w-4 h-4 mr-2" />
-          Escanear QR Code
-        </Button>
-      </div>
+      <AdminGuard fallback={null}>
+        <div className={`flex ${isMobile ? 'justify-center' : ''}`}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-fit text-green-600 border-green-200 hover:bg-green-50"
+            onClick={() => setShowScanner(true)}
+          >
+            <QrCode className="w-4 h-4 mr-2" />
+            Escanear QR Code
+          </Button>
+        </div>
+      </AdminGuard>
 
       <CamaraFriaFilters
         categorias={categories}

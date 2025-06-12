@@ -99,24 +99,23 @@ export function Dashboard() {
                       top: 20, 
                       right: 30, 
                       left: 20, 
-                      bottom: 100 
+                      bottom: 80 
                     }}
-                    barCategoryGap="20%"
+                    barCategoryGap="15%"
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis 
                       dataKey="tipo" 
                       stroke="#888" 
-                      angle={-50}
+                      angle={-45}
                       textAnchor="end"
-                      height={100}
-                      fontSize={10}
+                      height={80}
+                      fontSize={11}
                       interval={0}
-                      tick={{ fontSize: 10 }}
                     />
                     <YAxis 
                       stroke="#888"
-                      width={60}
+                      width={50}
                     />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}
@@ -125,7 +124,7 @@ export function Dashboard() {
                     <Bar 
                       dataKey="quantidade" 
                       radius={[2, 2, 0, 0]}
-                      maxBarSize={40}
+                      maxBarSize={35}
                     >
                       {meatTypesData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />

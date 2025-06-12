@@ -49,6 +49,26 @@ export function useUserPermissions() {
     }
   };
 
+  const canModifyUnidade = (itemUnidade: 'juazeiro_norte' | 'fortaleza') => {
+    if (!userProfile) return false;
+    
+    // Administradores podem modificar qualquer unidade
+    if (userProfile.user_type === 'admin') return true;
+    
+    // Outros usuários só podem modificar sua própria unidade
+    return userProfile.unidade_responsavel === itemUnidade;
+  };
+
+  const getFilterForUserUnidade = () => {
+    if (!userProfile) return null;
+    
+    // Administradores podem ver todas as unidades
+    if (userProfile.user_type === 'admin') return null;
+    
+    // Outros usuários só veem sua própria unidade
+    return userProfile.unidade_responsavel;
+  };
+
   useEffect(() => {
     fetchUserProfile();
   }, [user]);
@@ -57,6 +77,8 @@ export function useUserPermissions() {
     userProfile,
     isAdmin,
     loading,
-    refetchProfile: fetchUserProfile
+    refetchProfile: fetchUserProfile,
+    canModifyUnidade,
+    getFilterForUserUnidade
   };
 }

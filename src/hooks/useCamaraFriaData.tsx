@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { useQRCodeGenerator } from '@/hooks/useQRCodeGenerator';
 import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export interface CamaraFriaItem {
   id: string;
@@ -30,23 +31,30 @@ export function useCamaraFriaData() {
   const { user } = useAuth();
   const { generateQRCodeData } = useQRCodeGenerator();
   const { addHistoricoItem } = useCamaraFriaHistorico();
+  const { getFilterForUserUnidade, canModifyUnidade } = useUserPermissions();
 
   const fetchItems = async () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('camara_fria_items')
         .select('*')
         .order('nome');
+
+      // Aplicar filtro por unidade se necessário
+      const unidadeFilter = getFilterForUserUnidade();
+      if (unidadeFilter) {
+        query = query.eq('unidade', unidadeFilter);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
       console.log('=== DADOS CARREGADOS DO BANCO ===');
       console.log('Total de itens:', data?.length || 0);
-      data?.forEach(item => {
-        console.log(`Item: ${item.nome} - Unidade: ${item.unidade || 'não definido'}`);
-      });
+      console.log('Filtro aplicado para unidade:', unidadeFilter || 'nenhum (admin)');
       
       // Mapear o campo 'unidade' do banco para 'unidade_item' no frontend
       const itemsMapeados: CamaraFriaItem[] = (data || []).map(item => ({
@@ -67,61 +75,19 @@ export function useCamaraFriaData() {
     }
   };
 
-  const transferItemsToUnidade = async (itemIds: string[], targetUnidade: 'juazeiro_norte' | 'fortaleza') => {
-    if (!user) return;
-
-    console.log('=== TRANSFERINDO ITENS PARA NOVA UNIDADE ===');
-    console.log('Item IDs:', itemIds);
-    console.log('Unidade de destino:', targetUnidade);
-
-    try {
-      const { error } = await supabase
-        .from('camara_fria_items')
-        .update({ unidade: targetUnidade })
-        .in('id', itemIds);
-
-      if (error) throw error;
-
-      // Atualizar o estado local
-      setItems(prev => prev.map(item => 
-        itemIds.includes(item.id) 
-          ? { ...item, unidade_item: targetUnidade }
-          : item
-      ));
-
-      // Registrar no histórico para cada item transferido
-      const transferredItems = items.filter(item => itemIds.includes(item.id));
-      
-      for (const item of transferredItems) {
-        await addHistoricoItem({
-          item_nome: item.nome,
-          quantidade: item.quantidade,
-          unidade: item.unidade,
-          categoria: item.categoria,
-          tipo: 'entrada',
-          observacoes: `Transferido para ${targetUnidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza'}`,
-          unidade_item: targetUnidade
-        });
-      }
-
-      toast({
-        title: "Transferência realizada",
-        description: `${transferredItems.length} itens foram transferidos para ${targetUnidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza'}`,
-      });
-
-      console.log('✅ Transferência concluída com sucesso');
-    } catch (error) {
-      console.error('❌ ERRO na transferência:', error);
-      toast({
-        title: "Erro na transferência",
-        description: "Não foi possível transferir os itens.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const addItem = async (newItem: Omit<CamaraFriaItem, 'id'>) => {
     if (!user) return;
+
+    // Verificar se o usuário pode modificar essa unidade
+    const targetUnidade = newItem.unidade_item || 'juazeiro_norte';
+    if (!canModifyUnidade(targetUnidade)) {
+      toast({
+        title: "Acesso negado",
+        description: "Você só pode adicionar itens na sua unidade responsável.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     console.log('=== INÍCIO addItem NO HOOK ===');
     console.log('Item recebido no hook:', newItem);
@@ -227,6 +193,16 @@ export function useCamaraFriaData() {
       const currentItem = items.find(item => item.id === id);
       if (!currentItem) return;
 
+      // Verificar se o usuário pode modificar essa unidade
+      if (!canModifyUnidade(currentItem.unidade_item || 'juazeiro_norte')) {
+        toast({
+          title: "Acesso negado",
+          description: "Você só pode modificar itens da sua unidade responsável.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const quantityIncrease = newQuantity - currentItem.quantidade;
 
       console.log('=== updateItemQuantity ===');
@@ -271,6 +247,19 @@ export function useCamaraFriaData() {
 
   const deleteItem = async (id: string) => {
     try {
+      const currentItem = items.find(item => item.id === id);
+      if (!currentItem) return;
+
+      // Verificar se o usuário pode modificar essa unidade
+      if (!canModifyUnidade(currentItem.unidade_item || 'juazeiro_norte')) {
+        toast({
+          title: "Acesso negado",
+          description: "Você só pode deletar itens da sua unidade responsável.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('camara_fria_items')
         .delete()
@@ -293,9 +282,72 @@ export function useCamaraFriaData() {
     }
   };
 
+  const transferItemsToUnidade = async (itemIds: string[], targetUnidade: 'juazeiro_norte' | 'fortaleza') => {
+    if (!user) return;
+
+    // Verificar se o usuário pode fazer transferências (apenas admins)
+    if (!canModifyUnidade('juazeiro_norte') || !canModifyUnidade('fortaleza')) {
+      toast({
+        title: "Acesso negado",
+        description: "Apenas administradores podem transferir itens entre unidades.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('=== TRANSFERINDO ITENS PARA NOVA UNIDADE ===');
+    console.log('Item IDs:', itemIds);
+    console.log('Unidade de destino:', targetUnidade);
+
+    try {
+      const { error } = await supabase
+        .from('camara_fria_items')
+        .update({ unidade: targetUnidade })
+        .in('id', itemIds);
+
+      if (error) throw error;
+
+      // Atualizar o estado local
+      setItems(prev => prev.map(item => 
+        itemIds.includes(item.id) 
+          ? { ...item, unidade_item: targetUnidade }
+          : item
+      ));
+
+      // Registrar no histórico para cada item transferido
+      const transferredItems = items.filter(item => itemIds.includes(item.id));
+      
+      for (const item of transferredItems) {
+        await addHistoricoItem({
+          item_nome: item.nome,
+          quantidade: item.quantidade,
+          unidade: item.unidade,
+          categoria: item.categoria,
+          tipo: 'entrada',
+          observacoes: `Transferido para ${targetUnidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza'}`,
+          unidade_item: targetUnidade
+        });
+      }
+
+      toast({
+        title: "Transferência realizada",
+        description: `${transferredItems.length} itens foram transferidos para ${targetUnidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza'}`,
+      });
+
+      console.log('✅ Transferência concluída com sucesso');
+    } catch (error) {
+      console.error('❌ ERRO na transferência:', error);
+      toast({
+        title: "Erro na transferência",
+        description: "Não foi possível transferir os itens.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchItems();
-  }, [user]);
+  }, [user, getFilterForUserUnidade]);
 
   return {
     items,

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Thermometer, Clock, ArrowRight, ArrowLeft, Loader2, History } from 'lucide-react';
 import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
 import { useCamaraRefrigeradaHistorico } from '@/hooks/useCamaraRefrigeradaHistorico';
+import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { CamaraRefrigeradaHistoryDialog } from '@/components/camara-refrigerada/CamaraRefrigeradaHistoryDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
@@ -15,6 +15,7 @@ import { AdminGuard } from '@/components/AdminGuard';
 export function CamaraRefrigerada() {
   const { items, loading, updateItemStatus, deleteItem } = useCamaraRefrigeradaData();
   const { historico, loading: historicoLoading, addHistoricoItem } = useCamaraRefrigeradaHistorico();
+  const { addItem: addCamaraFriaItem } = useCamaraFriaData();
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const isMobile = useIsMobile();
   const { canModify } = useUserPermissions();
@@ -35,7 +36,19 @@ export function CamaraRefrigerada() {
     
     const item = items.find(i => i.id === id);
     if (item) {
-      // Registrar no histórico antes de remover
+      // Primeiro, adicionar o item de volta à câmara fria
+      await addCamaraFriaItem({
+        nome: item.nome,
+        quantidade: item.quantidade,
+        unidade: item.unidade,
+        categoria: item.categoria,
+        temperatura_ideal: item.temperatura_ideal,
+        observacoes: 'Retornado da câmara refrigerada',
+        data_entrada: new Date().toISOString().split('T')[0],
+        unidade_item: 'juazeiro_norte' // Definir unidade padrão
+      });
+
+      // Registrar no histórico da câmara refrigerada
       await addHistoricoItem({
         item_nome: item.nome,
         quantidade: item.quantidade,
@@ -43,8 +56,10 @@ export function CamaraRefrigerada() {
         categoria: item.categoria,
         tipo: 'volta_freezer'
       });
+
+      // Por último, remover da câmara refrigerada
+      deleteItem(id);
     }
-    deleteItem(id);
   };
 
   const removeFromChamber = async (id: string) => {

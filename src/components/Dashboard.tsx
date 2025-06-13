@@ -44,7 +44,9 @@ export function Dashboard() {
 
   // Debug: log dos dados para verificar
   console.log('Câmara Fria Items:', camaraFriaItems);
-  console.log('Meat Types Data:', meatTypesData);
+  console.log('Meat Types Data for Chart:', meatTypesData);
+  console.log('Data has items:', meatTypesData.length > 0);
+  console.log('First item sample:', meatTypesData[0]);
 
   // Top 5 carnes mais utilizadas baseado no histórico real de saídas
   const top5MeatUsage = camaraFriaHistorico
@@ -93,28 +95,29 @@ export function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[600px]">
+            <div className="h-[600px] w-full">
               {meatTypesData && meatTypesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={meatTypesData} 
-                    layout="horizontal"
+                    layout="vertical"
                     margin={{ 
                       top: 20, 
-                      right: 30, 
-                      left: 120, 
+                      right: 50, 
+                      left: 100, 
                       bottom: 20 
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                     <XAxis 
                       type="number"
+                      domain={[0, 'dataMax + 10']}
                       tick={{ fontSize: 12 }}
                     />
                     <YAxis 
                       type="category"
                       dataKey="tipo" 
-                      width={110}
+                      width={90}
                       tick={{ fontSize: 10 }}
                       interval={0}
                     />
@@ -125,7 +128,8 @@ export function Dashboard() {
                     <Bar 
                       dataKey="quantidade" 
                       fill="#3b82f6"
-                      radius={[0, 4, 4, 0]}
+                      stroke="#2563eb"
+                      strokeWidth={1}
                     />
                   </BarChart>
                 </ResponsiveContainer>

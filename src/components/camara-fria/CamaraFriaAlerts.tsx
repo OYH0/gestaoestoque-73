@@ -11,6 +11,14 @@ interface CamaraFriaAlertsProps {
 export function CamaraFriaAlerts({ itemsBaixoEstoque }: CamaraFriaAlertsProps) {
   if (itemsBaixoEstoque.length === 0) return null;
 
+  const getUnidadeDisplay = (item: CamaraFriaItem) => {
+    // Se a unidade for uma das unidades específicas, usar 'kg' como padrão
+    if (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') {
+      return 'kg';
+    }
+    return item.unidade;
+  };
+
   return (
     <Card className="border-red-200 bg-red-50">
       <CardHeader className="pb-3">
@@ -24,7 +32,7 @@ export function CamaraFriaAlerts({ itemsBaixoEstoque }: CamaraFriaAlertsProps) {
           {itemsBaixoEstoque.map((item) => (
             <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded border">
               <span className="font-medium text-sm">{item.nome}</span>
-              <span className="text-red-600 font-medium text-sm">{item.quantidade} {item.unidade}</span>
+              <span className="text-red-600 font-medium text-sm">{item.quantidade} {getUnidadeDisplay(item)}</span>
             </div>
           ))}
         </div>

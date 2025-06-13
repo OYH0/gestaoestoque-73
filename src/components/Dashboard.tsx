@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -263,12 +261,10 @@ export function Dashboard() {
                     <Legend 
                       verticalAlign="bottom"
                       height={36}
-                      formatter={(value, entry) => {
-                        // Para a legenda, retornar o nome da carne com porcentagem
-                        if (entry && entry.payload) {
-                          return `${entry.payload.nome} (${entry.payload.percentage}%)`;
-                        }
-                        return value;
+                      formatter={(value, entry, index) => {
+                        // Use the index to get the corresponding data item
+                        const dataItem = top5MeatUsageWithPercentage[index];
+                        return dataItem ? `${dataItem.nome} (${dataItem.percentage}%)` : value;
                       }}
                     />
                   </PieChart>

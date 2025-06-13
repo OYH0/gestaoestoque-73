@@ -20,6 +20,14 @@ export function CamaraRefrigeradaHistoryDialog({ historico, loading = false }: C
     return unidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza';
   };
 
+  const getUnidadeDisplay = (item: CamaraRefrigeradaHistoricoItem) => {
+    // Se a unidade for uma das unidades específicas, usar 'pç' como padrão
+    if (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') {
+      return 'pç';
+    }
+    return item.unidade;
+  };
+
   return (
     <DialogContent className="max-w-2xl">
       <DialogHeader>
@@ -59,7 +67,7 @@ export function CamaraRefrigeradaHistoryDialog({ historico, loading = false }: C
               </div>
               
               <div className="flex items-center gap-4 text-xs text-gray-600">
-                <span>Quantidade: {item.quantidade} {item.unidade}</span>
+                <span>Quantidade: {item.quantidade} {getUnidadeDisplay(item)}</span>
                 <span>Categoria: {item.categoria}</span>
                 {item.unidade_item && (
                   <span>Unidade: {getUnidadeLabel(item.unidade_item)}</span>

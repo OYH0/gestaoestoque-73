@@ -21,6 +21,14 @@ export function CamaraRefrigerada() {
   const isMobile = useIsMobile();
   const { canModify } = useUserPermissions();
 
+  const getUnidadeDisplay = (unidade: string) => {
+    // Se a unidade for uma das unidades específicas, usar 'pç' como padrão
+    if (unidade === 'juazeiro_norte' || unidade === 'fortaleza') {
+      return 'pç';
+    }
+    return unidade;
+  };
+
   const moveToReady = (id: string) => {
     if (!canModify) {
       console.error('Acesso negado: apenas administradores e gerentes podem alterar status');
@@ -255,7 +263,7 @@ export function CamaraRefrigerada() {
                         </Badge>
                       </div>
                       <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">
-                        <span>{item.quantidade} {item.unidade}</span>
+                        <span>{item.quantidade} {getUnidadeDisplay(item.unidade)}</span>
                         {item.tempo_descongelamento && (
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />

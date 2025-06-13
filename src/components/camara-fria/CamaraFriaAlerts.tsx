@@ -12,9 +12,9 @@ export function CamaraFriaAlerts({ itemsBaixoEstoque }: CamaraFriaAlertsProps) {
   if (itemsBaixoEstoque.length === 0) return null;
 
   const getUnidadeDisplay = (item: CamaraFriaItem) => {
-    // Se a unidade for uma das unidades específicas, usar 'kg' como padrão
+    // Se a unidade for uma das unidades específicas, usar 'pç' como padrão
     if (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') {
-      return 'kg';
+      return 'pç';
     }
     return item.unidade;
   };

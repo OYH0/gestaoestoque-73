@@ -104,7 +104,7 @@ export function Dashboard() {
                     margin={{ 
                       top: 20, 
                       right: 20, 
-                      left: 160, 
+                      left: 10, 
                       bottom: 20 
                     }}
                   >
@@ -117,7 +117,7 @@ export function Dashboard() {
                     <YAxis 
                       type="category"
                       dataKey="tipo" 
-                      width={150}
+                      width={140}
                       tick={{ fontSize: 10 }}
                       interval={0}
                     />

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Minus, Plus, Check, X, Snowflake, Trash2, MapPin } from 'lucide-react';
+import { Minus, Plus, Check, X, Snowflake, Trash2 } from 'lucide-react';
 import { CamaraFriaItem } from '@/hooks/useCamaraFriaData';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -43,10 +43,6 @@ export function CamaraFriaItemCard({
   const isLowStock = item.quantidade <= (item.minimo || 5);
   const isMobile = useIsMobile();
   
-  const getUnidadeLabel = (unidade: string) => {
-    return unidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza';
-  };
-  
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
       <CardContent className="p-4">
@@ -60,12 +56,6 @@ export function CamaraFriaItemCard({
               <Badge variant={isLowStock ? "destructive" : "secondary"}>
                 {item.categoria}
               </Badge>
-              {item.unidade_item && (
-                <Badge variant="outline" className="text-xs">
-                  <MapPin className="w-3 h-3 mr-1" />
-                  {getUnidadeLabel(item.unidade_item)}
-                </Badge>
-              )}
               {isLowStock && (
                 <Badge variant="destructive" className="text-xs">
                   Baixo Estoque

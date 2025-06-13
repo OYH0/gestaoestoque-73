@@ -80,22 +80,22 @@ export function Login() {
       {/* Right side - Login form */}
       <div className="flex-1 flex items-center justify-center p-4 lg:p-12 relative z-10">
         <div className="w-full max-w-md">
-          <Card className="bg-white/98 backdrop-blur-xl border-0 shadow-2xl rounded-2xl overflow-hidden">
+          <Card className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl overflow-hidden">
             {/* Mobile logo (visible only on small screens) */}
             <div className="lg:hidden pt-8 pb-6">
               <div className="text-center space-y-4">
-                <div className="mx-auto w-24 h-24 flex items-center justify-center mb-2">
+                <div className="mx-auto w-32 h-32 flex items-center justify-center mb-2">
                   <img 
                     src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
                     alt="Companhia do Churrasco Logo"
-                    className="w-full h-full object-contain drop-shadow-sm"
+                    className="w-full h-full object-contain drop-shadow-lg"
                   />
                 </div>
                 <div className="space-y-1">
-                  <h2 className="text-xl font-bold text-slate-800">
+                  <h2 className="text-xl font-bold text-white">
                     {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
                   </h2>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-white/70">
                     {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
                   </p>
                 </div>
@@ -104,10 +104,10 @@ export function Login() {
             
             {/* Desktop header */}
             <CardHeader className="text-center space-y-3 pb-6 pt-8 px-8 lg:block hidden">
-              <h2 className="text-2xl font-bold text-slate-800">
+              <h2 className="text-2xl font-bold text-white">
                 {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
               </h2>
-              <p className="text-slate-600">
+              <p className="text-white/70">
                 {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
               </p>
             </CardHeader>
@@ -116,8 +116,8 @@ export function Login() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {isSignUp && (
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      <User className="w-4 h-4 text-churrasco-red" />
+                    <Label htmlFor="fullName" className="text-sm font-semibold text-white/90 flex items-center gap-2">
+                      <User className="w-4 h-4 text-churrasco-orange" />
                       Nome Completo
                     </Label>
                     <Input
@@ -127,14 +127,14 @@ export function Login() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required={isSignUp}
-                      className="h-12 px-4 border-2 border-slate-200 hover:border-churrasco-red/50 focus:border-churrasco-red focus:ring-churrasco-red/20 transition-all duration-200 bg-white rounded-lg text-slate-800 placeholder:text-slate-400"
+                      className="h-12 px-4 border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:border-churrasco-orange/50 focus:border-churrasco-orange focus:ring-churrasco-orange/20 transition-all duration-200 rounded-lg text-white placeholder:text-white/50"
                     />
                   </div>
                 )}
                 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-churrasco-red" />
+                  <Label htmlFor="email" className="text-sm font-semibold text-white/90 flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-churrasco-orange" />
                     E-mail
                   </Label>
                   <Input
@@ -144,13 +144,13 @@ export function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-12 px-4 border-2 border-slate-200 hover:border-churrasco-red/50 focus:border-churrasco-red focus:ring-churrasco-red/20 transition-all duration-200 bg-white rounded-lg text-slate-800 placeholder:text-slate-400"
+                    className="h-12 px-4 border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:border-churrasco-orange/50 focus:border-churrasco-orange focus:ring-churrasco-orange/20 transition-all duration-200 rounded-lg text-white placeholder:text-white/50"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-churrasco-red" />
+                  <Label htmlFor="password" className="text-sm font-semibold text-white/90 flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-churrasco-orange" />
                     Senha
                   </Label>
                   <div className="relative">
@@ -161,13 +161,13 @@ export function Login() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="h-12 px-4 pr-12 border-2 border-slate-200 hover:border-churrasco-red/50 focus:border-churrasco-red focus:ring-churrasco-red/20 transition-all duration-200 bg-white rounded-lg text-slate-800 placeholder:text-slate-400"
+                      className="h-12 px-4 pr-12 border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:border-churrasco-orange/50 focus:border-churrasco-orange focus:ring-churrasco-orange/20 transition-all duration-200 rounded-lg text-white placeholder:text-white/50"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-100 text-slate-500 hover:text-slate-700"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-white/10 text-white/70 hover:text-white"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -209,12 +209,12 @@ export function Login() {
                 </div>
               </form>
               
-              <div className="text-center pt-6 mt-6 border-t border-slate-200">
-                <div className="text-sm text-slate-600">
+              <div className="text-center pt-6 mt-6 border-t border-white/20">
+                <div className="text-sm text-white/70">
                   {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}{' '}
                   <Button 
                     variant="link" 
-                    className="text-churrasco-red hover:text-churrasco-red/80 p-0 h-auto font-semibold hover:underline transition-colors text-sm"
+                    className="text-churrasco-orange hover:text-churrasco-orange/80 p-0 h-auto font-semibold hover:underline transition-colors text-sm"
                     onClick={() => setIsSignUp(!isSignUp)}
                   >
                     {isSignUp ? 'Fazer login' : 'Criar conta'}

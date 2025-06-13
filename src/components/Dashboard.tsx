@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -104,7 +105,7 @@ export function Dashboard() {
                     margin={{ 
                       top: 20, 
                       right: 20, 
-                      left: 60, 
+                      left: 0, 
                       bottom: 20 
                     }}
                   >
@@ -117,7 +118,7 @@ export function Dashboard() {
                     <YAxis 
                       type="category"
                       dataKey="tipo" 
-                      width={60}
+                      width={40}
                       tick={{ fontSize: 10 }}
                       interval={0}
                     />

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -43,7 +42,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
         id: item.id,
         item_nome: item.item_nome,
         quantidade: item.quantidade,
-        unidade: item.unidade,
+        unidade: item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza' ? 'kg' : item.unidade,
         categoria: item.categoria,
         tipo: item.tipo as 'entrada' | 'saida',
         data_operacao: item.data_operacao,
@@ -104,7 +103,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
         id: data.id,
         item_nome: data.item_nome,
         quantidade: data.quantidade,
-        unidade: data.unidade,
+        unidade: data.unidade === 'juazeiro_norte' || data.unidade === 'fortaleza' ? 'kg' : data.unidade,
         categoria: data.categoria,
         tipo: data.tipo as 'entrada' | 'saida',
         data_operacao: data.data_operacao,

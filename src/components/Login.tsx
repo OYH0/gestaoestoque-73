@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,124 +34,11 @@ export function Login() {
 
   return (
     <div 
-      className="min-h-screen flex relative overflow-hidden"
-      style={{
-        height: '100dvh',
-        background: `
-          linear-gradient(
-            135deg,
-            #f5f3f0 0%,
-            rgba(245, 243, 240, 0.9) 25%,
-            #faf8f5 50%,
-            rgba(245, 243, 240, 0.8) 75%,
-            rgba(245, 243, 240, 0.6) 100%
-          )
-        `,
-      }}
+      className="min-h-screen flex bg-churrasco-cream"
+      style={{ height: '100dvh' }}
     >
-      {/* Custom wallpaper overlay */}
-      <div 
-        className="absolute inset-0 opacity-95"
-        style={{
-          background: `
-            radial-gradient(
-              ellipse at center,
-              transparent 0%,
-              rgba(245, 243, 240, 0.1) 35%,
-              rgba(221, 95, 41, 0.05) 70%,
-              rgba(101, 70, 41, 0.1) 100%
-            )
-          `,
-        }}
-      />
-      
-      {/* Pattern overlay */}
-      <div 
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `
-            repeating-linear-gradient(
-              45deg,
-              transparent 0px,
-              transparent 4px,
-              rgba(101, 70, 41, 0.03) 4px,
-              rgba(101, 70, 41, 0.03) 8px
-            ),
-            repeating-linear-gradient(
-              -45deg,
-              transparent 0px,
-              transparent 4px,
-              rgba(221, 95, 41, 0.02) 4px,
-              rgba(221, 95, 41, 0.02) 8px
-            ),
-            radial-gradient(
-              circle at 25% 25%,
-              rgba(231, 139, 69, 0.05) 1px,
-              transparent 1px
-            ),
-            radial-gradient(
-              circle at 75% 75%,
-              rgba(101, 70, 41, 0.03) 1px,
-              transparent 1px
-            )
-          `,
-          backgroundSize: '40px 40px, 40px 40px, 60px 60px, 80px 80px',
-          backgroundPosition: '0 0, 0 0, 30px 30px, 40px 40px',
-        }}
-      />
-      
-      {/* Floating decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl animate-pulse"
-          style={{
-            background: 'linear-gradient(to bottom right, rgba(221, 95, 41, 0.1), rgba(231, 139, 69, 0.1))',
-          }}
-        ></div>
-        <div 
-          className="absolute top-1/3 -left-32 w-80 h-80 rounded-full blur-3xl"
-          style={{
-            background: 'linear-gradient(to top right, rgba(101, 70, 41, 0.08), rgba(221, 95, 41, 0.08))',
-            animationDelay: '2s'
-          }}
-        ></div>
-        <div 
-          className="absolute -bottom-32 right-1/4 w-72 h-72 rounded-full blur-3xl"
-          style={{
-            background: 'linear-gradient(to bottom left, rgba(231, 139, 69, 0.12), rgba(245, 243, 240, 0.15))',
-            animationDelay: '4s'
-          }}
-        ></div>
-        
-        {/* Small animated dots */}
-        <div 
-          className="absolute top-20 left-1/4 w-4 h-4 rounded-full animate-ping"
-          style={{ 
-            backgroundColor: 'rgba(221, 95, 41, 0.2)',
-            animationDelay: '2s', 
-            animationDuration: '3s' 
-          }}
-        ></div>
-        <div 
-          className="absolute bottom-1/3 right-1/3 w-3 h-3 rounded-full animate-ping"
-          style={{ 
-            backgroundColor: 'rgba(231, 139, 69, 0.25)',
-            animationDelay: '4s', 
-            animationDuration: '4s' 
-          }}
-        ></div>
-        <div 
-          className="absolute top-2/3 left-1/6 w-2 h-2 rounded-full animate-ping"
-          style={{ 
-            backgroundColor: 'rgba(101, 70, 41, 0.3)',
-            animationDelay: '1s', 
-            animationDuration: '5s' 
-          }}
-        ></div>
-      </div>
-      
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:flex-1 items-center justify-center relative z-10 p-12">
+      <div className="hidden lg:flex lg:flex-1 items-center justify-center p-12">
         <div className="max-w-md text-center space-y-8">
           <div className="space-y-6">
             <div className="mx-auto w-48 h-48 flex items-center justify-center">
@@ -175,7 +63,7 @@ export function Login() {
       </div>
       
       {/* Right side - Login form */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-12 relative z-10">
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-12">
         <div className="w-full max-w-md">
           <Card className="shadow-2xl rounded-3xl overflow-hidden border-0">
             {/* Mobile logo (visible only on small screens) */}

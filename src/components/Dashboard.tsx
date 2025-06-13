@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -174,11 +173,13 @@ export function Dashboard() {
                       bottom: 20 
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" />
                     <XAxis 
                       type="number"
                       domain={[0, 'dataMax + 10']}
                       tick={{ fontSize: 12 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                      tickLine={{ stroke: '#e5e7eb' }}
                     />
                     <YAxis 
                       type="category"
@@ -186,6 +187,8 @@ export function Dashboard() {
                       width={50}
                       tick={{ fontSize: 10 }}
                       interval={0}
+                      axisLine={false}
+                      tickLine={false}
                     />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}

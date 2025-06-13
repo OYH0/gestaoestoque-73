@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +34,7 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="h-screen flex relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" style={{ height: '100dvh' }}>
       {/* Animated background elements */}
       <div className="absolute inset-0">
         {/* Gradient overlays */}
@@ -78,22 +79,22 @@ export function Login() {
       </div>
       
       {/* Right side - Login form */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-12 relative z-10 min-h-screen">
-        <Card className="w-full max-w-md bg-white/95 backdrop-blur-xl border-0 shadow-2xl overflow-hidden">
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-12 relative z-10 h-full">
+        <Card className="w-full max-w-md bg-white/95 backdrop-blur-xl border-0 shadow-2xl overflow-hidden my-auto">
           {/* Mobile logo (visible only on small screens) */}
-          <div className="lg:hidden pt-6 pb-2">
-            <div className="text-center space-y-3">
-              <div className="mx-auto w-24 h-24 flex items-center justify-center">
+          <div className="lg:hidden pt-4 pb-2">
+            <div className="text-center space-y-2">
+              <div className="mx-auto w-20 h-20 flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
                   alt="Companhia do Churrasco Logo"
                   className="w-full h-full object-contain"
                 />
               </div>
-              <h2 className="text-xl font-bold text-slate-800">
+              <h2 className="text-lg font-bold text-slate-800">
                 {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
               </h2>
-              <p className="text-sm text-slate-600">
+              <p className="text-xs text-slate-600">
                 {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
               </p>
             </div>
@@ -108,8 +109,8 @@ export function Login() {
             </p>
           </CardHeader>
           
-          <CardContent className="space-y-6 px-6 lg:px-8 pb-8">
-            <form onSubmit={handleSubmit} className="space-y-5">
+          <CardContent className="space-y-4 px-6 lg:px-8 pb-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
                 <div className="space-y-2">
                   <Label htmlFor="fullName" className="text-sm font-medium text-slate-700 flex items-center gap-2">
@@ -207,7 +208,7 @@ export function Login() {
               </Button>
             </form>
             
-            <div className="text-center pt-4 border-t border-slate-200">
+            <div className="text-center pt-2 border-t border-slate-200">
               <div className="text-sm text-slate-600">
                 {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}{' '}
                 <Button 
@@ -225,3 +226,4 @@ export function Login() {
     </div>
   );
 }
+

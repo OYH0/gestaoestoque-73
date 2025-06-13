@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -18,6 +19,14 @@ const CHART_COLORS = [
 const PIE_COLORS = [
   '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'
 ];
+
+// Configuração do chart para o shadcn/ui
+const chartConfig = {
+  quantidade: {
+    label: "Quantidade (kg)",
+    color: "hsl(var(--chart-1))",
+  },
+};
 
 export function Dashboard() {
   const isMobile = useIsMobile();
@@ -95,56 +104,52 @@ export function Dashboard() {
           <CardContent>
             <div className="h-[500px]">
               {meatTypesData && meatTypesData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={meatTypesData} 
+                <ChartContainer config={chartConfig}>
+                  <BarChart
+                    accessibilityLayer
+                    data={meatTypesData}
                     layout="horizontal"
-                    margin={{ 
-                      top: 20, 
-                      right: 20, 
-                      left: 120, 
-                      bottom: 20 
+                    margin={{
+                      left: 140,
+                      right: 20,
+                      top: 20,
+                      bottom: 20,
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" horizontal={true} vertical={false} />
+                    <CartesianGrid 
+                      horizontal={true} 
+                      vertical={false}
+                      strokeDasharray="3 3"
+                    />
                     <XAxis 
-                      type="number"
-                      stroke="#666"
-                      fontSize={12}
+                      type="number" 
+                      dataKey="quantidade"
                       tickLine={false}
                       axisLine={false}
                     />
-                    <YAxis 
+                    <YAxis
+                      dataKey="tipo"
                       type="category"
-                      dataKey="tipo" 
-                      stroke="#666" 
-                      fontSize={11}
-                      width={110}
                       tickLine={false}
                       axisLine={false}
-                      tick={{ textAnchor: 'end' }}
+                      width={130}
+                      tick={{ fontSize: 11 }}
                     />
-                    <Tooltip 
-                      formatter={(value) => [`${value}kg`, 'Quantidade']}
-                      labelFormatter={(label) => `${label}`}
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                      }}
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent hideLabel />}
                     />
                     <Bar 
                       dataKey="quantidade" 
-                      radius={[0, 3, 3, 0]}
-                      fill="#3b82f6"
+                      fill="var(--color-quantidade)"
+                      radius={[0, 4, 4, 0]}
                     >
                       {meatTypesData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Bar>
                   </BarChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">

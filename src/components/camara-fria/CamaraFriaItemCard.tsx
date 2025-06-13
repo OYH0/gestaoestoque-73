@@ -74,8 +74,8 @@ export function CamaraFriaItemCard({
             </div>
             
             <div className="space-y-1 text-sm text-gray-600">
-              <p>Quantidade: <span className="font-medium">{item.quantidade}</span></p>
-              <p>Mínimo: <span className="font-medium">{item.minimo || 5}</span></p>
+              <p>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></p>
+              <p>Mínimo: <span className="font-medium">{item.minimo || 5} {item.unidade}</span></p>
               {item.unidade_item && (
                 <p>Unidade: <span className="font-medium">{getUnidadeLabel(item.unidade_item)}</span></p>
               )}

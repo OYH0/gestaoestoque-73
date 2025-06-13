@@ -16,10 +16,6 @@ export function CamaraFriaHistoryDialog({ historico, loading = false }: CamaraFr
     return date.toLocaleDateString('pt-BR') + ' às ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   };
 
-  const getUnidadeLabel = (unidade: string) => {
-    return unidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza';
-  };
-
   return (
     <DialogContent className="max-w-2xl">
       <DialogHeader>
@@ -59,9 +55,8 @@ export function CamaraFriaHistoryDialog({ historico, loading = false }: CamaraFr
               </div>
               
               <div className="flex items-center gap-4 text-xs text-gray-600">
-                <span>{item.quantidade} {item.unidade}</span>
-                <span>{item.categoria}</span>
-                <span>{getUnidadeLabel(item.unidade)}</span>
+                <span>Quantidade: {item.quantidade} {item.unidade}</span>
+                <span>Categoria: {item.categoria}</span>
               </div>
               
               {item.observacoes && (

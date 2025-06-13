@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -100,7 +101,7 @@ export function Dashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={meatTypesData} 
-                    layout="horizontal"
+                    layout="vertical"
                     margin={{ 
                       top: 20, 
                       right: 20, 
@@ -117,7 +118,7 @@ export function Dashboard() {
                     <YAxis 
                       type="category"
                       dataKey="tipo" 
-                      width={100}
+                      width={40}
                       tick={{ fontSize: 10 }}
                       interval={0}
                     />

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -227,48 +228,58 @@ export function Dashboard() {
           <CardContent>
             <div className="h-96">
               {top5MeatUsageWithPercentage.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={top5MeatUsageWithPercentage}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={(entry) => `${entry.percentage}%`}
-                      outerRadius={120}
-                      innerRadius={60}
-                      fill="#8884d8"
-                      dataKey="totalSaidas"
-                      strokeWidth={2}
-                      stroke="#ffffff"
-                    >
-                      {top5MeatUsageWithPercentage.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value, name, props) => [
-                        `${value}kg (${props.payload.percentage}%)`, 
-                        'Total de Saídas'
-                      ]}
-                      labelFormatter={(label, payload) => {
-                        if (payload && payload.length > 0) {
-                          return payload[0].payload.nome;
-                        }
-                        return label;
-                      }}
-                    />
-                    <Legend 
-                      verticalAlign="bottom"
-                      height={36}
-                      formatter={(value, entry, index) => {
-                        // Use the index to get the corresponding data item
-                        const dataItem = top5MeatUsageWithPercentage[index];
-                        return dataItem ? `${dataItem.nome} (${dataItem.percentage}%)` : value;
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="space-y-4">
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={top5MeatUsageWithPercentage}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={(entry) => `${entry.percentage}%`}
+                          outerRadius={80}
+                          innerRadius={40}
+                          fill="#8884d8"
+                          dataKey="totalSaidas"
+                          strokeWidth={2}
+                          stroke="#ffffff"
+                        >
+                          {top5MeatUsageWithPercentage.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value, name, props) => [
+                            `${value}kg (${props.payload.percentage}%)`, 
+                            'Total de Saídas'
+                          ]}
+                          labelFormatter={(label, payload) => {
+                            if (payload && payload.length > 0) {
+                              return payload[0].payload.nome;
+                            }
+                            return label;
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  
+                  {/* Legenda customizada para evitar overflow */}
+                  <div className="grid grid-cols-1 gap-2 text-xs">
+                    {top5MeatUsageWithPercentage.map((item, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-sm flex-shrink-0"
+                          style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+                        />
+                        <span className="truncate">
+                          {item.nome} ({item.percentage}%)
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">

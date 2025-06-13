@@ -122,6 +122,15 @@ export function Dashboard() {
     .sort((a, b) => b.totalSaidas - a.totalSaidas)
     .slice(0, 5); // Top 5
 
+  // Calcular o total de saídas para calcular porcentagens
+  const totalSaidas = top5MeatUsage.reduce((acc, item) => acc + item.totalSaidas, 0);
+
+  // Adicionar porcentagens aos dados
+  const top5MeatUsageWithPercentage = top5MeatUsage.map(item => ({
+    ...item,
+    percentage: totalSaidas > 0 ? ((item.totalSaidas / totalSaidas) * 100).toFixed(1) : 0
+  }));
+
   // Dados para alertas de baixo estoque
   const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5));
   const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5));
@@ -217,14 +226,15 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="h-96">
-              {top5MeatUsage.length > 0 ? (
+              {top5MeatUsageWithPercentage.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={top5MeatUsage}
+                      data={top5MeatUsageWithPercentage}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
+                      label={(entry) => `${entry.percentage}%`}
                       outerRadius={120}
                       innerRadius={60}
                       fill="#8884d8"
@@ -232,19 +242,28 @@ export function Dashboard() {
                       strokeWidth={2}
                       stroke="#ffffff"
                     >
-                      {top5MeatUsage.map((entry, index) => (
+                      {top5MeatUsageWithPercentage.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value) => [`${value}kg`, 'Total de Saídas']}
+                      formatter={(value, name, props) => [
+                        `${value}kg (${props.payload.percentage}%)`, 
+                        'Total de Saídas'
+                      ]}
+                      labelFormatter={(label, payload) => {
+                        if (payload && payload.length > 0) {
+                          return payload[0].payload.nome;
+                        }
+                        return label;
+                      }}
                     />
                     <Legend 
                       verticalAlign="bottom"
                       height={36}
                       formatter={(value, entry) => {
-                        const dataEntry = top5MeatUsage.find(item => item.totalSaidas === value);
-                        return dataEntry ? dataEntry.nome : value;
+                        const dataEntry = top5MeatUsageWithPercentage.find(item => item.totalSaidas === entry.payload?.totalSaidas);
+                        return dataEntry ? `${dataEntry.nome} (${dataEntry.percentage}%)` : value;
                       }}
                     />
                   </PieChart>

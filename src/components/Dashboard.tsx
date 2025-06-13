@@ -22,10 +22,10 @@ const PIE_COLORS = [
 // Função para abreviar nomes longos
 const abreviarNome = (nome: string): string => {
   const abreviacoes: { [key: string]: string } = {
-    'Filé de Peito': 'Filé Peito',
-    'Coxa e Sobrecoxa': 'Coxa/Sobrecoxa',
+    'Filé de Peito': 'Peito',
+    'Coxa e Sobrecoxa': 'Sobrecoxa',
+    'Coração de Frango': 'Coração',
     'Picanha Suína': 'Picanha Suína',
-    'Coração de Frango': 'Coração Frango',
     'Coxão Duro': 'Coxão Duro',
     'Costela Janelinha': 'Costela Jan.',
     'Alcatra com Maminha': 'Alcatra c/ Mam.',

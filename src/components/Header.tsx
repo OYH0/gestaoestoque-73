@@ -6,6 +6,7 @@ import { LogOut, User, Home, Snowflake, Thermometer, Package2, FileText, Setting
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,6 +95,8 @@ export function Header() {
       {!isMobile && <div className="flex-1" />}
 
       <div className="flex items-center gap-2">
+        <ThemeToggle />
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">

@@ -20,7 +20,7 @@ const Index = () => {
     <ProtectedRoute>
       <SidebarProvider>
         <div 
-          className="min-h-screen flex w-full relative overflow-hidden bg-churrasco-cream"
+          className="min-h-screen flex w-full relative overflow-hidden bg-background transition-colors duration-300"
         >
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0 h-screen relative z-10">

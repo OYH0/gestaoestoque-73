@@ -19,6 +19,36 @@ const PIE_COLORS = [
   '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'
 ];
 
+// Função para abreviar nomes longos
+const abreviarNome = (nome: string): string => {
+  const abreviacoes: { [key: string]: string } = {
+    'Filé de Peito': 'Filé Peito',
+    'Coxa e Sobrecoxa': 'Coxa/Sobrecoxa',
+    'Picanha Suína': 'Picanha Suína',
+    'Coração de Frango': 'Coração Frango',
+    'Coxão Duro': 'Coxão Duro',
+    'Costela Janelinha': 'Costela Jan.',
+    'Alcatra com Maminha': 'Alcatra c/ Mam.',
+    'Capa de Filé G': 'Capa Filé G',
+    'Linguiça Mista': 'Linguiça Mista',
+    'Costelão Bovino 9': 'Costelão Bov.',
+    'Cupim': 'Cupim',
+    'Contra Filé': 'Contra Filé',
+    'Coxinha da Asa': 'Coxinha Asa',
+    'Fralda': 'Fralda',
+    'Capa de Filé P': 'Capa Filé P',
+    'Costela Suína': 'Costela Suína',
+    'Coxão Mole': 'Coxão Mole',
+    'Picanha Bovina': 'Picanha Bov.',
+    'Linguiça de Frango': 'Ling. Frango',
+    'Pernil Suíno': 'Pernil Suíno',
+    'Linguiça Apimentada': 'Ling. Apiment.',
+    'Maminha da Alcatra': 'Maminha Alc.'
+  };
+  
+  return abreviacoes[nome] || nome;
+};
+
 export function Dashboard() {
   const isMobile = useIsMobile();
   const { items: camaraFriaItems } = useCamaraFriaData();
@@ -35,6 +65,7 @@ export function Dashboard() {
       } else {
         acc.push({ 
           tipo: item.nome, 
+          tipoAbrev: abreviarNome(item.nome),
           quantidade: item.quantidade
         });
       }
@@ -116,14 +147,17 @@ export function Dashboard() {
                     />
                     <YAxis 
                       type="category"
-                      dataKey="tipo" 
-                      width={50}
+                      dataKey="tipoAbrev" 
+                      width={90}
                       tick={{ fontSize: 10 }}
                       interval={0}
                     />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}
-                      labelFormatter={(label) => `${label}`}
+                      labelFormatter={(label) => {
+                        const item = meatTypesData.find(d => d.tipoAbrev === label);
+                        return item ? item.tipo : label;
+                      }}
                     />
                     <Bar 
                       dataKey="quantidade" 

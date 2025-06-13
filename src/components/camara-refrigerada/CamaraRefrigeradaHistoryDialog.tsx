@@ -59,9 +59,11 @@ export function CamaraRefrigeradaHistoryDialog({ historico, loading = false }: C
               </div>
               
               <div className="flex items-center gap-4 text-xs text-gray-600">
-                <span>{item.quantidade} {item.unidade}</span>
-                <span>{item.categoria}</span>
-                <span>{getUnidadeLabel(item.unidade_item || 'juazeiro_norte')}</span>
+                <span>Quantidade: {item.quantidade} {item.unidade}</span>
+                <span>Categoria: {item.categoria}</span>
+                {item.unidade_item && (
+                  <span>Unidade: {getUnidadeLabel(item.unidade_item)}</span>
+                )}
               </div>
               
               {item.observacoes && (

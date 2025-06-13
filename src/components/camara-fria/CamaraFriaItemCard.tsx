@@ -42,6 +42,17 @@ export function CamaraFriaItemCard({
 }: CamaraFriaItemCardProps) {
   const isLowStock = item.quantidade <= (item.minimo || 5);
   const isMobile = useIsMobile();
+
+  const getUnidadeLabel = (unidade: string) => {
+    switch (unidade) {
+      case 'juazeiro_norte':
+        return 'Juazeiro do Norte';
+      case 'fortaleza':
+        return 'Fortaleza';
+      default:
+        return unidade;
+    }
+  };
   
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
@@ -66,6 +77,9 @@ export function CamaraFriaItemCard({
             <div className="space-y-1 text-sm text-gray-600">
               <p>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></p>
               <p>Mínimo: <span className="font-medium">{item.minimo || 5} {item.unidade}</span></p>
+              {item.unidade_item && (
+                <p>Unidade: <span className="font-medium">{getUnidadeLabel(item.unidade_item)}</span></p>
+              )}
             </div>
           </div>
 

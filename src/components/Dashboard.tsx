@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -15,6 +14,21 @@ const CHART_COLORS = [
   '#f59e0b', '#f59e0b', '#f59e0b', '#f59e0b', '#f59e0b', // Laranja para os próximos 5
   '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444' // Vermelho para o resto
 ];
+
+// Função para determinar a cor baseada na quantidade
+const getColorByQuantity = (quantidade: number, maxQuantity: number) => {
+  const percentage = quantidade / maxQuantity;
+  
+  if (percentage >= 0.7) {
+    return '#10b981'; // Verde para alta quantidade (70%+)
+  } else if (percentage >= 0.4) {
+    return '#f59e0b'; // Laranja para média quantidade (40-70%)
+  } else if (percentage >= 0.1) {
+    return '#ef4444'; // Vermelho para baixa quantidade (10-40%)
+  } else {
+    return '#991b1b'; // Vermelho escuro para quantidade muito baixa (<10%)
+  }
+};
 
 const PIE_COLORS = [
   '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'
@@ -75,6 +89,15 @@ export function Dashboard() {
     }, [] as any[])
     .sort((a, b) => b.quantidade - a.quantidade);
 
+  // Encontrar a quantidade máxima para calcular as cores
+  const maxQuantity = Math.max(...meatTypesData.map(item => item.quantidade));
+
+  // Adicionar cores aos dados baseadas na quantidade
+  const meatTypesDataWithColors = meatTypesData.map(item => ({
+    ...item,
+    fill: getColorByQuantity(item.quantidade, maxQuantity)
+  }));
+
   // Debug: log dos dados para verificar
   console.log('Câmara Fria Items:', camaraFriaItems);
   console.log('Meat Types Data for Chart:', meatTypesData);
@@ -129,10 +152,10 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="h-[600px] w-full">
-              {meatTypesData && meatTypesData.length > 0 ? (
+              {meatTypesDataWithColors && meatTypesDataWithColors.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
-                    data={meatTypesData} 
+                    data={meatTypesDataWithColors} 
                     layout="vertical"
                     margin={{ 
                       top: 20, 
@@ -157,14 +180,13 @@ export function Dashboard() {
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}
                       labelFormatter={(label) => {
-                        const item = meatTypesData.find(d => d.tipoAbrev === label);
+                        const item = meatTypesDataWithColors.find(d => d.tipoAbrev === label);
                         return item ? item.tipo : label;
                       }}
                     />
                     <Bar 
                       dataKey="quantidade" 
-                      fill="#3b82f6"
-                      stroke="#2563eb"
+                      stroke="#ffffff"
                       strokeWidth={1}
                     />
                   </BarChart>

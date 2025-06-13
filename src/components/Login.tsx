@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,9 +80,9 @@ export function Login() {
       <div className="flex-1 flex items-center justify-center p-4 lg:p-12 relative z-10 h-full">
         <Card className="w-full max-w-md bg-white/95 backdrop-blur-xl border-0 shadow-2xl overflow-hidden my-auto">
           {/* Mobile logo (visible only on small screens) */}
-          <div className="lg:hidden pt-4 pb-2">
-            <div className="text-center space-y-2">
-              <div className="mx-auto w-20 h-20 flex items-center justify-center">
+          <div className="lg:hidden pt-6 pb-4">
+            <div className="text-center space-y-3">
+              <div className="mx-auto w-32 h-32 flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
                   alt="Companhia do Churrasco Logo"
@@ -226,4 +224,3 @@ export function Login() {
     </div>
   );
 }
-

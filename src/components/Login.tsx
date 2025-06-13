@@ -33,43 +33,41 @@ export function Login() {
   };
 
   return (
-    <div className="h-screen flex relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" style={{ height: '100dvh' }}>
-      {/* Animated background elements */}
-      <div className="absolute inset-0">
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-churrasco-red/20 via-transparent to-churrasco-orange/20"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/50 to-slate-900"></div>
+    <div className="min-h-screen flex relative overflow-hidden bg-churrasco-wallpaper" style={{ height: '100dvh' }}>
+      {/* Background overlays and patterns */}
+      <div className="absolute inset-0 bg-churrasco-wallpaper-overlay"></div>
+      <div className="absolute inset-0 bg-churrasco-pattern"></div>
+      
+      {/* Floating decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-churrasco-red/20 to-churrasco-orange/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/3 -left-32 w-80 h-80 bg-gradient-to-tr from-churrasco-brown/15 to-churrasco-red/15 rounded-full blur-3xl" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute -bottom-32 right-1/4 w-72 h-72 bg-gradient-to-bl from-churrasco-orange/25 to-churrasco-cream/20 rounded-full blur-3xl" style={{ animationDelay: '4s' }}></div>
         
-        {/* Floating geometric shapes */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-churrasco-red/30 to-churrasco-orange/30 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute top-1/3 right-20 w-48 h-48 bg-gradient-to-tr from-churrasco-brown/20 to-churrasco-red/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-1/4 left-1/4 w-24 h-24 bg-gradient-to-bl from-churrasco-orange/25 to-churrasco-cream/20 rounded-full blur-lg animate-pulse" style={{ animationDelay: '4s' }}></div>
-        
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="w-full h-full bg-grid-pattern"></div>
-        </div>
+        {/* Small animated dots */}
+        <div className="absolute top-20 left-1/4 w-4 h-4 bg-churrasco-red/30 rounded-full animate-ping" style={{ animationDelay: '2s', animationDuration: '3s' }}></div>
+        <div className="absolute bottom-1/3 right-1/3 w-3 h-3 bg-churrasco-orange/35 rounded-full animate-ping" style={{ animationDelay: '4s', animationDuration: '4s' }}></div>
+        <div className="absolute top-2/3 left-1/6 w-2 h-2 bg-churrasco-brown/40 rounded-full animate-ping" style={{ animationDelay: '1s', animationDuration: '5s' }}></div>
       </div>
       
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:flex-1 items-center justify-center relative z-10 p-12">
         <div className="max-w-md text-center space-y-8">
-          {/* Logo */}
           <div className="space-y-6">
             <div className="mx-auto w-48 h-48 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
                 alt="Companhia do Churrasco Logo"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain drop-shadow-2xl"
               />
             </div>
           </div>
           
           <div className="space-y-4">
-            <p className="text-xl text-slate-300 font-medium">
+            <p className="text-xl text-churrasco-brown font-medium">
               Sistema de Gestão de Estoque
             </p>
-            <p className="text-slate-400 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               Controle inteligente e eficiente do seu estoque, 
               desde a câmara fria até os descartáveis.
             </p>
@@ -80,7 +78,7 @@ export function Login() {
       {/* Right side - Login form */}
       <div className="flex-1 flex items-center justify-center p-4 lg:p-12 relative z-10">
         <div className="w-full max-w-md">
-          <Card className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl overflow-hidden">
+          <Card className="shadow-2xl rounded-3xl overflow-hidden border-0">
             {/* Mobile logo (visible only on small screens) */}
             <div className="lg:hidden pt-8 pb-6">
               <div className="text-center space-y-4">
@@ -92,10 +90,10 @@ export function Login() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className="text-xl font-bold text-foreground">
                     {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
                   </h2>
-                  <p className="text-sm text-white/70">
+                  <p className="text-sm text-muted-foreground">
                     {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
                   </p>
                 </div>
@@ -104,10 +102,10 @@ export function Login() {
             
             {/* Desktop header */}
             <CardHeader className="text-center space-y-3 pb-6 pt-8 px-8 lg:block hidden">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-foreground">
                 {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
               </h2>
-              <p className="text-white/70">
+              <p className="text-muted-foreground">
                 {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
               </p>
             </CardHeader>
@@ -116,7 +114,7 @@ export function Login() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {isSignUp && (
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-sm font-semibold text-white/90 flex items-center gap-2">
+                    <Label htmlFor="fullName" className="text-sm font-semibold flex items-center gap-2">
                       <User className="w-4 h-4 text-churrasco-orange" />
                       Nome Completo
                     </Label>
@@ -127,13 +125,13 @@ export function Login() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required={isSignUp}
-                      className="h-12 px-4 border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:border-churrasco-orange/50 focus:border-churrasco-orange focus:ring-churrasco-orange/20 transition-all duration-200 rounded-lg text-white placeholder:text-white/50"
+                      className="h-12 px-4 transition-all duration-200 rounded-lg"
                     />
                   </div>
                 )}
                 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-white/90 flex items-center gap-2">
+                  <Label htmlFor="email" className="text-sm font-semibold flex items-center gap-2">
                     <Mail className="w-4 h-4 text-churrasco-orange" />
                     E-mail
                   </Label>
@@ -144,12 +142,12 @@ export function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-12 px-4 border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:border-churrasco-orange/50 focus:border-churrasco-orange focus:ring-churrasco-orange/20 transition-all duration-200 rounded-lg text-white placeholder:text-white/50"
+                    className="h-12 px-4 transition-all duration-200 rounded-lg"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-semibold text-white/90 flex items-center gap-2">
+                  <Label htmlFor="password" className="text-sm font-semibold flex items-center gap-2">
                     <Lock className="w-4 h-4 text-churrasco-orange" />
                     Senha
                   </Label>
@@ -161,13 +159,13 @@ export function Login() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="h-12 px-4 pr-12 border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:border-churrasco-orange/50 focus:border-churrasco-orange focus:ring-churrasco-orange/20 transition-all duration-200 rounded-lg text-white placeholder:text-white/50"
+                      className="h-12 px-4 pr-12 transition-all duration-200 rounded-lg"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-white/10 text-white/70 hover:text-white"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -209,8 +207,8 @@ export function Login() {
                 </div>
               </form>
               
-              <div className="text-center pt-6 mt-6 border-t border-white/20">
-                <div className="text-sm text-white/70">
+              <div className="text-center pt-6 mt-6 border-t">
+                <div className="text-sm text-muted-foreground">
                   {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}{' '}
                   <Button 
                     variant="link" 

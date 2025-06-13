@@ -93,7 +93,7 @@ export function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[500px]">
+            <div className="h-[600px]">
               {meatTypesData && meatTypesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
@@ -109,16 +109,14 @@ export function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       type="number"
-                      axisLine={true}
-                      tickLine={true}
+                      tick={{ fontSize: 12 }}
                     />
                     <YAxis 
                       type="category"
                       dataKey="tipo" 
                       width={110}
-                      axisLine={true}
-                      tickLine={true}
                       tick={{ fontSize: 10 }}
+                      interval={0}
                     />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}

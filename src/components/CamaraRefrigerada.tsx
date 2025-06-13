@@ -81,7 +81,8 @@ export function CamaraRefrigerada() {
           quantidade: item.quantidade,
           unidade: item.unidade,
           categoria: item.categoria,
-          tipo: 'volta_freezer'
+          tipo: 'volta_freezer',
+          unidade_item: 'juazeiro_norte' // Definir unidade padrão
         });
 
         console.log('✅ Histórico registrado');
@@ -110,7 +111,8 @@ export function CamaraRefrigerada() {
         quantidade: item.quantidade,
         unidade: item.unidade,
         categoria: item.categoria,
-        tipo: 'retirada'
+        tipo: 'retirada',
+        unidade_item: 'juazeiro_norte' // Definir unidade padrão
       });
     }
     deleteItem(id);

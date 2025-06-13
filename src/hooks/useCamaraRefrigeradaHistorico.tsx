@@ -13,6 +13,7 @@ export interface CamaraRefrigeradaHistoricoItem {
   tipo: 'retirada' | 'volta_freezer';
   data_operacao: string;
   observacoes?: string;
+  unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
 export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas') {
@@ -47,6 +48,7 @@ export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte'
         tipo: item.tipo as 'retirada' | 'volta_freezer',
         data_operacao: item.data_operacao,
         observacoes: item.observacoes,
+        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
       }));
       
       setHistorico(mappedHistorico);
@@ -65,17 +67,38 @@ export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte'
   const addHistoricoItem = async (item: Omit<CamaraRefrigeradaHistoricoItem, 'id' | 'data_operacao'>) => {
     if (!user) return;
 
+    console.log('=== REGISTRANDO NO HISTÓRICO DA CÂMARA REFRIGERADA ===');
+    console.log('Item para histórico:', item);
+    console.log('Unidade do item:', item.unidade_item);
+
     try {
+      // Garantir que a unidade seja sempre passada
+      const unidadeParaSalvar = item.unidade_item || 'juazeiro_norte';
+      
+      const itemParaInserir = {
+        item_nome: item.item_nome,
+        quantidade: item.quantidade,
+        categoria: item.categoria,
+        tipo: item.tipo,
+        observacoes: item.observacoes || null,
+        user_id: user.id,
+        unidade: unidadeParaSalvar
+      };
+
+      console.log('Item final para inserir no histórico:', itemParaInserir);
+
       const { data, error } = await supabase
         .from('camara_refrigerada_historico')
-        .insert([{ 
-          ...item, 
-          user_id: user.id
-        }])
+        .insert([itemParaInserir])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao inserir no histórico:', error);
+        throw error;
+      }
+      
+      console.log('✅ Histórico registrado com sucesso:', data);
       
       const mappedItem: CamaraRefrigeradaHistoricoItem = {
         id: data.id,
@@ -86,11 +109,12 @@ export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte'
         tipo: data.tipo as 'retirada' | 'volta_freezer',
         data_operacao: data.data_operacao,
         observacoes: data.observacoes,
+        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
       setHistorico(prev => [mappedItem, ...prev]);
     } catch (error) {
-      console.error('Error adding history item:', error);
+      console.error('❌ ERRO ao registrar histórico:', error);
       toast({
         title: "Erro ao registrar histórico",
         description: "Não foi possível registrar a operação no histórico.",

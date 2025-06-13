@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -94,42 +93,51 @@ export function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-96">
+            <div className="h-[500px]">
               {meatTypesData && meatTypesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={meatTypesData} 
                     layout="horizontal"
                     margin={{ 
-                      top: 10, 
-                      right: 30, 
-                      left: 100, 
-                      bottom: 10 
+                      top: 20, 
+                      right: 20, 
+                      left: 120, 
+                      bottom: 20 
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" horizontal={true} vertical={false} />
                     <XAxis 
                       type="number"
-                      stroke="#888"
+                      stroke="#666"
                       fontSize={12}
-                      domain={[0, 'dataMax + 5']}
+                      tickLine={false}
+                      axisLine={false}
                     />
                     <YAxis 
                       type="category"
                       dataKey="tipo" 
-                      stroke="#888" 
+                      stroke="#666" 
                       fontSize={11}
-                      width={90}
+                      width={110}
+                      tickLine={false}
+                      axisLine={false}
                       tick={{ textAnchor: 'end' }}
                     />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}
                       labelFormatter={(label) => `${label}`}
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                      }}
                     />
                     <Bar 
                       dataKey="quantidade" 
-                      radius={[0, 4, 4, 0]}
-                      fill="#8884d8"
+                      radius={[0, 3, 3, 0]}
+                      fill="#3b82f6"
                     >
                       {meatTypesData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />

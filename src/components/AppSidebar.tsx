@@ -76,7 +76,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0 w-full md:w-64 shadow-2xl">
-      <div className="bg-gradient-to-r from-churrasco-red to-churrasco-orange h-full">
+      <div className="h-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-r-2xl">
         <SidebarContent className="bg-transparent flex flex-col h-full">
           <div className="flex-1">
             <SidebarGroup className="pt-6 md:pt-8 px-3 md:px-4">
@@ -89,14 +89,14 @@ export function AppSidebar() {
                           to={item.url} 
                           onClick={handleItemClick}
                           className={({ isActive }) => 
-                            `flex items-center gap-3 md:gap-4 w-full px-3 md:px-4 py-3 md:py-4 text-white/90 hover:bg-white/10 transition-all duration-200 font-medium text-sm md:text-base h-auto rounded-xl ${
+                            `flex items-center gap-3 md:gap-4 w-full px-3 md:px-4 py-3 md:py-4 text-white/90 hover:bg-white/20 transition-all duration-300 font-medium text-sm md:text-base h-auto rounded-xl border border-transparent hover:border-white/30 backdrop-blur-sm ${
                               isActive 
-                                ? "bg-white/20 text-white shadow-lg border border-white/30 backdrop-blur-sm" 
+                                ? "bg-white/25 text-white shadow-lg border-white/40 backdrop-blur-sm" 
                                 : ""
                             }`
                           }
                         >
-                          <item.icon className="h-5 w-5 md:h-6 md:w-6 shrink-0" />
+                          <item.icon className="h-5 w-5 md:h-6 md:w-6 shrink-0 text-churrasco-orange" />
                           <span className="text-sm md:text-base truncate">{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>
@@ -108,9 +108,9 @@ export function AppSidebar() {
           </div>
           
           <SidebarFooter className="p-3 md:p-4 mt-auto">
-            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 px-1 md:px-2">
+            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 px-1 md:px-2 py-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
               <Avatar className="h-8 w-8 md:h-10 md:w-10">
-                <AvatarFallback className="bg-white/20 text-white text-sm border border-white/30">
+                <AvatarFallback className="bg-churrasco-orange/20 text-churrasco-orange text-sm border border-churrasco-orange/30">
                   {user?.email?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -121,9 +121,9 @@ export function AppSidebar() {
             
             <Button 
               onClick={handleSignOut}
-              className="w-full justify-start rounded-xl px-3 md:px-4 py-3 md:py-4 text-white bg-white/10 border border-white/20 hover:bg-white/20 hover:text-white transition-all duration-200 font-medium text-sm md:text-base h-auto backdrop-blur-sm"
+              className="w-full justify-start rounded-xl px-3 md:px-4 py-3 md:py-4 text-white/90 bg-white/10 border border-white/20 hover:bg-white/20 hover:text-white hover:border-white/30 transition-all duration-300 font-medium text-sm md:text-base h-auto backdrop-blur-sm"
             >
-              <LogOut className="h-5 w-5 md:h-6 md:w-6 shrink-0 mr-2 md:mr-3" />
+              <LogOut className="h-5 w-5 md:h-6 md:w-6 shrink-0 mr-2 md:mr-3 text-churrasco-orange" />
               <span className="text-sm md:text-base">Sair</span>
             </Button>
           </SidebarFooter>

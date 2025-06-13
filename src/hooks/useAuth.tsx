@@ -173,13 +173,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      setLoading(true);
+      console.log('Iniciando logout...');
+      
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Erro no logout:', error);
+        if (!error.message?.includes('rate limit')) {
+          toast({
+            title: "Erro no logout",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
+      // Limpar estado local imediatamente
+      setSession(null);
+      setUser(null);
+      
+      console.log('Logout realizado com sucesso');
       toast({
         title: "Logout realizado",
         description: "Até logo!",
       });
     } catch (error: any) {
-      console.error('Sign out error:', error);
+      console.error('Falha no logout:', error);
       if (!error.message?.includes('rate limit')) {
         toast({
           title: "Erro no logout",
@@ -187,6 +208,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           variant: "destructive",
         });
       }
+    } finally {
+      setLoading(false);
     }
   };
 

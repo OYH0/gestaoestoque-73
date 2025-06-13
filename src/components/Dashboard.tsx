@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -103,41 +102,33 @@ export function Dashboard() {
                     margin={{ 
                       top: 20, 
                       right: 30, 
-                      left: 150, 
+                      left: 120, 
                       bottom: 20 
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       type="number"
-                      domain={[0, 'dataMax + 5']}
-                      tick={{ fontSize: 12 }}
+                      axisLine={true}
+                      tickLine={true}
                     />
                     <YAxis 
                       type="category"
                       dataKey="tipo" 
-                      width={140}
-                      tick={{ fontSize: 11 }}
-                      interval={0}
+                      width={110}
+                      axisLine={true}
+                      tickLine={true}
+                      tick={{ fontSize: 10 }}
                     />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}
                       labelFormatter={(label) => `${label}`}
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                      }}
                     />
                     <Bar 
                       dataKey="quantidade" 
+                      fill="#3b82f6"
                       radius={[0, 4, 4, 0]}
-                    >
-                      {meatTypesData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                      ))}
-                    </Bar>
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

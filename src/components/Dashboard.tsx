@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -262,7 +263,8 @@ export function Dashboard() {
                       verticalAlign="bottom"
                       height={36}
                       formatter={(value, entry) => {
-                        const dataEntry = top5MeatUsageWithPercentage.find(item => item.totalSaidas === entry.payload?.totalSaidas);
+                        // Encontrar o item correspondente baseado no valor
+                        const dataEntry = top5MeatUsageWithPercentage.find(item => item.nome === value);
                         return dataEntry ? `${dataEntry.nome} (${dataEntry.percentage}%)` : value;
                       }}
                     />

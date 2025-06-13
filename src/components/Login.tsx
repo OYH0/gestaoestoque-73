@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,21 +32,121 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex relative overflow-hidden bg-churrasco-wallpaper" style={{ height: '100dvh' }}>
-      {/* Background overlays and patterns */}
-      <div className="absolute inset-0 bg-churrasco-wallpaper-overlay"></div>
-      <div className="absolute inset-0 bg-churrasco-pattern"></div>
+    <div 
+      className="min-h-screen flex relative overflow-hidden"
+      style={{
+        height: '100dvh',
+        background: `
+          linear-gradient(
+            135deg,
+            #f5f3f0 0%,
+            rgba(245, 243, 240, 0.9) 25%,
+            #faf8f5 50%,
+            rgba(245, 243, 240, 0.8) 75%,
+            rgba(245, 243, 240, 0.6) 100%
+          )
+        `,
+      }}
+    >
+      {/* Custom wallpaper overlay */}
+      <div 
+        className="absolute inset-0 opacity-95"
+        style={{
+          background: `
+            radial-gradient(
+              ellipse at center,
+              transparent 0%,
+              rgba(245, 243, 240, 0.1) 35%,
+              rgba(221, 95, 41, 0.05) 70%,
+              rgba(101, 70, 41, 0.1) 100%
+            )
+          `,
+        }}
+      />
+      
+      {/* Pattern overlay */}
+      <div 
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: `
+            repeating-linear-gradient(
+              45deg,
+              transparent 0px,
+              transparent 4px,
+              rgba(101, 70, 41, 0.03) 4px,
+              rgba(101, 70, 41, 0.03) 8px
+            ),
+            repeating-linear-gradient(
+              -45deg,
+              transparent 0px,
+              transparent 4px,
+              rgba(221, 95, 41, 0.02) 4px,
+              rgba(221, 95, 41, 0.02) 8px
+            ),
+            radial-gradient(
+              circle at 25% 25%,
+              rgba(231, 139, 69, 0.05) 1px,
+              transparent 1px
+            ),
+            radial-gradient(
+              circle at 75% 75%,
+              rgba(101, 70, 41, 0.03) 1px,
+              transparent 1px
+            )
+          `,
+          backgroundSize: '40px 40px, 40px 40px, 60px 60px, 80px 80px',
+          backgroundPosition: '0 0, 0 0, 30px 30px, 40px 40px',
+        }}
+      />
       
       {/* Floating decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-churrasco-red/20 to-churrasco-orange/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/3 -left-32 w-80 h-80 bg-gradient-to-tr from-churrasco-brown/15 to-churrasco-red/15 rounded-full blur-3xl" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute -bottom-32 right-1/4 w-72 h-72 bg-gradient-to-bl from-churrasco-orange/25 to-churrasco-cream/20 rounded-full blur-3xl" style={{ animationDelay: '4s' }}></div>
+        <div 
+          className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl animate-pulse"
+          style={{
+            background: 'linear-gradient(to bottom right, rgba(221, 95, 41, 0.1), rgba(231, 139, 69, 0.1))',
+          }}
+        ></div>
+        <div 
+          className="absolute top-1/3 -left-32 w-80 h-80 rounded-full blur-3xl"
+          style={{
+            background: 'linear-gradient(to top right, rgba(101, 70, 41, 0.08), rgba(221, 95, 41, 0.08))',
+            animationDelay: '2s'
+          }}
+        ></div>
+        <div 
+          className="absolute -bottom-32 right-1/4 w-72 h-72 rounded-full blur-3xl"
+          style={{
+            background: 'linear-gradient(to bottom left, rgba(231, 139, 69, 0.12), rgba(245, 243, 240, 0.15))',
+            animationDelay: '4s'
+          }}
+        ></div>
         
         {/* Small animated dots */}
-        <div className="absolute top-20 left-1/4 w-4 h-4 bg-churrasco-red/30 rounded-full animate-ping" style={{ animationDelay: '2s', animationDuration: '3s' }}></div>
-        <div className="absolute bottom-1/3 right-1/3 w-3 h-3 bg-churrasco-orange/35 rounded-full animate-ping" style={{ animationDelay: '4s', animationDuration: '4s' }}></div>
-        <div className="absolute top-2/3 left-1/6 w-2 h-2 bg-churrasco-brown/40 rounded-full animate-ping" style={{ animationDelay: '1s', animationDuration: '5s' }}></div>
+        <div 
+          className="absolute top-20 left-1/4 w-4 h-4 rounded-full animate-ping"
+          style={{ 
+            backgroundColor: 'rgba(221, 95, 41, 0.2)',
+            animationDelay: '2s', 
+            animationDuration: '3s' 
+          }}
+        ></div>
+        <div 
+          className="absolute bottom-1/3 right-1/3 w-3 h-3 rounded-full animate-ping"
+          style={{ 
+            backgroundColor: 'rgba(231, 139, 69, 0.25)',
+            animationDelay: '4s', 
+            animationDuration: '4s' 
+          }}
+        ></div>
+        <div 
+          className="absolute top-2/3 left-1/6 w-2 h-2 rounded-full animate-ping"
+          style={{ 
+            backgroundColor: 'rgba(101, 70, 41, 0.3)',
+            animationDelay: '1s', 
+            animationDuration: '5s' 
+          }}
+        ></div>
       </div>
       
       {/* Left side - Branding */}

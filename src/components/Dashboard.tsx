@@ -117,7 +117,7 @@ export function Dashboard() {
                     <YAxis 
                       type="category"
                       dataKey="tipo" 
-                      width={90}
+                      width={50}
                       tick={{ fontSize: 10 }}
                       interval={0}
                     />

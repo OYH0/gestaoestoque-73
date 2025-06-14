@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -254,7 +255,7 @@ export function Dashboard() {
                         </Pie>
                         <Tooltip 
                           formatter={(value, name, props) => [
-                            `${value}kg (${props.payload.percentage}%)`, 
+                            `${value}pç (${props.payload.percentage}%)`, 
                             'Total de Saídas'
                           ]}
                           labelFormatter={(label, payload) => {

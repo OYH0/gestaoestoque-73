@@ -75,7 +75,7 @@ export function AppSidebar() {
   const allItems = [...items, ...(isAdmin ? adminItems : [])];
 
   return (
-    <Sidebar className="border-r-0 w-full md:w-64 shadow-2xl">
+    <Sidebar className="border-0 w-full md:w-64">
       <div className="bg-gradient-to-r from-churrasco-red to-churrasco-orange h-full">
         <SidebarContent className="bg-transparent flex flex-col h-full">
           <div className="flex-1">

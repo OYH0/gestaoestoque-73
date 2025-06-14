@@ -163,7 +163,9 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
   };
 
   useEffect(() => {
-    fetchItems();
+    if (user) {
+      fetchItems();
+    }
   }, [user, selectedUnidade]);
 
   return {

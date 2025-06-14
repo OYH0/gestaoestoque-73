@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -272,12 +271,12 @@ export function Dashboard() {
                   {/* Legenda customizada para evitar overflow */}
                   <div className="grid grid-cols-1 gap-2 text-xs">
                     {top5MeatUsageWithPercentage.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2">
+                      <div key={index} className="flex items-center justify-center gap-2">
                         <div 
                           className="w-3 h-3 rounded-sm flex-shrink-0"
                           style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
                         />
-                        <span className="truncate">
+                        <span className="text-center">
                           {item.nome} ({item.percentage}%)
                         </span>
                       </div>

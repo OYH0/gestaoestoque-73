@@ -200,7 +200,7 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
                   <Button 
                     onClick={startCamera} 
                     variant="outline"
-                    className="border-white text-white hover:bg-white hover:text-gray-900 focus:text-gray-900"
+                    className="border-white text-gray-900 bg-white hover:bg-gray-100 focus:bg-gray-100"
                   >
                     Tentar Novamente
                   </Button>

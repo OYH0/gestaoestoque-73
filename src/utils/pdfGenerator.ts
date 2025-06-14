@@ -83,8 +83,9 @@ export const generateInventoryPDF = (
     const lines = pdf.splitTextToSize(item.nome, maxWidth);
     pdf.text(lines[0], margin, yPosition);
     
-    // Quantidade atual (removendo "juazeiro_norte" e "fortaleza")
-    pdf.text(`${item.quantidade} ${item.unidade}`, margin + 70, yPosition);
+    // Quantidade atual - filtrar apenas para exibir a unidade correta
+    const unidadeDisplay = (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') ? 'pç' : item.unidade;
+    pdf.text(`${item.quantidade} ${unidadeDisplay}`, margin + 70, yPosition);
     
     // Linha para preenchimento manual da quantidade a comprar
     pdf.line(margin + 130, yPosition + 2, pageWidth - margin - 10, yPosition + 2);
@@ -209,8 +210,9 @@ export const generateStockListPDF = (
     const lines = pdf.splitTextToSize(item.nome, maxWidth);
     pdf.text(lines[0], margin, yPosition);
     
-    // Quantidade atual (removendo "juazeiro_norte" e "fortaleza")
-    pdf.text(`${item.quantidade} ${item.unidade}`, margin + 90, yPosition);
+    // Quantidade atual - filtrar apenas para exibir a unidade correta
+    const unidadeDisplay = (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') ? 'pç' : item.unidade;
+    pdf.text(`${item.quantidade} ${unidadeDisplay}`, margin + 90, yPosition);
     
     // Linha para preenchimento manual da quantidade a comprar
     pdf.line(margin + 140, yPosition + 2, pageWidth - margin - 10, yPosition + 2);

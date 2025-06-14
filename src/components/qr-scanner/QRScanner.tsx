@@ -168,8 +168,9 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
                   <div className="mb-4">{cameraError}</div>
                   <Button 
                     onClick={startCamera} 
-                    variant="outline" 
-                    className="text-white border-white hover:bg-white hover:text-gray-900"
+                    variant="outline"
+                    className="text-white border-white hover:bg-white hover:text-gray-900 focus:text-gray-900" // Força hover e focus correto
+                    style={{ color: "white" }} // Garante cor inicial
                   >
                     Tentar Novamente
                   </Button>

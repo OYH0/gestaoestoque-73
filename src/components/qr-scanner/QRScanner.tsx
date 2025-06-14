@@ -16,6 +16,9 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
+  const [manualCode, setManualCode] = useState('');
+  const [manualError, setManualError] = useState<string | null>(null);
+  const [manualProcessing, setManualProcessing] = useState(false);
   const { processQRCode, isProcessing } = useQRCodeScanner();
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
@@ -127,7 +130,36 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
       }
     }
   };
-  
+
+  const handleManualSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setManualError(null);
+
+    if (!manualCode.trim()) {
+      setManualError('Digite um código.');
+      return;
+    }
+
+    setManualProcessing(true);
+    try {
+      const result = await processQRCode(manualCode.trim(), onSuccess);
+      if (result.success) {
+        toast({
+          title: "QR Code processado!",
+          description: `Item ${result.itemName} foi removido do estoque.`,
+        });
+        stopCamera();
+        handleClose();
+      } else {
+        setManualError(result.error || "QR Code não reconhecido");
+      }
+    } catch (error) {
+      setManualError('Erro ao processar código manual.');
+    } finally {
+      setManualProcessing(false);
+    }
+  };
+
   const handleClose = () => {
     stopCamera();
     setIsOpen(false);
@@ -161,7 +193,6 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
               muted
               style={{ background: '#000' }}
             />
-            
             {cameraError && (
               <div className="absolute inset-0 bg-gray-900 rounded-lg flex items-center justify-center">
                 <div className="text-center text-white p-4">
@@ -169,15 +200,14 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
                   <Button 
                     onClick={startCamera} 
                     variant="outline"
-                    className="text-white border-white hover:bg-white hover:text-gray-900 focus:text-gray-900" // Força hover e focus correto
-                    style={{ color: "white" }} // Garante cor inicial
+                    className="text-white border-white hover:bg-white hover:text-gray-900 focus:text-gray-900"
+                    style={{ color: "white" }}
                   >
                     Tentar Novamente
                   </Button>
                 </div>
               </div>
             )}
-            
             {isScanning && !cameraError && (
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
                 {isProcessing ? (
@@ -192,8 +222,40 @@ export function QRScanner({ onClose, onSuccess }: QRScannerProps) {
             )}
           </div>
 
+          <form onSubmit={handleManualSubmit} className="space-y-2">
+            <input
+              type="text"
+              className="w-full rounded border px-3 py-2 bg-background text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Digite o código manualmente"
+              value={manualCode}
+              disabled={isProcessing || manualProcessing}
+              onChange={e => setManualCode(e.target.value)}
+              autoFocus={cameraError ? true : false}
+              maxLength={48}
+            />
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isProcessing || manualProcessing}
+              variant="outline"
+            >
+              {manualProcessing ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Processando...
+                </span>
+              ) : (
+                "Processar Código Manual"
+              )}
+            </Button>
+            {manualError && (
+              <div className="text-sm text-red-600 text-center">{manualError}</div>
+            )}
+          </form>
+
           <div className="text-xs text-gray-500 text-center">
-            Posicione o QR Code na frente da câmera para escaneamento automático
+            Posicione o QR Code na frente da câmera para escaneamento automático<br />
+            ou insira o código manualmente.
           </div>
 
           <Button variant="outline" onClick={handleClose} className="w-full">

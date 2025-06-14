@@ -32,8 +32,8 @@ export function Login() {
   };
 
   return (
-    <div 
-      className="flex items-center justify-center min-h-screen bg-churrasco-cream"
+    <div
+      className="flex items-center justify-center min-h-[100svh] bg-churrasco-cream"
     >
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:flex-1 items-center justify-center p-12">
@@ -211,3 +211,5 @@ export function Login() {
     </div>
   );
 }
+
+export default Login;

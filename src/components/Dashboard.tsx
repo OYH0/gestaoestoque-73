@@ -189,7 +189,7 @@ export function Dashboard() {
                   dataKey="quantidade" 
                   stroke="#ffffff"
                   strokeWidth={1}
-                  radius={[12, 12, 12, 12]} // Barras com bordas arredondadas
+                  radius={[0, 12, 12, 0]} // Somente extremidade direita arredondada
                 />
               </BarChart>
             </ResponsiveContainer>

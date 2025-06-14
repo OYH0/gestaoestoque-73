@@ -270,15 +270,15 @@ export function Dashboard() {
                     </ResponsiveContainer>
                   </div>
                   
-                  {/* Legenda customizada para evitar overflow - uma coluna */}
+                  {/* Legenda customizada para evitar overflow - uma coluna centralizada */}
                   <div className="grid grid-cols-1 gap-1 text-xs">
                     {top10MeatUsageWithPercentage.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2">
+                      <div key={index} className="flex items-center justify-center gap-2">
                         <div 
                           className="w-3 h-3 rounded-sm flex-shrink-0"
                           style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
                         />
-                        <span>
+                        <span className="text-center">
                           {item.nome} ({item.percentage}%)
                         </span>
                       </div>

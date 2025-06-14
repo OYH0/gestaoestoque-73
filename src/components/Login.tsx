@@ -32,7 +32,7 @@ export function Login() {
   };
 
   return (
-    <div className="relative flex items-center justify-center min-h-[100svh] bg-churrasco-cream overflow-hidden">
+    <div className="relative flex items-center justify-center min-h-[100svh] overflow-hidden">
       {/* Bg image churrasco - em toda a tela */}
       <div
         className="absolute inset-0 w-full h-full z-0"

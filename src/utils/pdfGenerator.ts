@@ -85,20 +85,24 @@ export const generateInventoryPDF = (
     
     // Quantidade atual - filtrar apenas para exibir a unidade correta
     const unidadeDisplay = (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') ? 'pç' : item.unidade;
+    
+    // Se o item tem baixo estoque, deixar a quantidade em vermelho
+    const isLowStock = item.minimo && item.quantidade <= item.minimo;
+    if (isLowStock) {
+      pdf.setTextColor(255, 0, 0);
+    }
+    
     pdf.text(`${item.quantidade} ${unidadeDisplay}`, margin + 70, yPosition);
+    
+    // Voltar cor para preto
+    if (isLowStock) {
+      pdf.setTextColor(0, 0, 0);
+    }
     
     // Linha para preenchimento manual da quantidade a comprar
     pdf.line(margin + 130, yPosition + 2, pageWidth - margin - 10, yPosition + 2);
     
     yPosition += 12;
-    
-    // Se o item tem baixo estoque, adicionar marcação
-    const isLowStock = item.minimo && item.quantidade <= item.minimo;
-    if (isLowStock) {
-      pdf.setTextColor(255, 0, 0);
-      pdf.text('⚠ Baixo estoque', margin + 70, yPosition - 6);
-      pdf.setTextColor(0, 0, 0);
-    }
   });
   
   // Adicionar algumas linhas extras em branco para novos itens
@@ -212,7 +216,19 @@ export const generateStockListPDF = (
     
     // Quantidade atual - filtrar apenas para exibir a unidade correta
     const unidadeDisplay = (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') ? 'pç' : item.unidade;
+    
+    // Se o item tem baixo estoque, deixar a quantidade em vermelho
+    const isLowStock = item.minimo && item.quantidade <= item.minimo;
+    if (isLowStock) {
+      pdf.setTextColor(255, 0, 0);
+    }
+    
     pdf.text(`${item.quantidade} ${unidadeDisplay}`, margin + 90, yPosition);
+    
+    // Voltar cor para preto
+    if (isLowStock) {
+      pdf.setTextColor(0, 0, 0);
+    }
     
     // Linha para preenchimento manual da quantidade a comprar
     pdf.line(margin + 140, yPosition + 2, pageWidth - margin - 10, yPosition + 2);

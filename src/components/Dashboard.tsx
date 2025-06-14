@@ -137,6 +137,157 @@ export function Dashboard() {
   
   const temAlertas = carnesBaixoEstoque.length > 0 || estoqueBaixo.length > 0;
 
+  // Componente do gráfico de barras
+  const BarChartCard = () => (
+    <Card className="shadow-md border-0">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-blue-500" />
+          Estoque por Tipo de Carne
+        </CardTitle>
+        <CardDescription>
+          Quantidade disponível de cada tipo de carne (pç)
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="h-[600px] w-full">
+          {meatTypesDataWithColors && meatTypesDataWithColors.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={meatTypesDataWithColors} 
+                layout="vertical"
+                margin={{ 
+                  top: 20, 
+                  right: 20, 
+                  left: 10, 
+                  bottom: 20 
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" />
+                <XAxis 
+                  type="number"
+                  domain={[0, 'dataMax + 10']}
+                  tick={{ fontSize: 12 }}
+                  axisLine={{ stroke: '#e5e7eb' }}
+                  tickLine={{ stroke: '#e5e7eb' }}
+                />
+                <YAxis 
+                  type="category"
+                  dataKey="tipoAbrev" 
+                  width={50}
+                  tick={{ fontSize: 10 }}
+                  interval={0}
+                  axisLine={{ stroke: '#e5e7eb' }}
+                  tickLine={{ stroke: '#e5e7eb' }}
+                />
+                <Tooltip 
+                  formatter={(value) => [`${value}pç`, 'Quantidade']}
+                  labelFormatter={(label) => {
+                    const item = meatTypesDataWithColors.find(d => d.tipoAbrev === label);
+                    return item ? item.tipo : label;
+                  }}
+                />
+                <Bar 
+                  dataKey="quantidade" 
+                  stroke="#ffffff"
+                  strokeWidth={1}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              <div className="text-center">
+                <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>Nenhum item na câmara fria</p>
+                <p className="text-xs mt-1">Total de itens: {camaraFriaItems?.length || 0}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // Componente do gráfico de pizza
+  const PieChartCard = () => (
+    <Card className="shadow-md border-0">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Package className="w-5 h-5 text-green-500" />
+          Top 5 Carnes Mais Utilizadas
+        </CardTitle>
+        <CardDescription>
+          Carnes com maior quantidade de saídas registradas
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="h-96">
+          {top5MeatUsageWithPercentage.length > 0 ? (
+            <div className="space-y-4">
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={top5MeatUsageWithPercentage}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={(entry) => `${entry.percentage}%`}
+                      outerRadius={80}
+                      innerRadius={40}
+                      fill="#8884d8"
+                      dataKey="totalSaidas"
+                      strokeWidth={2}
+                      stroke="#ffffff"
+                    >
+                      {top5MeatUsageWithPercentage.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value, name, props) => [
+                        `${value}pç (${props.payload.percentage}%)`, 
+                        'Total de Saídas'
+                      ]}
+                      labelFormatter={(label, payload) => {
+                        if (payload && payload.length > 0) {
+                          return payload[0].payload.nome;
+                        }
+                        return label;
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {/* Legenda customizada para evitar overflow */}
+              <div className="grid grid-cols-1 gap-2 text-xs">
+                {top5MeatUsageWithPercentage.map((item, index) => (
+                  <div key={index} className="flex items-center justify-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-sm flex-shrink-0"
+                      style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+                    />
+                    <span className="text-center">
+                      {item.nome} ({item.percentage}%)
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              <div className="text-center">
+                <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>Nenhuma movimentação de saída registrada</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-center md:justify-end">
@@ -146,154 +297,19 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Gráficos */}
+      {/* Gráficos com ordem diferente para mobile e desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gráfico de Barras Horizontais - Todos os tipos de carne e quantidades */}
-        <Card className="shadow-md border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
-              Estoque por Tipo de Carne
-            </CardTitle>
-            <CardDescription>
-              Quantidade disponível de cada tipo de carne (pç)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[600px] w-full">
-              {meatTypesDataWithColors && meatTypesDataWithColors.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={meatTypesDataWithColors} 
-                    layout="vertical"
-                    margin={{ 
-                      top: 20, 
-                      right: 20, 
-                      left: 10, 
-                      bottom: 20 
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" />
-                    <XAxis 
-                      type="number"
-                      domain={[0, 'dataMax + 10']}
-                      tick={{ fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                      tickLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <YAxis 
-                      type="category"
-                      dataKey="tipoAbrev" 
-                      width={50}
-                      tick={{ fontSize: 10 }}
-                      interval={0}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                      tickLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <Tooltip 
-                      formatter={(value) => [`${value}pç`, 'Quantidade']}
-                      labelFormatter={(label) => {
-                        const item = meatTypesDataWithColors.find(d => d.tipoAbrev === label);
-                        return item ? item.tipo : label;
-                      }}
-                    />
-                    <Bar 
-                      dataKey="quantidade" 
-                      stroke="#ffffff"
-                      strokeWidth={1}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  <div className="text-center">
-                    <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum item na câmara fria</p>
-                    <p className="text-xs mt-1">Total de itens: {camaraFriaItems?.length || 0}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Gráfico de Pizza - Top 5 carnes mais utilizadas baseado no histórico real */}
-        <Card className="shadow-md border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-green-500" />
-              Top 5 Carnes Mais Utilizadas
-            </CardTitle>
-            <CardDescription>
-              Carnes com maior quantidade de saídas registradas
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-96">
-              {top5MeatUsageWithPercentage.length > 0 ? (
-                <div className="space-y-4">
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={top5MeatUsageWithPercentage}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={(entry) => `${entry.percentage}%`}
-                          outerRadius={80}
-                          innerRadius={40}
-                          fill="#8884d8"
-                          dataKey="totalSaidas"
-                          strokeWidth={2}
-                          stroke="#ffffff"
-                        >
-                          {top5MeatUsageWithPercentage.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value, name, props) => [
-                            `${value}pç (${props.payload.percentage}%)`, 
-                            'Total de Saídas'
-                          ]}
-                          labelFormatter={(label, payload) => {
-                            if (payload && payload.length > 0) {
-                              return payload[0].payload.nome;
-                            }
-                            return label;
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  
-                  {/* Legenda customizada para evitar overflow */}
-                  <div className="grid grid-cols-1 gap-2 text-xs">
-                    {top5MeatUsageWithPercentage.map((item, index) => (
-                      <div key={index} className="flex items-center justify-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-sm flex-shrink-0"
-                          style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
-                        />
-                        <span className="text-center">
-                          {item.nome} ({item.percentage}%)
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  <div className="text-center">
-                    <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhuma movimentação de saída registrada</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {isMobile ? (
+          <>
+            <PieChartCard />
+            <BarChartCard />
+          </>
+        ) : (
+          <>
+            <BarChartCard />
+            <PieChartCard />
+          </>
+        )}
       </div>
 
       {/* Alertas */}

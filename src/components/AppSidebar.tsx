@@ -66,7 +66,6 @@ export function AppSidebar() {
   };
 
   const handleItemClick = () => {
-    // Fecha a sidebar automaticamente em dispositivos móveis
     if (isMobile) {
       setOpenMobile(false);
     }
@@ -76,7 +75,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-0 w-full md:w-64">
-      <div className="bg-gradient-to-r from-churrasco-red to-churrasco-orange h-full backdrop-blur-sm bg-opacity-95">
+      <div className="bg-gradient-to-r from-churrasco-red to-churrasco-orange h-full backdrop-blur-lg bg-opacity-90">
         <SidebarContent className="bg-transparent flex flex-col h-full backdrop-blur-md">
           <div className="flex-1">
             <SidebarGroup className="pt-6 md:pt-8 px-3 md:px-4">

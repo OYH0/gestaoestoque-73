@@ -156,7 +156,7 @@ export function Dashboard() {
               Estoque por Tipo de Carne
             </CardTitle>
             <CardDescription>
-              Quantidade disponível de cada tipo de carne (kg)
+              Quantidade disponível de cada tipo de carne (pç)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -191,7 +191,7 @@ export function Dashboard() {
                       tickLine={{ stroke: '#e5e7eb' }}
                     />
                     <Tooltip 
-                      formatter={(value) => [`${value}kg`, 'Quantidade']}
+                      formatter={(value) => [`${value}pç`, 'Quantidade']}
                       labelFormatter={(label) => {
                         const item = meatTypesDataWithColors.find(d => d.tipoAbrev === label);
                         return item ? item.tipo : label;

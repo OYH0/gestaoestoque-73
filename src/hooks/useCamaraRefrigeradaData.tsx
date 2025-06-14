@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,22 +22,15 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
   const [items, setItems] = useState<CamaraRefrigeradaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const fetchingRef = useRef(false);
-  const lastFetchRef = useRef<string>('');
+  const mountedRef = useRef(true);
+  
+  // Create a stable reference for the selected unit
+  const stableSelectedUnidade = useRef(selectedUnidade);
+  stableSelectedUnidade.current = selectedUnidade;
 
   const fetchItems = useCallback(async () => {
-    if (!user || fetchingRef.current) {
-      console.log('Skipping fetch: user =', !!user, 'already fetching =', fetchingRef.current);
-      return;
-    }
-
-    const fetchKey = `${user.id}-${selectedUnidade || 'todas'}`;
-    if (lastFetchRef.current === fetchKey) {
-      console.log('Skipping fetch: same parameters as last fetch');
-      return;
-    }
-
-    fetchingRef.current = true;
+    if (!user || !mountedRef.current) return;
+    
     console.log('=== INICIANDO FETCH DA CÂMARA REFRIGERADA ===');
     
     try {
@@ -46,13 +40,15 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         .order('nome');
 
       // Aplicar filtro por unidade se não for "todas"
-      if (selectedUnidade && selectedUnidade !== 'todas') {
-        query = query.eq('unidade', selectedUnidade);
+      if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
+        query = query.eq('unidade', stableSelectedUnidade.current);
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
+      
+      if (!mountedRef.current) return;
       
       // Map the database data to our interface
       const mappedItems: CamaraRefrigeradaItem[] = (data || []).map(item => ({
@@ -69,21 +65,47 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       }));
       
       setItems(mappedItems);
-      lastFetchRef.current = fetchKey;
       console.log('=== FETCH CONCLUÍDO - CÂMARA REFRIGERADA ===');
       console.log('Total de itens:', mappedItems.length);
     } catch (error) {
       console.error('Error fetching items:', error);
-      toast({
-        title: "Erro ao carregar dados",
-        description: "Não foi possível carregar os itens da câmara refrigerada.",
-        variant: "destructive",
-      });
+      if (mountedRef.current) {
+        toast({
+          title: "Erro ao carregar dados",
+          description: "Não foi possível carregar os itens da câmara refrigerada.",
+          variant: "destructive",
+        });
+      }
     } finally {
-      setLoading(false);
-      fetchingRef.current = false;
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
-  }, [user, selectedUnidade]);
+  }, [user]);
+
+  // Effect for initial load and user changes
+  useEffect(() => {
+    if (user) {
+      fetchItems();
+    } else {
+      setLoading(false);
+    }
+  }, [user, fetchItems]);
+
+  // Effect for unit changes
+  useEffect(() => {
+    if (user && stableSelectedUnidade.current !== selectedUnidade) {
+      stableSelectedUnidade.current = selectedUnidade;
+      fetchItems();
+    }
+  }, [selectedUnidade, user, fetchItems]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const addItem = async (newItem: Omit<CamaraRefrigeradaItem, 'id'>) => {
     if (!user) return;
@@ -178,12 +200,6 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       });
     }
   };
-
-  useEffect(() => {
-    if (user && !fetchingRef.current) {
-      fetchItems();
-    }
-  }, [fetchItems]);
 
   return {
     items,

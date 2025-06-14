@@ -38,7 +38,7 @@ export function Login() {
         className="absolute inset-0 w-full h-full z-0"
         aria-hidden="true"
         style={{
-          backgroundImage: "url('/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png')",
+          backgroundImage: "url('/lovable-uploads/dec7bb0c-8b1d-4d76-bfb6-ecd835292847.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           filter: "blur(2px)",

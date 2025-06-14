@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface UnidadeSelectorProps {
@@ -25,45 +24,24 @@ export function UnidadeSelector({ selectedUnidade, onUnidadeChange }: UnidadeSel
     }
   };
 
-  const getUnidadeBadgeColor = (unidade: string) => {
-    switch (unidade) {
-      case 'juazeiro_norte':
-        return 'bg-blue-100 text-blue-800';
-      case 'fortaleza':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
-    <div className={`flex items-center gap-2 ${isMobile ? 'justify-center flex-col sm:flex-row' : ''}`}>
-      <Badge variant="outline" className="text-xs whitespace-nowrap">
-        Unidade:
-      </Badge>
+    <div className={`flex items-center gap-3 ${isMobile ? 'justify-center' : ''}`}>
+      <span className="text-sm font-medium text-gray-700">Unidade:</span>
       <Select value={selectedUnidade} onValueChange={onUnidadeChange}>
-        <SelectTrigger className={`${isMobile ? 'w-full max-w-xs' : 'w-48'}`}>
+        <SelectTrigger className={`${isMobile ? 'w-full max-w-xs' : 'w-48'} bg-white border-gray-300`}>
           <SelectValue>
-            <Badge className={`text-xs ${getUnidadeBadgeColor(selectedUnidade)}`}>
-              {getUnidadeLabel(selectedUnidade)}
-            </Badge>
+            {getUnidadeLabel(selectedUnidade)}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-white">
           <SelectItem value="todas">
-            <Badge className="text-xs bg-gray-100 text-gray-800">
-              Todas as Unidades
-            </Badge>
+            Todas as Unidades
           </SelectItem>
           <SelectItem value="juazeiro_norte">
-            <Badge className="text-xs bg-blue-100 text-blue-800">
-              Juazeiro do Norte
-            </Badge>
+            Juazeiro do Norte
           </SelectItem>
           <SelectItem value="fortaleza">
-            <Badge className="text-xs bg-green-100 text-green-800">
-              Fortaleza
-            </Badge>
+            Fortaleza
           </SelectItem>
         </SelectContent>
       </Select>

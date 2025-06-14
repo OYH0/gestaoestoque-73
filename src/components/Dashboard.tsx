@@ -187,8 +187,8 @@ export function Dashboard() {
                       width={50}
                       tick={{ fontSize: 10 }}
                       interval={0}
-                      axisLine={false}
-                      tickLine={false}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                      tickLine={{ stroke: '#e5e7eb' }}
                     />
                     <Tooltip 
                       formatter={(value) => [`${value}kg`, 'Quantidade']}

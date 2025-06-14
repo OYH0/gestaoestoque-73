@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface UnidadeSelectorProps {
   selectedUnidade: 'juazeiro_norte' | 'fortaleza' | 'todas';
@@ -9,8 +8,6 @@ interface UnidadeSelectorProps {
 }
 
 export function UnidadeSelector({ selectedUnidade, onUnidadeChange }: UnidadeSelectorProps) {
-  const isMobile = useIsMobile();
-
   const getUnidadeLabel = (unidade: string) => {
     switch (unidade) {
       case 'juazeiro_norte':
@@ -25,15 +22,15 @@ export function UnidadeSelector({ selectedUnidade, onUnidadeChange }: UnidadeSel
   };
 
   return (
-    <div className={`flex items-center gap-3 ${isMobile ? 'justify-center' : ''}`}>
-      <span className="text-sm font-medium text-gray-700">Unidade:</span>
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-gray-600">Unidade:</span>
       <Select value={selectedUnidade} onValueChange={onUnidadeChange}>
-        <SelectTrigger className={`${isMobile ? 'w-full max-w-xs' : 'w-48'} bg-white border-gray-300`}>
+        <SelectTrigger className="w-48">
           <SelectValue>
             {getUnidadeLabel(selectedUnidade)}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="bg-white">
+        <SelectContent>
           <SelectItem value="todas">
             Todas as Unidades
           </SelectItem>

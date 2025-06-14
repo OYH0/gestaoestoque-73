@@ -11,6 +11,7 @@ interface Item {
   data_validade?: string;
   fornecedor?: string;
   observacoes?: string;
+  unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
 export const generateInventoryPDF = (
@@ -82,7 +83,7 @@ export const generateInventoryPDF = (
     const lines = pdf.splitTextToSize(item.nome, maxWidth);
     pdf.text(lines[0], margin, yPosition);
     
-    // Quantidade atual
+    // Quantidade atual (removendo "juazeiro_norte" e "fortaleza")
     pdf.text(`${item.quantidade} ${item.unidade}`, margin + 70, yPosition);
     
     // Linha para preenchimento manual da quantidade a comprar
@@ -208,7 +209,7 @@ export const generateStockListPDF = (
     const lines = pdf.splitTextToSize(item.nome, maxWidth);
     pdf.text(lines[0], margin, yPosition);
     
-    // Quantidade atual
+    // Quantidade atual (removendo "juazeiro_norte" e "fortaleza")
     pdf.text(`${item.quantidade} ${item.unidade}`, margin + 90, yPosition);
     
     // Linha para preenchimento manual da quantidade a comprar

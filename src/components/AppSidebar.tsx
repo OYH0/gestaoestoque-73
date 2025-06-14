@@ -76,11 +76,14 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-0 w-full md:w-64">
       <div className="relative h-full">
-        {/* Background with blur effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-churrasco-red to-churrasco-orange backdrop-blur-xl bg-opacity-80"></div>
+        {/* Background with gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-churrasco-red to-churrasco-orange"></div>
         
-        {/* Content with additional blur */}
-        <div className="relative h-full backdrop-blur-sm bg-white/5">
+        {/* Blur effect on the right edge */}
+        <div className="absolute top-0 right-0 w-4 h-full bg-gradient-to-l from-transparent to-black/20 backdrop-blur-sm"></div>
+        
+        {/* Content */}
+        <div className="relative h-full">
           <SidebarContent className="bg-transparent flex flex-col h-full">
             <div className="flex-1">
               <SidebarGroup className="pt-6 md:pt-8 px-3 md:px-4">

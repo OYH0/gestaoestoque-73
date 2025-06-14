@@ -374,7 +374,8 @@ export const generateHistoryPDF = (
   
   // Data de geração
   const currentDate = new Date().toLocaleDateString('pt-BR');
-  pdf.text(`Data: ${currentDate}`, margin, yPosition);
+  const currentTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  pdf.text(`Data: ${currentDate} às ${currentTime}`, margin, yPosition);
   
   yPosition += 20;
   
@@ -385,7 +386,7 @@ export const generateHistoryPDF = (
   const col1Width = 50; // Item
   const col2Width = 30; // Quantidade
   const col3Width = 25; // Tipo
-  const col4Width = 35; // Data
+  const col4Width = 35; // Data/Hora
   const col5Width = pageWidth - margin - col1Width - col2Width - col3Width - col4Width - margin; // Observações
   
   // Fundo do cabeçalho
@@ -404,7 +405,7 @@ export const generateHistoryPDF = (
   pdf.text('Item', margin + 2, yPosition);
   pdf.text('Qtd.', margin + col1Width + 2, yPosition);
   pdf.text('Tipo', margin + col1Width + col2Width + 2, yPosition);
-  pdf.text('Data', margin + col1Width + col2Width + col3Width + 2, yPosition);
+  pdf.text('Data/Hora', margin + col1Width + col2Width + col3Width + 2, yPosition);
   pdf.text('Obs.', margin + col1Width + col2Width + col3Width + col4Width + 2, yPosition);
   
   yPosition += headerHeight;
@@ -441,7 +442,7 @@ export const generateHistoryPDF = (
       pdf.text('Item', margin + 2, yPosition);
       pdf.text('Qtd.', margin + col1Width + 2, yPosition);
       pdf.text('Tipo', margin + col1Width + col2Width + 2, yPosition);
-      pdf.text('Data', margin + col1Width + col2Width + col3Width + 2, yPosition);
+      pdf.text('Data/Hora', margin + col1Width + col2Width + col3Width + 2, yPosition);
       pdf.text('Obs.', margin + col1Width + col2Width + col3Width + col4Width + 2, yPosition);
       
       yPosition += headerHeight;
@@ -485,9 +486,10 @@ export const generateHistoryPDF = (
     // Voltar cor para preto
     pdf.setTextColor(0, 0, 0);
     
-    // Data
+    // Data e hora
     const dataFormatada = new Date(item.data_operacao).toLocaleDateString('pt-BR');
-    pdf.text(dataFormatada, margin + col1Width + col2Width + col3Width + 2, yPosition + 8);
+    const horaFormatada = new Date(item.data_operacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    pdf.text(`${dataFormatada} ${horaFormatada}`, margin + col1Width + col2Width + col3Width + 2, yPosition + 8);
     
     // Observações (resumidas)
     if (item.observacoes) {
@@ -528,44 +530,69 @@ export const generateHistoryTXT = (
   subtitle: string
 ) => {
   const currentDate = new Date().toLocaleDateString('pt-BR');
+  const currentTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   
   let content = '';
-  content += `${title}\n`;
+  content += `📋 *${title}*\n`;
   content += `${subtitle}\n`;
-  content += `Data: ${currentDate}\n`;
-  content += `Total de registros: ${historico.length}\n`;
-  content += '\n' + '='.repeat(80) + '\n\n';
+  content += `📅 Relatório gerado em: ${currentDate} às ${currentTime}\n`;
+  content += `📊 Total de registros: ${historico.length}\n`;
+  content += '\n' + '━'.repeat(40) + '\n\n';
   
   // Cabeçalho
-  content += 'ITEM'.padEnd(30) + 'QUANTIDADE'.padEnd(15) + 'TIPO'.padEnd(10) + 'DATA'.padEnd(12) + 'OBSERVAÇÕES\n';
+  content += 'ITEM'.padEnd(30) + 'QUANTIDADE'.padEnd(15) + 'TIPO'.padEnd(10) + 'DATA/HORA'.padEnd(12) + 'OBSERVAÇÕES\n';
   content += '-'.repeat(80) + '\n';
   
-  // Ordenar histórico por data (mais recente primeiro)
-  const sortedHistorico = [...historico].sort((a, b) => 
-    new Date(b.data_operacao).getTime() - new Date(a.data_operacao).getTime()
-  );
-  
-  // Listar histórico
-  sortedHistorico.forEach((item) => {
-    const nome = item.item_nome.length > 28 ? item.item_nome.substring(0, 28) + '..' : item.item_nome;
-    const unidadeDisplay = (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') ? 'pç' : item.unidade;
-    const quantidade = `${item.quantidade} ${unidadeDisplay}`;
-    const tipo = item.tipo === 'entrada' ? 'ENTRADA' : item.tipo === 'saida' ? 'SAÍDA' : item.tipo.toUpperCase();
-    const data = new Date(item.data_operacao).toLocaleDateString('pt-BR');
-    const obs = item.observacoes ? (item.observacoes.length > 20 ? item.observacoes.substring(0, 20) + '...' : item.observacoes) : '';
-    
-    content += nome.padEnd(30) + quantidade.padEnd(15) + tipo.padEnd(10) + data.padEnd(12) + obs + '\n';
+  // Agrupar por data para melhor organização
+  const groupedByDate: { [key: string]: HistoricoItem[] } = {};
+  historico.forEach(item => {
+    const dateKey = new Date(item.data_operacao).toLocaleDateString('pt-BR');
+    if (!groupedByDate[dateKey]) {
+      groupedByDate[dateKey] = [];
+    }
+    groupedByDate[dateKey].push(item);
   });
   
-  content += '\n' + '='.repeat(80) + '\n';
-  content += `Relatório gerado em: ${new Date().toLocaleString('pt-BR')}\n`;
+  // Listar histórico agrupado por data
+  Object.entries(groupedByDate).forEach(([date, items]) => {
+    content += `📅 *${date}*\n`;
+    content += '─'.repeat(25) + '\n';
+    
+    items.forEach((item) => {
+      const unidadeDisplay = (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') ? 'pç' : item.unidade;
+      const tipoEmoji = item.tipo === 'entrada' ? '⬆️' : '⬇️';
+      const tipoText = item.tipo === 'entrada' ? 'ENTRADA' : 'SAÍDA';
+      const hora = new Date(item.data_operacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      
+      content += `${tipoEmoji} *${item.item_nome}*\n`;
+      content += `   📦 Quantidade: ${item.quantidade} ${unidadeDisplay}\n`;
+      content += `   🔄 Tipo: ${tipoText}\n`;
+      content += `   🕐 Hora: ${hora}\n`;
+      
+      if (item.observacoes) {
+        content += `   📝 Obs: ${item.observacoes}\n`;
+      }
+      
+      content += '\n';
+    });
+    
+    content += '\n';
+  });
+  
+  content += '━'.repeat(40) + '\n';
+  content += `📊 *Resumo:*\n`;
+  const entradas = historico.filter(item => item.tipo === 'entrada').length;
+  const saidas = historico.filter(item => item.tipo === 'saida').length;
+  content += `⬆️ Entradas: ${entradas}\n`;
+  content += `⬇️ Saídas: ${saidas}\n`;
+  content += `📋 Total: ${historico.length} movimentações\n`;
   
   // Criar e baixar arquivo
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `historico_${title.toLowerCase().replace(/\s+/g, '_')}_${currentDate.replace(/\//g, '_')}.txt`;
+  a.download = `historico_whatsapp_${title.toLowerCase().replace(/\s+/g, '_')}_${currentDate.replace(/\//g, '_')}.txt`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

@@ -60,6 +60,7 @@ export const generateInventoryPDF = (
   
   // Bordas do cabeçalho
   pdf.setDrawColor(0, 0, 0);
+  pdf.setLineWidth(0.1);
   pdf.rect(margin, yPosition - 6, col1Width, headerHeight);
   pdf.rect(margin + col1Width, yPosition - 6, col2Width, headerHeight);
   pdf.rect(margin + col1Width + col2Width, yPosition - 6, col3Width, headerHeight);
@@ -90,6 +91,7 @@ export const generateInventoryPDF = (
       
       // Bordas do cabeçalho
       pdf.setDrawColor(0, 0, 0);
+      pdf.setLineWidth(0.1);
       pdf.rect(margin, yPosition - 6, col1Width, headerHeight);
       pdf.rect(margin + col1Width, yPosition - 6, col2Width, headerHeight);
       pdf.rect(margin + col1Width + col2Width, yPosition - 6, col3Width, headerHeight);
@@ -106,6 +108,7 @@ export const generateInventoryPDF = (
     
     // Desenhar bordas da linha
     pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(0.1);
     pdf.rect(margin, yPosition - 8, col1Width, rowHeight);
     pdf.rect(margin + col1Width, yPosition - 8, col2Width, rowHeight);
     pdf.rect(margin + col1Width + col2Width, yPosition - 8, col3Width, rowHeight);
@@ -151,6 +154,7 @@ export const generateInventoryPDF = (
     
     // Desenhar bordas para novos itens
     pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(0.1);
     pdf.rect(margin, yPosition - 8, col1Width, rowHeight);
     pdf.rect(margin + col1Width, yPosition - 8, col2Width, rowHeight);
     pdf.rect(margin + col1Width + col2Width, yPosition - 8, col3Width, rowHeight);
@@ -223,6 +227,7 @@ export const generateStockListPDF = (
   
   // Bordas do cabeçalho
   pdf.setDrawColor(0, 0, 0);
+  pdf.setLineWidth(0.1);
   pdf.rect(margin, yPosition - 6, col1Width, headerHeight);
   pdf.rect(margin + col1Width, yPosition - 6, col2Width, headerHeight);
   pdf.rect(margin + col1Width + col2Width, yPosition - 6, col3Width, headerHeight);
@@ -253,6 +258,7 @@ export const generateStockListPDF = (
       
       // Bordas do cabeçalho
       pdf.setDrawColor(0, 0, 0);
+      pdf.setLineWidth(0.1);
       pdf.rect(margin, yPosition - 6, col1Width, headerHeight);
       pdf.rect(margin + col1Width, yPosition - 6, col2Width, headerHeight);
       pdf.rect(margin + col1Width + col2Width, yPosition - 6, col3Width, headerHeight);
@@ -269,6 +275,7 @@ export const generateStockListPDF = (
     
     // Desenhar bordas da linha
     pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(0.1);
     pdf.rect(margin, yPosition - 8, col1Width, rowHeight);
     pdf.rect(margin + col1Width, yPosition - 8, col2Width, rowHeight);
     pdf.rect(margin + col1Width + col2Width, yPosition - 8, col3Width, rowHeight);
@@ -314,6 +321,7 @@ export const generateStockListPDF = (
     
     // Desenhar bordas para novos itens
     pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(0.1);
     pdf.rect(margin, yPosition - 8, col1Width, rowHeight);
     pdf.rect(margin + col1Width, yPosition - 8, col2Width, rowHeight);
     pdf.rect(margin + col1Width + col2Width, yPosition - 8, col3Width, rowHeight);

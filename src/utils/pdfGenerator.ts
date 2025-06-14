@@ -47,12 +47,27 @@ export const generateInventoryPDF = (
   
   // Cabeçalhos das colunas
   pdf.setFont(undefined, 'bold');
-  pdf.text('Item', margin, yPosition);
-  pdf.text('Qtd. Atual', margin + 70, yPosition);
-  pdf.text('Qtd. a Comprar', margin + 130, yPosition);
   
-  yPosition += 5;
-  pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+  // Desenhar grade do cabeçalho
+  const headerHeight = 8;
+  const col1Width = 70;
+  const col2Width = 60;
+  const col3Width = pageWidth - margin - col1Width - col2Width - margin;
+  
+  // Fundo do cabeçalho
+  pdf.setFillColor(240, 240, 240);
+  pdf.rect(margin, yPosition - 6, pageWidth - 2 * margin, headerHeight, 'F');
+  
+  // Bordas do cabeçalho
+  pdf.setDrawColor(0, 0, 0);
+  pdf.rect(margin, yPosition - 6, col1Width, headerHeight);
+  pdf.rect(margin + col1Width, yPosition - 6, col2Width, headerHeight);
+  pdf.rect(margin + col1Width + col2Width, yPosition - 6, col3Width, headerHeight);
+  
+  pdf.text('Item', margin + 2, yPosition);
+  pdf.text('Qtd. Atual', margin + col1Width + 2, yPosition);
+  pdf.text('Qtd. a Comprar', margin + col1Width + col2Width + 2, yPosition);
+  
   yPosition += 8;
   
   // Ordenar itens alfabeticamente
@@ -68,20 +83,37 @@ export const generateInventoryPDF = (
       
       // Repetir cabeçalhos na nova página
       pdf.setFont(undefined, 'bold');
-      pdf.text('Item', margin, yPosition);
-      pdf.text('Qtd. Atual', margin + 70, yPosition);
-      pdf.text('Qtd. a Comprar', margin + 130, yPosition);
       
-      yPosition += 5;
-      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      // Fundo do cabeçalho
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, yPosition - 6, pageWidth - 2 * margin, headerHeight, 'F');
+      
+      // Bordas do cabeçalho
+      pdf.setDrawColor(0, 0, 0);
+      pdf.rect(margin, yPosition - 6, col1Width, headerHeight);
+      pdf.rect(margin + col1Width, yPosition - 6, col2Width, headerHeight);
+      pdf.rect(margin + col1Width + col2Width, yPosition - 6, col3Width, headerHeight);
+      
+      pdf.text('Item', margin + 2, yPosition);
+      pdf.text('Qtd. Atual', margin + col1Width + 2, yPosition);
+      pdf.text('Qtd. a Comprar', margin + col1Width + col2Width + 2, yPosition);
+      
       yPosition += 8;
       pdf.setFont(undefined, 'normal');
     }
     
+    const rowHeight = 12;
+    
+    // Desenhar bordas da linha
+    pdf.setDrawColor(0, 0, 0);
+    pdf.rect(margin, yPosition - 8, col1Width, rowHeight);
+    pdf.rect(margin + col1Width, yPosition - 8, col2Width, rowHeight);
+    pdf.rect(margin + col1Width + col2Width, yPosition - 8, col3Width, rowHeight);
+    
     // Nome do item
-    const maxWidth = 60;
+    const maxWidth = col1Width - 4;
     const lines = pdf.splitTextToSize(item.nome, maxWidth);
-    pdf.text(lines[0], margin, yPosition);
+    pdf.text(lines[0], margin + 2, yPosition);
     
     // Quantidade atual - filtrar apenas para exibir a unidade correta
     const unidadeDisplay = (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') ? 'pç' : item.unidade;
@@ -92,15 +124,12 @@ export const generateInventoryPDF = (
       pdf.setTextColor(255, 0, 0);
     }
     
-    pdf.text(`${item.quantidade} ${unidadeDisplay}`, margin + 70, yPosition);
+    pdf.text(`${item.quantidade} ${unidadeDisplay}`, margin + col1Width + 2, yPosition);
     
     // Voltar cor para preto
     if (isLowStock) {
       pdf.setTextColor(0, 0, 0);
     }
-    
-    // Linha para preenchimento manual da quantidade a comprar
-    pdf.line(margin + 130, yPosition + 2, pageWidth - margin - 10, yPosition + 2);
     
     yPosition += 12;
   });
@@ -118,12 +147,15 @@ export const generateInventoryPDF = (
       yPosition = 30;
     }
     
-    // Linhas para preenchimento manual de novos itens
-    pdf.line(margin, yPosition + 2, margin + 60, yPosition + 2);
-    pdf.line(margin + 70, yPosition + 2, margin + 120, yPosition + 2);
-    pdf.line(margin + 130, yPosition + 2, pageWidth - margin - 10, yPosition + 2);
+    const rowHeight = 12;
     
-    yPosition += 15;
+    // Desenhar bordas para novos itens
+    pdf.setDrawColor(0, 0, 0);
+    pdf.rect(margin, yPosition - 8, col1Width, rowHeight);
+    pdf.rect(margin + col1Width, yPosition - 8, col2Width, rowHeight);
+    pdf.rect(margin + col1Width + col2Width, yPosition - 8, col3Width, rowHeight);
+    
+    yPosition += 12;
   }
   
   // Rodapé
@@ -178,12 +210,27 @@ export const generateStockListPDF = (
   
   // Cabeçalhos das colunas
   pdf.setFont(undefined, 'bold');
-  pdf.text('Item', margin, yPosition);
-  pdf.text('Qtd. Atual', margin + 90, yPosition);
-  pdf.text('Qtd. a Comprar', margin + 140, yPosition);
   
-  yPosition += 5;
-  pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+  // Desenhar grade do cabeçalho
+  const headerHeight = 8;
+  const col1Width = 90;
+  const col2Width = 50;
+  const col3Width = pageWidth - margin - col1Width - col2Width - margin;
+  
+  // Fundo do cabeçalho
+  pdf.setFillColor(240, 240, 240);
+  pdf.rect(margin, yPosition - 6, pageWidth - 2 * margin, headerHeight, 'F');
+  
+  // Bordas do cabeçalho
+  pdf.setDrawColor(0, 0, 0);
+  pdf.rect(margin, yPosition - 6, col1Width, headerHeight);
+  pdf.rect(margin + col1Width, yPosition - 6, col2Width, headerHeight);
+  pdf.rect(margin + col1Width + col2Width, yPosition - 6, col3Width, headerHeight);
+  
+  pdf.text('Item', margin + 2, yPosition);
+  pdf.text('Qtd. Atual', margin + col1Width + 2, yPosition);
+  pdf.text('Qtd. a Comprar', margin + col1Width + col2Width + 2, yPosition);
+  
   yPosition += 8;
   
   // Ordenar itens alfabeticamente
@@ -199,20 +246,37 @@ export const generateStockListPDF = (
       
       // Repetir cabeçalhos na nova página
       pdf.setFont(undefined, 'bold');
-      pdf.text('Item', margin, yPosition);
-      pdf.text('Qtd. Atual', margin + 90, yPosition);
-      pdf.text('Qtd. a Comprar', margin + 140, yPosition);
       
-      yPosition += 5;
-      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      // Fundo do cabeçalho
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, yPosition - 6, pageWidth - 2 * margin, headerHeight, 'F');
+      
+      // Bordas do cabeçalho
+      pdf.setDrawColor(0, 0, 0);
+      pdf.rect(margin, yPosition - 6, col1Width, headerHeight);
+      pdf.rect(margin + col1Width, yPosition - 6, col2Width, headerHeight);
+      pdf.rect(margin + col1Width + col2Width, yPosition - 6, col3Width, headerHeight);
+      
+      pdf.text('Item', margin + 2, yPosition);
+      pdf.text('Qtd. Atual', margin + col1Width + 2, yPosition);
+      pdf.text('Qtd. a Comprar', margin + col1Width + col2Width + 2, yPosition);
+      
       yPosition += 8;
       pdf.setFont(undefined, 'normal');
     }
     
+    const rowHeight = 12;
+    
+    // Desenhar bordas da linha
+    pdf.setDrawColor(0, 0, 0);
+    pdf.rect(margin, yPosition - 8, col1Width, rowHeight);
+    pdf.rect(margin + col1Width, yPosition - 8, col2Width, rowHeight);
+    pdf.rect(margin + col1Width + col2Width, yPosition - 8, col3Width, rowHeight);
+    
     // Nome do item
-    const maxWidth = 80;
+    const maxWidth = col1Width - 4;
     const lines = pdf.splitTextToSize(item.nome, maxWidth);
-    pdf.text(lines[0], margin, yPosition);
+    pdf.text(lines[0], margin + 2, yPosition);
     
     // Quantidade atual - filtrar apenas para exibir a unidade correta
     const unidadeDisplay = (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') ? 'pç' : item.unidade;
@@ -223,15 +287,12 @@ export const generateStockListPDF = (
       pdf.setTextColor(255, 0, 0);
     }
     
-    pdf.text(`${item.quantidade} ${unidadeDisplay}`, margin + 90, yPosition);
+    pdf.text(`${item.quantidade} ${unidadeDisplay}`, margin + col1Width + 2, yPosition);
     
     // Voltar cor para preto
     if (isLowStock) {
       pdf.setTextColor(0, 0, 0);
     }
-    
-    // Linha para preenchimento manual da quantidade a comprar
-    pdf.line(margin + 140, yPosition + 2, pageWidth - margin - 10, yPosition + 2);
     
     yPosition += 12;
   });
@@ -249,12 +310,15 @@ export const generateStockListPDF = (
       yPosition = 30;
     }
     
-    // Linhas para preenchimento manual de novos itens
-    pdf.line(margin, yPosition + 2, margin + 80, yPosition + 2);
-    pdf.line(margin + 90, yPosition + 2, margin + 130, yPosition + 2);
-    pdf.line(margin + 140, yPosition + 2, pageWidth - margin - 10, yPosition + 2);
+    const rowHeight = 12;
     
-    yPosition += 15;
+    // Desenhar bordas para novos itens
+    pdf.setDrawColor(0, 0, 0);
+    pdf.rect(margin, yPosition - 8, col1Width, rowHeight);
+    pdf.rect(margin + col1Width, yPosition - 8, col2Width, rowHeight);
+    pdf.rect(margin + col1Width + col2Width, yPosition - 8, col3Width, rowHeight);
+    
+    yPosition += 12;
   }
   
   // Salvar o PDF

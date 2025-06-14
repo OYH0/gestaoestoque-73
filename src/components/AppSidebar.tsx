@@ -76,8 +76,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-0 w-full md:w-64">
-      <div className="bg-gradient-to-r from-churrasco-red to-churrasco-orange h-full">
-        <SidebarContent className="bg-transparent flex flex-col h-full">
+      <div className="bg-gradient-to-r from-churrasco-red to-churrasco-orange h-full backdrop-blur-sm bg-opacity-95">
+        <SidebarContent className="bg-transparent flex flex-col h-full backdrop-blur-md">
           <div className="flex-1">
             <SidebarGroup className="pt-6 md:pt-8 px-3 md:px-4">
               <SidebarGroupContent>
@@ -89,9 +89,9 @@ export function AppSidebar() {
                           to={item.url} 
                           onClick={handleItemClick}
                           className={({ isActive }) => 
-                            `flex items-center gap-3 md:gap-4 w-full px-3 md:px-4 py-3 md:py-4 text-white/90 hover:bg-white/10 transition-all duration-200 font-medium text-sm md:text-base h-auto rounded-xl ${
+                            `flex items-center gap-3 md:gap-4 w-full px-3 md:px-4 py-3 md:py-4 text-white/90 hover:bg-white/10 transition-all duration-200 font-medium text-sm md:text-base h-auto rounded-xl backdrop-blur-sm ${
                               isActive 
-                                ? "bg-white/20 text-white shadow-lg border border-white/30 backdrop-blur-sm" 
+                                ? "bg-white/20 text-white shadow-lg border border-white/30 backdrop-blur-md" 
                                 : ""
                             }`
                           }
@@ -110,7 +110,7 @@ export function AppSidebar() {
           <SidebarFooter className="p-3 md:p-4 mt-auto">
             <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 px-1 md:px-2">
               <Avatar className="h-8 w-8 md:h-10 md:w-10">
-                <AvatarFallback className="bg-white/20 text-white text-sm border border-white/30">
+                <AvatarFallback className="bg-white/20 text-white text-sm border border-white/30 backdrop-blur-sm">
                   {user?.email?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -121,7 +121,7 @@ export function AppSidebar() {
             
             <Button 
               onClick={handleSignOut}
-              className="w-full justify-start rounded-xl px-3 md:px-4 py-3 md:py-4 text-white bg-white/10 border border-white/20 hover:bg-white/20 hover:text-white transition-all duration-200 font-medium text-sm md:text-base h-auto backdrop-blur-sm"
+              className="w-full justify-start rounded-xl px-3 md:px-4 py-3 md:py-4 text-white bg-white/10 border border-white/20 hover:bg-white/20 hover:text-white transition-all duration-200 font-medium text-sm md:text-base h-auto backdrop-blur-md"
             >
               <LogOut className="h-5 w-5 md:h-6 md:w-6 shrink-0 mr-2 md:mr-3" />
               <span className="text-sm md:text-base">Sair</span>

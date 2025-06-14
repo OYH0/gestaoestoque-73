@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,8 +33,7 @@ export function Login() {
 
   return (
     <div 
-      className="min-h-screen flex bg-churrasco-cream"
-      style={{ height: '100dvh' }}
+      className="flex items-center justify-center min-h-screen bg-churrasco-cream"
     >
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:flex-1 items-center justify-center p-12">
@@ -63,7 +61,7 @@ export function Login() {
       </div>
       
       {/* Right side - Login form */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-12">
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-12 py-8">
         <div className="w-full max-w-md">
           <Card className="shadow-2xl rounded-3xl overflow-hidden border-0">
             {/* Mobile logo (visible only on small screens) */}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
@@ -72,73 +72,70 @@ export function Dashboard() {
   const { items: estoqueSecoItems } = useEstoqueSecoData();
   const { items: descartaveisItems } = useDescartaveisData();
 
-  // Processar dados para gráfico de barras - todos os tipos de carne
-  const meatTypesData = camaraFriaItems
-    .reduce((acc, item) => {
-      const existing = acc.find(a => a.tipo === item.nome);
-      if (existing) {
-        existing.quantidade += item.quantidade;
-      } else {
-        acc.push({ 
-          tipo: item.nome, 
-          tipoAbrev: abreviarNome(item.nome),
-          quantidade: item.quantidade
-        });
-      }
-      return acc;
-    }, [] as any[])
-    .sort((a, b) => b.quantidade - a.quantidade);
+  // Memorizar processamento dos dados para gráfico de barras
+  const meatTypesDataWithColors = useMemo(() => {
+    const meatTypesData = camaraFriaItems
+      .reduce((acc, item) => {
+        const existing = acc.find(a => a.tipo === item.nome);
+        if (existing) {
+          existing.quantidade += item.quantidade;
+        } else {
+          acc.push({ 
+            tipo: item.nome, 
+            tipoAbrev: abreviarNome(item.nome),
+            quantidade: item.quantidade
+          });
+        }
+        return acc;
+      }, [] as any[])
+      .sort((a, b) => b.quantidade - a.quantidade);
 
-  // Encontrar a quantidade máxima para calcular as cores
-  const maxQuantity = Math.max(...meatTypesData.map(item => item.quantidade));
+    const maxQuantity = Math.max(...meatTypesData.map(item => item.quantidade));
 
-  // Adicionar cores aos dados baseadas na quantidade
-  const meatTypesDataWithColors = meatTypesData.map(item => ({
-    ...item,
-    fill: getColorByQuantity(item.quantidade, maxQuantity)
-  }));
+    return meatTypesData.map(item => ({
+      ...item,
+      fill: getColorByQuantity(item.quantidade, maxQuantity)
+    }));
+  }, [camaraFriaItems]);
 
-  // Debug: log dos dados para verificar
-  console.log('Câmara Fria Items:', camaraFriaItems);
-  console.log('Meat Types Data for Chart:', meatTypesData);
-  console.log('Data has items:', meatTypesData.length > 0);
-  console.log('First item sample:', meatTypesData[0]);
+  // Memorizar processamento do Top 5 carnes
+  const top5MeatUsageWithPercentage = useMemo(() => {
+    const top5MeatUsage = camaraFriaHistorico
+      .filter(item => item.tipo === 'saida')
+      .reduce((acc, item) => {
+        const existing = acc.find(a => a.nome === item.item_nome);
+        if (existing) {
+          existing.totalSaidas += item.quantidade;
+        } else {
+          acc.push({
+            nome: item.item_nome,
+            totalSaidas: item.quantidade
+          });
+        }
+        return acc;
+      }, [] as any[])
+      .sort((a, b) => b.totalSaidas - a.totalSaidas)
+      .slice(0, 5);
 
-  // Top 5 carnes mais utilizadas baseado no histórico real de saídas
-  const top5MeatUsage = camaraFriaHistorico
-    .filter(item => item.tipo === 'saida') // Apenas saídas
-    .reduce((acc, item) => {
-      const existing = acc.find(a => a.nome === item.item_nome);
-      if (existing) {
-        existing.totalSaidas += item.quantidade;
-      } else {
-        acc.push({
-          nome: item.item_nome,
-          totalSaidas: item.quantidade
-        });
-      }
-      return acc;
-    }, [] as any[])
-    .sort((a, b) => b.totalSaidas - a.totalSaidas)
-    .slice(0, 5); // Top 5
+    const totalSaidas = top5MeatUsage.reduce((acc, item) => acc + item.totalSaidas, 0);
 
-  // Calcular o total de saídas para calcular porcentagens
-  const totalSaidas = top5MeatUsage.reduce((acc, item) => acc + item.totalSaidas, 0);
+    return top5MeatUsage.map(item => ({
+      ...item,
+      percentage: totalSaidas > 0 ? ((item.totalSaidas / totalSaidas) * 100).toFixed(1) : 0
+    }));
+  }, [camaraFriaHistorico]);
 
-  // Adicionar porcentagens aos dados
-  const top5MeatUsageWithPercentage = top5MeatUsage.map(item => ({
-    ...item,
-    percentage: totalSaidas > 0 ? ((item.totalSaidas / totalSaidas) * 100).toFixed(1) : 0
-  }));
+  // Memorizar dados de alertas
+  const alertsData = useMemo(() => {
+    const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5));
+    const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5));
+    const temAlertas = carnesBaixoEstoque.length > 0 || estoqueBaixo.length > 0;
 
-  // Dados para alertas de baixo estoque
-  const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5));
-  const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5));
-  
-  const temAlertas = carnesBaixoEstoque.length > 0 || estoqueBaixo.length > 0;
+    return { carnesBaixoEstoque, estoqueBaixo, temAlertas };
+  }, [camaraFriaItems, estoqueSecoItems]);
 
   // Componente do gráfico de barras
-  const BarChartCard = () => (
+  const BarChartCard = useMemo(() => (
     <Card className="shadow-md border-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -206,10 +203,10 @@ export function Dashboard() {
         </div>
       </CardContent>
     </Card>
-  );
+  ), [meatTypesDataWithColors, camaraFriaItems]);
 
   // Componente do gráfico de pizza
-  const PieChartCard = () => (
+  const PieChartCard = useMemo(() => (
     <Card className="shadow-md border-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -260,7 +257,6 @@ export function Dashboard() {
                 </ResponsiveContainer>
               </div>
               
-              {/* Legenda customizada para evitar overflow */}
               <div className="grid grid-cols-1 gap-2 text-xs">
                 {top5MeatUsageWithPercentage.map((item, index) => (
                   <div key={index} className="flex items-center justify-center gap-2">
@@ -286,7 +282,7 @@ export function Dashboard() {
         </div>
       </CardContent>
     </Card>
-  );
+  ), [top5MeatUsageWithPercentage]);
 
   return (
     <div className="space-y-6">
@@ -301,19 +297,19 @@ export function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {isMobile ? (
           <>
-            <PieChartCard />
-            <BarChartCard />
+            {PieChartCard}
+            {BarChartCard}
           </>
         ) : (
           <>
-            <BarChartCard />
-            <PieChartCard />
+            {BarChartCard}
+            {PieChartCard}
           </>
         )}
       </div>
 
       {/* Alertas */}
-      {temAlertas && (
+      {alertsData.temAlertas && (
         <Card className="shadow-md border-0 border-l-4 border-l-orange-500">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-600">
@@ -323,11 +319,11 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {carnesBaixoEstoque.length > 0 && (
+              {alertsData.carnesBaixoEstoque.length > 0 && (
                 <div>
                   <h4 className="font-medium text-sm text-gray-700 mb-2">Câmara Fria - Carnes</h4>
                   <div className="space-y-2">
-                    {carnesBaixoEstoque.map((item, index) => (
+                    {alertsData.carnesBaixoEstoque.map((item, index) => (
                       <div key={index} className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
                         <AlertTriangle className="w-4 h-4 text-red-500" />
                         <div className="flex-1">
@@ -342,11 +338,11 @@ export function Dashboard() {
                 </div>
               )}
               
-              {estoqueBaixo.length > 0 && (
+              {alertsData.estoqueBaixo.length > 0 && (
                 <div>
                   <h4 className="font-medium text-sm text-gray-700 mb-2">Estoque Seco</h4>
                   <div className="space-y-2">
-                    {estoqueBaixo.map((item, index) => (
+                    {alertsData.estoqueBaixo.map((item, index) => (
                       <div key={index} className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
                         <AlertTriangle className="w-4 h-4 text-orange-500" />
                         <div className="flex-1">

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { UnidadeSelector } from '@/components/UnidadeSelector';
 import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
 import { useCamaraRefrigeradaHistorico } from '@/hooks/useCamaraRefrigeradaHistorico';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
@@ -14,8 +15,9 @@ import { CamaraRefrigeradaEmptyState } from '@/components/camara-refrigerada/Cam
 import { CamaraRefrigeradaInstructions } from '@/components/camara-refrigerada/CamaraRefrigeradaInstructions';
 
 export function CamaraRefrigerada() {
-  const { items, loading, updateItemStatus, deleteItem } = useCamaraRefrigeradaData();
-  const { historico, loading: historicoLoading, addHistoricoItem } = useCamaraRefrigeradaHistorico();
+  const [selectedUnidade, setSelectedUnidade] = useState<'juazeiro_norte' | 'fortaleza' | 'todas'>('todas');
+  const { items, loading, updateItemStatus, deleteItem } = useCamaraRefrigeradaData(selectedUnidade);
+  const { historico, loading: historicoLoading, addHistoricoItem } = useCamaraRefrigeradaHistorico(selectedUnidade);
   const { items: camaraFriaItems, addItem: addCamaraFriaItem, updateItemQuantity } = useCamaraFriaData();
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const { canModify } = useUserPermissions();
@@ -67,7 +69,7 @@ export function CamaraRefrigerada() {
             temperatura_ideal: item.temperatura_ideal || -18,
             observacoes: 'Retornado da câmara refrigerada',
             data_entrada: new Date().toISOString().split('T')[0],
-            unidade_item: 'juazeiro_norte',
+            unidade_item: selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade,
             minimo: 5
           });
           
@@ -81,7 +83,7 @@ export function CamaraRefrigerada() {
           unidade: item.unidade,
           categoria: item.categoria,
           tipo: 'volta_freezer',
-          unidade_item: 'juazeiro_norte'
+          unidade_item: selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade
         });
 
         console.log('✅ Histórico registrado');
@@ -111,7 +113,7 @@ export function CamaraRefrigerada() {
         unidade: item.unidade,
         categoria: item.categoria,
         tipo: 'retirada',
-        unidade_item: 'juazeiro_norte'
+        unidade_item: selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade
       });
     }
     deleteItem(id);
@@ -135,6 +137,11 @@ export function CamaraRefrigerada() {
 
   return (
     <div className="space-y-6">
+      <UnidadeSelector 
+        selectedUnidade={selectedUnidade}
+        onUnidadeChange={setSelectedUnidade}
+      />
+
       <CamaraRefrigeradaHeader 
         items={items}
         historico={historico}

@@ -15,9 +15,10 @@ export interface CamaraRefrigeradaItem {
   data_entrada?: string;
   temperatura_ideal?: number;
   observacoes?: string;
+  unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
-export function useCamaraRefrigeradaData() {
+export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas') {
   const [items, setItems] = useState<CamaraRefrigeradaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -26,10 +27,17 @@ export function useCamaraRefrigeradaData() {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('camara_refrigerada_items')
         .select('*')
         .order('nome');
+
+      // Aplicar filtro por unidade se não for "todas"
+      if (selectedUnidade && selectedUnidade !== 'todas') {
+        query = query.eq('unidade', selectedUnidade);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -38,12 +46,13 @@ export function useCamaraRefrigeradaData() {
         id: item.id,
         nome: item.nome,
         quantidade: item.quantidade,
-        unidade: item.unidade,
+        unidade: item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza' ? 'pç' : item.unidade,
         categoria: item.categoria,
         status: item.status as 'descongelando' | 'pronto',
         data_entrada: item.data_entrada,
         temperatura_ideal: item.temperatura_ideal,
         observacoes: item.observacoes,
+        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
       }));
       
       setItems(mappedItems);
@@ -63,12 +72,15 @@ export function useCamaraRefrigeradaData() {
     if (!user) return;
 
     try {
+      const unidadeParaSalvar = newItem.unidade_item || 'juazeiro_norte';
+      
       const { data, error } = await supabase
         .from('camara_refrigerada_items')
         .insert([{ 
           ...newItem, 
           user_id: user.id,
-          status: newItem.status || 'descongelando'
+          status: newItem.status || 'descongelando',
+          unidade: unidadeParaSalvar
         }])
         .select()
         .single();
@@ -80,12 +92,13 @@ export function useCamaraRefrigeradaData() {
         id: data.id,
         nome: data.nome,
         quantidade: data.quantidade,
-        unidade: data.unidade,
+        unidade: data.unidade === 'juazeiro_norte' || data.unidade === 'fortaleza' ? 'pç' : data.unidade,
         categoria: data.categoria,
         status: data.status as 'descongelando' | 'pronto',
         data_entrada: data.data_entrada,
         temperatura_ideal: data.temperatura_ideal,
         observacoes: data.observacoes,
+        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
       setItems(prev => [...prev, mappedItem]);
@@ -151,7 +164,7 @@ export function useCamaraRefrigeradaData() {
 
   useEffect(() => {
     fetchItems();
-  }, [user]);
+  }, [user, selectedUnidade]);
 
   return {
     items,

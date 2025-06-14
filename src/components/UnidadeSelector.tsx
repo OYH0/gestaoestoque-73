@@ -22,26 +22,23 @@ export function UnidadeSelector({ selectedUnidade, onUnidadeChange }: UnidadeSel
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-600">Unidade:</span>
-      <Select value={selectedUnidade} onValueChange={onUnidadeChange}>
-        <SelectTrigger className="w-48">
-          <SelectValue>
-            {getUnidadeLabel(selectedUnidade)}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="todas">
-            Todas as Unidades
-          </SelectItem>
-          <SelectItem value="juazeiro_norte">
-            Juazeiro do Norte
-          </SelectItem>
-          <SelectItem value="fortaleza">
-            Fortaleza
-          </SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+    <Select value={selectedUnidade} onValueChange={onUnidadeChange}>
+      <SelectTrigger className="w-48">
+        <SelectValue placeholder="Selecione a unidade">
+          {getUnidadeLabel(selectedUnidade)}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="todas">
+          Todas as Unidades
+        </SelectItem>
+        <SelectItem value="juazeiro_norte">
+          Juazeiro do Norte
+        </SelectItem>
+        <SelectItem value="fortaleza">
+          Fortaleza
+        </SelectItem>
+      </SelectContent>
+    </Select>
   );
 }

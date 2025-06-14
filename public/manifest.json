@@ -1,0 +1,26 @@
+
+{
+  "name": "Sistema de Gestão de Estoque - Companhia do Churrasco",
+  "short_name": "Gestão Estoque",
+  "description": "Controle inteligente e eficiente do seu estoque, desde a câmara fria até os descartáveis.",
+  "theme_color": "#dc2626",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/lovable-uploads/6634b9e0-aec5-430d-a5cb-0a64ce6b5f12.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/lovable-uploads/6634b9e0-aec5-430d-a5cb-0a64ce6b5f12.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ]
+}

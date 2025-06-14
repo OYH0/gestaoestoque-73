@@ -41,7 +41,7 @@ export function Login() {
           backgroundImage: "url('/lovable-uploads/dec7bb0c-8b1d-4d76-bfb6-ecd835292847.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          filter: "blur(2px)",
+          filter: "blur(6px)",
         }}
       />
       {/* Overlay para escurecer e garantir contraste */}

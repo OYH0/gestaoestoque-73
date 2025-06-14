@@ -15,10 +15,10 @@ const config: CapacitorConfig = {
     },
   },
   ios: {
-    icon: 'public/lovable-uploads/ae9f1c81-a4aa-4f64-9118-91ed2cdd5703.png'
+    icon: 'public/lovable-uploads/97e0e4b2-6513-45d2-9a2b-dca5bc027a48.png'
   },
   android: {
-    icon: 'public/lovable-uploads/ae9f1c81-a4aa-4f64-9118-91ed2cdd5703.png'
+    icon: 'public/lovable-uploads/97e0e4b2-6513-45d2-9a2b-dca5bc027a48.png'
   }
 };
 

@@ -28,7 +28,7 @@ export function CamaraFriaAlerts({ itemsBaixoEstoque }: CamaraFriaAlertsProps) {
             <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded border">
               <span className="font-medium text-sm">{item.nome}</span>
               <span className="text-red-600 font-medium text-sm">
-                Estoque atual: {item.quantidade}pç | Mínimo: {item.minimo || 0}pç
+                Estoque: {item.quantidade}pç
               </span>
             </div>
           ))}

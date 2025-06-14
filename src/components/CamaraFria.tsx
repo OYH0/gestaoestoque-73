@@ -374,7 +374,7 @@ export default function CamaraFria() {
           <Button 
             variant="outline" 
             size="sm" 
-            className="w-fit text-green-600 border-green-200 hover:bg-green-50"
+            className="w-fit text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700"
             onClick={() => setShowScanner(true)}
           >
             <QrCode className="w-4 h-4 mr-2" />
@@ -385,7 +385,7 @@ export default function CamaraFria() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-fit text-blue-600 border-blue-200 hover:bg-blue-50"
+              className="w-fit text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-800"
               onClick={() => setShowTransferDialog(true)}
             >
               <ArrowRight className="w-4 h-4 mr-2" />

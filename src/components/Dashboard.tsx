@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -317,7 +318,7 @@ export function Dashboard() {
                         <div className="flex-1">
                           <p className="text-sm font-medium">{item.nome}</p>
                           <p className="text-xs text-muted-foreground">
-                            Estoque atual: {item.quantidade}{item.unidade} | Mínimo: {item.minimo || 5}{item.unidade}
+                            Estoque atual: {item.quantidade}pç | Mínimo: {item.minimo || 5}pç
                           </p>
                         </div>
                       </div>

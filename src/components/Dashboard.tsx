@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -48,7 +47,7 @@ const abreviarNome = (nome: string): string => {
     'Alcatra com Maminha': 'Alcatra c/ Mam.',
     'Capa de Filé G': 'Capa Filé G',
     'Linguiça Mista': 'Linguiça Mista',
-    'Costelão Bovino 9': 'Costelão Bov.',
+    'Costelão Bovino 9': 'Costelão Bovino',
     'Cupim': 'Cupim',
     'Contra Filé': 'Contra Filé',
     'Coxinha da Asa': 'Coxinha Asa',

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -148,75 +149,6 @@ export function Dashboard() {
 
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gráfico de Barras Horizontais - Todos os tipos de carne e quantidades */}
-        <Card className="shadow-md border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
-              Estoque por Tipo de Carne
-            </CardTitle>
-            <CardDescription>
-              Quantidade disponível de cada tipo de carne (pç)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[600px] w-full">
-              {meatTypesDataWithColors && meatTypesDataWithColors.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={meatTypesDataWithColors} 
-                    layout="vertical"
-                    margin={{ 
-                      top: 20, 
-                      right: 20, 
-                      left: 10, 
-                      bottom: 20 
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" />
-                    <XAxis 
-                      type="number"
-                      domain={[0, 'dataMax + 10']}
-                      tick={{ fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                      tickLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <YAxis 
-                      type="category"
-                      dataKey="tipoAbrev" 
-                      width={50}
-                      tick={{ fontSize: 10 }}
-                      interval={0}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                      tickLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <Tooltip 
-                      formatter={(value) => [`${value}pç`, 'Quantidade']}
-                      labelFormatter={(label) => {
-                        const item = meatTypesDataWithColors.find(d => d.tipoAbrev === label);
-                        return item ? item.tipo : label;
-                      }}
-                    />
-                    <Bar 
-                      dataKey="quantidade" 
-                      stroke="#ffffff"
-                      strokeWidth={1}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  <div className="text-center">
-                    <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum item na câmara fria</p>
-                    <p className="text-xs mt-1">Total de itens: {camaraFriaItems?.length || 0}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Gráfico de Pizza - Top 5 carnes mais utilizadas baseado no histórico real */}
         <Card className="shadow-md border-0">
           <CardHeader>
@@ -288,6 +220,75 @@ export function Dashboard() {
                   <div className="text-center">
                     <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p>Nenhuma movimentação de saída registrada</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Gráfico de Barras Horizontais - Todos os tipos de carne e quantidades */}
+        <Card className="shadow-md border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-blue-500" />
+              Estoque por Tipo de Carne
+            </CardTitle>
+            <CardDescription>
+              Quantidade disponível de cada tipo de carne (pç)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[600px] w-full">
+              {meatTypesDataWithColors && meatTypesDataWithColors.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
+                    data={meatTypesDataWithColors} 
+                    layout="vertical"
+                    margin={{ 
+                      top: 20, 
+                      right: 20, 
+                      left: 10, 
+                      bottom: 20 
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" />
+                    <XAxis 
+                      type="number"
+                      domain={[0, 'dataMax + 10']}
+                      tick={{ fontSize: 12 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                      tickLine={{ stroke: '#e5e7eb' }}
+                    />
+                    <YAxis 
+                      type="category"
+                      dataKey="tipoAbrev" 
+                      width={50}
+                      tick={{ fontSize: 10 }}
+                      interval={0}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                      tickLine={{ stroke: '#e5e7eb' }}
+                    />
+                    <Tooltip 
+                      formatter={(value) => [`${value}pç`, 'Quantidade']}
+                      labelFormatter={(label) => {
+                        const item = meatTypesDataWithColors.find(d => d.tipoAbrev === label);
+                        return item ? item.tipo : label;
+                      }}
+                    />
+                    <Bar 
+                      dataKey="quantidade" 
+                      stroke="#ffffff"
+                      strokeWidth={1}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <div className="text-center">
+                    <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum item na câmara fria</p>
+                    <p className="text-xs mt-1">Total de itens: {camaraFriaItems?.length || 0}</p>
                   </div>
                 </div>
               )}

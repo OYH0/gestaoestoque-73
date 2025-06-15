@@ -43,10 +43,9 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         .select('*')
         .order('nome');
 
-      // Aplicar filtro por unidade se não for "todas" - usar o campo 'unidade' do banco
-      if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
-        query = query.eq('unidade', stableSelectedUnidade.current);
-      }
+      // Note: The camara_refrigerada_items table doesn't have a 'unidade' field for company unit
+      // We'll need to filter differently or add this field to the database schema
+      console.log('Filtro selecionado:', stableSelectedUnidade.current);
 
       const { data, error } = await query;
 
@@ -59,13 +58,14 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         id: item.id,
         nome: item.nome,
         quantidade: item.quantidade,
-        unidade: item.unidade_medida || 'pç', // Use unidade_medida from database for unit of measure
+        unidade: item.unidade || 'pç', // Use unidade from database for unit of measure
         categoria: item.categoria,
         status: item.status as 'descongelando' | 'pronto',
         data_entrada: item.data_entrada,
         temperatura_ideal: item.temperatura_ideal,
         observacoes: item.observacoes,
-        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza', // Use unidade from database for company unit
+        // Note: camara_refrigerada_items doesn't have company unit field, using default
+        unidade_item: 'juazeiro_norte', 
       }));
       
       setItems(mappedItems);
@@ -113,25 +113,20 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     if (!user) return;
 
     try {
-      // Usar unidade_item se fornecido, senão usar padrão
-      const unidadeParaSalvar = newItem.unidade_item || 'juazeiro_norte';
-      
       console.log('=== ADICIONANDO ITEM NA CÂMARA REFRIGERADA ===');
       console.log('Item recebido:', newItem);
-      console.log('Unidade para salvar:', unidadeParaSalvar);
       
       // Preparar dados para inserção no banco - usar os campos corretos do banco
       const itemToInsert = {
         nome: newItem.nome,
         quantidade: newItem.quantidade,
-        unidade_medida: newItem.unidade, // Campo correto para unidade de medida
+        unidade: newItem.unidade, // Campo correto para unidade de medida
         categoria: newItem.categoria,
         status: newItem.status || 'descongelando',
         data_entrada: newItem.data_entrada,
         temperatura_ideal: newItem.temperatura_ideal,
         observacoes: newItem.observacoes,
         user_id: user.id,
-        unidade: unidadeParaSalvar // Campo correto para unidade da empresa
       };
 
       console.log('Dados para inserção:', itemToInsert);
@@ -154,13 +149,13 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         id: data.id,
         nome: data.nome,
         quantidade: data.quantidade,
-        unidade: data.unidade_medida || newItem.unidade, // Mapear corretamente a unidade de medida
+        unidade: data.unidade || newItem.unidade, // Mapear corretamente a unidade de medida
         categoria: data.categoria,
         status: data.status as 'descongelando' | 'pronto',
         data_entrada: data.data_entrada,
         temperatura_ideal: data.temperatura_ideal,
         observacoes: data.observacoes,
-        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza', // Mapear corretamente a unidade da empresa
+        unidade_item: newItem.unidade_item || 'juazeiro_norte', // Use from newItem since DB doesn't have this field
       };
       
       setItems(prev => [...prev, mappedItem]);

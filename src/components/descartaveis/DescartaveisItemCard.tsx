@@ -23,6 +23,13 @@ function getUnidadeLabel(unidade: string | undefined) {
   }
 }
 
+function getUnidadeFisicaLabel(unidade: string | undefined) {
+  if (!unidade) return '';
+  if (unidade === 'fortaleza') return 'Fortaleza';
+  if (unidade === 'juazeiro_norte') return 'Juazeiro do Norte';
+  return unidade;
+}
+
 export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: DescartaveisItemCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.quantidade);
@@ -75,6 +82,7 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
               {item.unidade_item && getUnidadeLabel(item.unidade_item) && (
                 <p>Unidade: <span className="font-medium">{getUnidadeLabel(item.unidade_item)}</span></p>
               )}
+              <p>Unidade física: <span className="font-medium">{getUnidadeFisicaLabel(item.unidade)}</span></p>
             </div>
 
             {item.observacoes && (

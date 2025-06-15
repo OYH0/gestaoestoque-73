@@ -1,7 +1,7 @@
-
 import { useState } from 'react';
 import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
+import { toast } from '@/hooks/use-toast';
 
 export interface QRCodeData {
   id: string;
@@ -11,7 +11,7 @@ export interface QRCodeData {
   lote?: string;
 }
 
-const LOGO_URL = '/public/churrasco-logo.png'; // Altere para o caminho correto se necessário
+const LOGO_URL = '/churrasco-logo.png'; // deve estar em public/churrasco-logo.png
 
 export function useQRCodeGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -79,85 +79,81 @@ export function useQRCodeGenerator() {
   const generateQRCodePDF = async (qrCodes: QRCodeData[]) => {
     setIsGenerating(true);
 
+    let logoImage: string | undefined = undefined;
+    let logoErro = false;
+
     try {
-      // Define o tamanho da etiqueta (60mm x 50mm em pontos, 1mm ~ 2.83465pt)
+      // Corrigir fetch da logo (sem /public no caminho)
+      const resp = await fetch(LOGO_URL);
+      if (!resp.ok) throw new Error('Logo não encontrada');
+      const blob = await resp.blob();
+      logoImage = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      logoErro = true;
+      logoImage = undefined;
+      // Não bloqueia geração, apenas avisa usuário
+      toast({
+        title: "Atenção",
+        description: "Logo da Companhia do Churrasco não foi encontrada ou está corrompida. Etiquetas serão geradas sem a logo.",
+        variant: "destructive"
+      });
+    }
+
+    try {
+      // Medidas
       const labelWidthMM = 60;
       const labelHeightMM = 50;
       const labelWidth = labelWidthMM * 2.83465;
       const labelHeight = labelHeightMM * 2.83465;
-
-      // Carrega a logo da empresa como base64
-      let logoImage: string | undefined;
-      try {
-        // Precisa que a logo esteja no public/ e se possa acessar via fetch.
-        const resp = await fetch(LOGO_URL);
-        const blob = await resp.blob();
-        logoImage = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        });
-      } catch (e) {
-        console.error('Erro ao carregar logo da empresa:', e);
-        logoImage = undefined;
-      }
+      const margin = 16;
 
       for (let i = 0; i < qrCodes.length; i++) {
         const qrData = qrCodes[i];
-        // Cria uma nova página por etiqueta
         const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'pt',
           format: [labelWidth, labelHeight],
         });
-
-        // MARGENS e medidas
-        const margin = 16;
         let y = margin;
 
-        // Nome do produto (destaque)
+        // Nome produto
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(17);
         pdf.text(qrData.nome, margin, y + 10);
 
-        // Linha de status/categoria + quantidade/kg (exemplo suposto: 1kg)
+        // Status/categoria
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(11);
         let statusText = '';
         switch (qrData.tipo) {
-          case 'CF':
-            statusText = 'RESFRIADO / DESCONGELANDO';
-            break;
-          case 'ES':
-            statusText = 'ESTOQUE SECO';
-            break;
-          case 'DESC':
-            statusText = 'DESCARTÁVEIS';
-            break;
-          default:
-            statusText = '';
+          case 'CF': statusText = 'RESFRIADO / DESCONGELANDO'; break;
+          case 'ES': statusText = 'ESTOQUE SECO'; break;
+          case 'DESC': statusText = 'DESCARTÁVEIS'; break;
         }
         pdf.setTextColor('#111');
         pdf.text(statusText, margin, y + 32);
 
-        // Peso ou quantidade fictício na direita (ajuste para sua regra/dado real)
+        // Peso/quantidade fictício
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(14);
-        pdf.text('1 kg', labelWidth - margin - 36, y + 32); // Você pode ajustar '1 kg' para outro campo se existir
+        pdf.text('1 kg', labelWidth - margin - 36, y + 32);
 
-        // Linha horizontal separadora
+        // Linha separadora
         pdf.setDrawColor(60, 60, 60);
         pdf.setLineWidth(0.5);
         pdf.line(margin, y + 38, labelWidth - margin, y + 38);
 
         y += 48;
 
-        // Bloco de datas e info
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9);
+        // Bloco de datas/info
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9);
         pdf.text('VAL. ORIGINAL:', margin, y);
         pdf.setFont('helvetica', 'normal');
-        pdf.text('21/04/2025', margin + 78, y); // Exemplo, ajuste conforme disponível
+        pdf.text('21/04/2025', margin + 78, y);
 
         pdf.setFont('helvetica', 'bold');
         pdf.text('MANIPULAÇÃO:', margin, y + 14);
@@ -179,14 +175,14 @@ export function useQRCodeGenerator() {
         pdf.setFont('helvetica', 'normal');
         pdf.text('358', margin + 78, y + 56);
 
-        // Linha horizontal separadora 2
+        // Linha separadora 2
         pdf.setDrawColor(180, 180, 180);
         pdf.setLineWidth(0.5);
         pdf.line(margin, y + 62, labelWidth - margin, y + 62);
 
         y = y + 76;
 
-        // Dados do responsável e empresa
+        // Dados responsável/empresa
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(9);
         pdf.text('RESP.: LUCIANA', margin, y);
@@ -199,7 +195,7 @@ export function useQRCodeGenerator() {
         pdf.text('SÃO PAULO - SP', margin, y + 42);
         pdf.text('CEP: 05435-030', margin + 100, y + 32);
 
-        // Código #TXXXX
+        // Código TXXXX
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(11);
         pdf.setTextColor('#12126a');
@@ -207,31 +203,36 @@ export function useQRCodeGenerator() {
 
         pdf.setTextColor('#111');
 
-        // QR Code
+        // QRCode como sempre
         const qrCodeDataURL = await QRCode.toDataURL(qrData.id, {
           width: 240,
           margin: 1,
         });
-        // O QR deve ficar no canto inferior direito da etiqueta
         const qrSide = 62;
         pdf.addImage(qrCodeDataURL, 'PNG', labelWidth - margin - qrSide, labelHeight - margin - qrSide, qrSide, qrSide);
 
-        // Logo da empresa
+        // Logo, só se OK
         if (logoImage) {
-          // Logo fica no canto superior direito
-          pdf.addImage(logoImage, 'PNG', labelWidth - 50, margin, 38, 38);
+          try {
+            pdf.addImage(logoImage, 'PNG', labelWidth - 50, margin, 38, 38);
+          } catch (e) {
+            // Se ainda assim der erro, não quebra o fluxo
+            console.error("Erro ao adicionar a logo na etiqueta:", e);
+          }
         }
-
-        // Apenas salva cada etiqueta separada (caso prefira um PDF únido, adapte para fazer addPage)
         const fileName = `etiqueta-qrcode-${qrData.nome.replace(/\s+/g, '-').toLowerCase()}-${qrData.id.slice(-6)}.pdf`;
         pdf.save(fileName);
       }
-
       setIsGenerating(false);
       return { success: true };
     } catch (error) {
       setIsGenerating(false);
       console.error('❌ Erro ao gerar etiqueta PDF:', error);
+      toast({
+        title: "Erro ao gerar etiquetas",
+        description: "Ocorreu um problema ao gerar as etiquetas.",
+        variant: "destructive"
+      });
       return { success: false, error };
     }
   };

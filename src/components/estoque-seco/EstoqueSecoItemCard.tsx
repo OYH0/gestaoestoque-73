@@ -87,7 +87,7 @@ export function EstoqueSecoItemCard({ item, onUpdateQuantity, onDelete }: Estoqu
                   <b>{new Date(item.data_validade).toLocaleDateString('pt-BR')}</b>
                 </span></p>
               )}
-              <p>Unidade física: <span className="font-medium">{getUnidadeFisicaLabel(item.unidade)}</span></p>
+              <p>Unidade: <span className="font-medium">{getUnidadeFisicaLabel(item.unidade)}</span></p>
             </div>
 
             {item.observacoes && (

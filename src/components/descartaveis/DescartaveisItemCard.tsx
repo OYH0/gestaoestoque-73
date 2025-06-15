@@ -82,7 +82,7 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
               {item.unidade_item && getUnidadeLabel(item.unidade_item) && (
                 <p>Unidade: <span className="font-medium">{getUnidadeLabel(item.unidade_item)}</span></p>
               )}
-              <p>Unidade física: <span className="font-medium">{getUnidadeFisicaLabel(item.unidade)}</span></p>
+              <p>Unidade: <span className="font-medium">{getUnidadeFisicaLabel(item.unidade)}</span></p>
             </div>
 
             {item.observacoes && (

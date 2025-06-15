@@ -77,33 +77,59 @@ export function useQRCodeGenerator() {
     return qrCodes;
   };
 
-  // NOVO: gerar um PDF ÚNICO com todas etiquetas por página
+  // Agora: cada etiqueta terá 100x150mm (convertido para pontos)
   const generateQRCodePDF = async (qrCodes: QRCodeData[]) => {
     setIsGenerating(true);
 
     const MM_TO_PT = 2.83465;
-    const labelWidthMM = 60;
-    const labelHeightMM = 50;
-    const labelWidth = labelWidthMM * MM_TO_PT;
-    const labelHeight = labelHeightMM * MM_TO_PT;
-    const margin = 8;
-    const paddingBetween = 6;
+    // 💡 Atualizado para 100mm x 150mm etiquetas!
+    const labelWidthMM = 100;
+    const labelHeightMM = 150;
+    const labelWidth = labelWidthMM * MM_TO_PT; // 283.465 pt
+    const labelHeight = labelHeightMM * MM_TO_PT; // 425.1975 pt
+    const margin = 10; // espaço interno na etiqueta, em pt
+    const paddingBetween = 8; // espaço entre etiquetas
 
-    // Layout da folha (A4): 210 x 297 mm
+    // Layout da folha (A4): 210 x 297 mm (595.276 x 841.89 pt)
     const pageWidth = 210 * MM_TO_PT;
     const pageHeight = 297 * MM_TO_PT;
 
-    // Quantas colunas/linhas cabem em uma página?
-    // Deixar uns 12mm de margem lateral e topo/baixo
-    const horizontalMargin = 12 * MM_TO_PT;
-    const verticalMargin = 12 * MM_TO_PT;
+    // Margens externas
+    const horizontalMargin = 6 * MM_TO_PT;
+    const verticalMargin = 6 * MM_TO_PT;
+
+    // Área útil
     const usableWidth = pageWidth - 2 * horizontalMargin;
     const usableHeight = pageHeight - 2 * verticalMargin;
-    const columns = Math.floor((usableWidth + paddingBetween) / (labelWidth + paddingBetween)); // ex: 2
-    const rows = Math.floor((usableHeight + paddingBetween) / (labelHeight + paddingBetween));  // ex: 3
+
+    // Novo: para 100x150mm, só cabe 1 etiqueta por linha em A4 na horizontal, 
+    // e no máximo 1 por coluna se for retrato.
+    // Melhor usar orientação landscape p/ caber mais etiquetas por folha.
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: 'a4',
+    });
+
+    const landscapePageWidth = pageHeight;  // 841.89 pt (A4 landscape)
+    const landscapePageHeight = pageWidth;  // 595.276 pt
+
+    // Cálculo das linhas/colunas POR FOLHA
+    const usableLandscapeWidth = landscapePageWidth - 2 * horizontalMargin;
+    const usableLandscapeHeight = landscapePageHeight - 2 * verticalMargin;
+
+    // Exemplo: cabem no máximo 2 colunas (200mm + espaço), 3 linhas (450mm)
+    const columns = Math.max(
+      1,
+      Math.floor((usableLandscapeWidth + paddingBetween) / (labelWidth + paddingBetween))
+    );
+    const rows = Math.max(
+      1,
+      Math.floor((usableLandscapeHeight + paddingBetween) / (labelHeight + paddingBetween))
+    );
     const labelsPerPage = columns * rows;
 
-    // Carrega logo se houver
+    // Garantir logo opcional
     let logoImage: string | undefined = undefined;
     try {
       const resp = await fetch(LOGO_URL);
@@ -120,68 +146,62 @@ export function useQRCodeGenerator() {
     }
 
     try {
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'pt',
-        format: 'a4'
-      });
-
       for (let i = 0; i < qrCodes.length; i++) {
         const qrData = qrCodes[i];
         const labelIdxInPage = i % labelsPerPage;
         const pageIdx = Math.floor(i / labelsPerPage);
 
-        // Calcular posição (col, row)
+        // Add página se necessário (não na primeira)
+        if (i !== 0 && labelIdxInPage === 0) {
+          pdf.addPage();
+        }
+
+        // Posição da etiqueta
         const row = Math.floor(labelIdxInPage / columns);
         const col = labelIdxInPage % columns;
         const x = horizontalMargin + col * (labelWidth + paddingBetween);
         const y = verticalMargin + row * (labelHeight + paddingBetween);
 
-        // Adiciona nova página se necessário (skip primeira)
-        if (i !== 0 && labelIdxInPage === 0) {
-          pdf.addPage();
-        }
-
-        // Desenha borda da etiqueta (opcional, para visual)
-        pdf.setLineWidth(0.1);
+        // Bordas de referência
+        pdf.setLineWidth(0.5);
         pdf.setDrawColor(210, 210, 210);
         pdf.rect(x, y, labelWidth, labelHeight);
 
         let currY = y + margin;
 
-        // Nome do produto (quebra até 23 chars)
+        // Nome produto (quebra até 32 chars)
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
-        const nomeMaxLen = 23;
+        pdf.setFontSize(20);
+        const nomeMaxLen = 32;
         const nomeProduto = qrData.nome.length > nomeMaxLen
           ? qrData.nome.slice(0, nomeMaxLen) + '...'
           : qrData.nome;
-        pdf.text(nomeProduto, x + margin, currY + 8);
+        pdf.text(nomeProduto, x + margin, currY + 18);
 
-        // Tipo (em cima do QR)
+        // Tipo
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8.2);
+        pdf.setFontSize(16);
         let statusText = '';
         switch (qrData.tipo) {
           case 'CF': statusText = 'CÂMARA FRIA'; break;
           case 'ES': statusText = 'ESTOQUE SECO'; break;
           case 'DESC': statusText = 'DESCARTÁVEIS'; break;
         }
-        pdf.text(statusText, x + margin, currY + 20);
+        pdf.text(statusText, x + margin, currY + 38);
 
-        // Peso/qtde (canto superior direito)
+        // Peso (topo direito)
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(10);
-        pdf.text('1 kg', x + labelWidth - margin - 27, currY + 20);
+        pdf.setFontSize(15);
+        pdf.text('1 kg', x + labelWidth - margin - 50, currY + 38);
 
         // Linha divisória
         pdf.setDrawColor(80, 80, 80);
-        pdf.setLineWidth(0.2);
-        pdf.line(x + margin, currY + 23, x + labelWidth - margin, currY + 23);
+        pdf.setLineWidth(0.6);
+        pdf.line(x + margin, currY + 55, x + labelWidth - margin, currY + 55);
 
-        currY += 27;
+        currY += 65;
 
-        // Bloco lateral de informações
+        // Info bloco lateral
         const infos1 = [
           { label: 'VAL. ORIGINAL:', value: '21/04/2025' },
           { label: 'MANIPULAÇÃO:', value: '09/04/2025 - 12:59' },
@@ -190,17 +210,17 @@ export function useQRCodeGenerator() {
           { label: 'SIF:', value: '358' }
         ];
         let lineY = 0;
-        pdf.setFontSize(7.5);
+        pdf.setFontSize(12.5);
         for (const info of infos1) {
           pdf.setFont('helvetica', 'bold');
           pdf.text(info.label, x + margin, currY + lineY);
           pdf.setFont('helvetica', 'normal');
-          pdf.text(info.value, x + margin + 68, currY + lineY);
-          lineY += 9;
+          pdf.text(info.value, x + margin + 120, currY + lineY);
+          lineY += 19;
         }
 
-        // QR code (lado direito, metade da altura)
-        const qrSide = 46;
+        // QR code (lado direito)
+        const qrSide = 100;
         const qrX = x + labelWidth - margin - qrSide;
         const qrY = currY;
 
@@ -210,40 +230,40 @@ export function useQRCodeGenerator() {
         });
         pdf.addImage(qrCodeDataURL, 'PNG', qrX, qrY, qrSide, qrSide);
 
-        // Linha divisória 2
-        const afterInfoY = Math.max(currY + lineY, qrY + qrSide) + 3;
+        // Segunda linha divisória
+        const afterInfoY = Math.max(currY + lineY, qrY + qrSide) + 8;
         pdf.setDrawColor(180, 180, 180);
-        pdf.setLineWidth(0.2);
+        pdf.setLineWidth(0.5);
         pdf.line(x + margin, afterInfoY, x + labelWidth - margin, afterInfoY);
 
-        let rodapeY = afterInfoY + 7;
+        let rodapeY = afterInfoY + 17;
 
         // Bloco empresa
-        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5);
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(12.5);
         pdf.text('RESP.: LUCIANA', x + margin, rodapeY + 2);
 
         pdf.setFont('helvetica', 'normal');
-        pdf.text('RESTAURANTE SUFLEX', x + margin, rodapeY + 11);
-        pdf.setFontSize(6.7);
-        pdf.text('CNPJ: 12.345.678.0001-12', x + margin, rodapeY + 18);
-        pdf.text('RUA PURPURINA, 400', x + margin, rodapeY + 24);
-        pdf.text('SÃO PAULO - SP', x + margin, rodapeY + 30);
-        pdf.text('CEP: 05435-030', x + margin + 80, rodapeY + 24);
+        pdf.text('RESTAURANTE SUFLEX', x + margin, rodapeY + 22);
+        pdf.setFontSize(11.7);
+        pdf.text('CNPJ: 12.345.678.0001-12', x + margin, rodapeY + 38);
+        pdf.text('RUA PURPURINA, 400', x + margin, rodapeY + 52);
+        pdf.text('SÃO PAULO - SP', x + margin, rodapeY + 64);
+        pdf.text('CEP: 05435-030', x + margin + 120, rodapeY + 52);
 
-        rodapeY += 34;
+        rodapeY += 72;
 
-        // Código azul final
+        // Código azul destacado
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9.7);
+        pdf.setFontSize(17);
         pdf.setTextColor(32,48,140);
         pdf.text(`#${qrData.id.slice(-6).toUpperCase()}`, x + margin, rodapeY);
         pdf.setTextColor(0,0,0);
 
-        // Logo
+        // Logo canto direito
         if (logoImage) {
           try {
-            pdf.addImage(logoImage, 'PNG', x + labelWidth - 42, y + margin, 24, 24);
-          } catch { /* não trava */ }
+            pdf.addImage(logoImage, 'PNG', x + labelWidth - 60, y + margin, 38, 38);
+          } catch { /* sem erro bloqueante */ }
         }
       }
 

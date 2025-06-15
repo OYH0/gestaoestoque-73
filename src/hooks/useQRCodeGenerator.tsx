@@ -141,7 +141,6 @@ export function useQRCodeGenerator() {
         const qrData = qrCodes[i];
         const labelIdxInPage = i % labelsPerPage;
 
-        // Add página se necessário
         if (i !== 0 && labelIdxInPage === 0) {
           pdf.addPage();
         }
@@ -153,18 +152,16 @@ export function useQRCodeGenerator() {
         const y = row * (labelHeight + spacingY) + spacingY / 2;
 
         // Layout principal
-        const logoBoxWidth = labelWidth * 0.45; // AUMENTA para ~45% do bloco, ocupando mais espaço para a logo
+        const logoBoxWidth = labelWidth * 0.45; // 45% do bloco
         const qrBoxWidth = labelWidth - logoBoxWidth;
         let currY = y + marginY;
 
         // Exibe a logo maior, centralizada e sem esticar/cortar
         if (logoImage) {
           try {
-            // Permite uma altura de logo maior (até metade da altura da etiqueta)
-            const maxLogoW = logoBoxWidth - 8; // um pouco menos de padding
-            const maxLogoH = labelHeight * 0.5; // até metade da altura
+            const maxLogoW = logoBoxWidth - 8;
+            const maxLogoH = labelHeight * 0.5;
 
-            // Criar img temporária p/detectar proporção
             const img = new window.Image();
             await new Promise((resolve) => {
               img.onload = resolve;
@@ -173,25 +170,22 @@ export function useQRCodeGenerator() {
 
             let renderW = maxLogoW, renderH = maxLogoH;
             if (img.width / img.height > maxLogoW / maxLogoH) {
-              // mais "comprido": limita largura, ajusta altura
               renderW = maxLogoW;
               renderH = img.height * (maxLogoW / img.width);
             } else {
-              // mais "alto": limita altura, ajusta largura
               renderH = maxLogoH;
               renderW = img.width * (maxLogoH / img.height);
             }
-            // Centralizar
             const logoX = x + (logoBoxWidth - renderW) / 2;
             const logoY = currY + (maxLogoH - renderH) / 2;
 
             pdf.addImage(logoImage, 'PNG', logoX, logoY, renderW, renderH, undefined, 'FAST');
-            currY += maxLogoH + 4;
+            currY += maxLogoH + 14; // +14 para afastar mais o texto da logo (aqui está a mudança)
           } catch {
-            currY += labelHeight * 0.5 + 4;
+            currY += labelHeight * 0.5 + 14; // mantém distância extra mesmo em caso de erro
           }
         } else {
-          currY += labelHeight * 0.5 + 4;
+          currY += labelHeight * 0.5 + 14;
         }
 
         // Nome do produto (em negrito, centralizado)
@@ -225,7 +219,7 @@ export function useQRCodeGenerator() {
           currY += 15;
         }
 
-        // Unidade (exceto juazeiro_norte), se existir e diferente
+        // Unidade (exceto juazeiro_norte)
         if (qrData.unidade && qrData.unidade !== 'juazeiro_norte') {
           pdf.setFont('helvetica', 'italic');
           pdf.setFontSize(10);
@@ -262,9 +256,7 @@ export function useQRCodeGenerator() {
           margin: 0,
         });
         pdf.addImage(qrCodeDataURL, 'PNG', qrX, qrY, qrSide, qrSide);
-
         // NÃO exibe nenhum texto abaixo do QR code!
-        // (Já removido)
       }
 
       setIsGenerating(false);

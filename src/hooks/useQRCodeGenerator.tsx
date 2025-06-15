@@ -164,21 +164,43 @@ export function useQRCodeGenerator() {
         // --- Bloco da logo ---
         const logoBoxWidth = labelWidth * 0.38; // Cerca de 38% para logo/textos
         const qrBoxWidth = labelWidth - logoBoxWidth;
-
         let currY = y + marginY;
 
-        // Desenha logo centralizado no bloco esquerdo
+        // Ajuste: Logo com "contain"/fit e centralizada SEM esticar/cortar
         if (logoImage) {
           try {
-            // logo altura ~40pt, centrada horizontalmente
-            const logoWidth = logoBoxWidth - 12;
-            const logoHeight = 40;
-            const logoX = x + (logoBoxWidth - logoWidth) / 2;
-            pdf.addImage(logoImage, 'PNG', logoX, currY, logoWidth, logoHeight, undefined, 'FAST');
-            currY += logoHeight + 6;
-          } catch { /* falha em adicionar imagem não quebra */ }
+            // Logo área disponível
+            const maxLogoW = logoBoxWidth - 12;
+            const maxLogoH = 42; // aumenta um pouco p/dar mais espaço para proporção original
+
+            // Criar img temporária p/detectar proporção
+            const img = new window.Image();
+            await new Promise((resolve) => {
+              img.onload = resolve;
+              img.src = logoImage as string;
+            });
+
+            let renderW = maxLogoW, renderH = maxLogoH;
+            if (img.width / img.height > maxLogoW / maxLogoH) {
+              // mais "comprido": limita largura, ajusta altura
+              renderW = maxLogoW;
+              renderH = img.height * (maxLogoW / img.width);
+            } else {
+              // mais "alto": limita altura, ajusta largura
+              renderH = maxLogoH;
+              renderW = img.width * (maxLogoH / img.height);
+            }
+            // Centralizar
+            const logoX = x + (logoBoxWidth - renderW) / 2;
+            const logoY = currY + (maxLogoH - renderH) / 2;
+
+            pdf.addImage(logoImage, 'PNG', logoX, logoY, renderW, renderH, undefined, 'FAST');
+            currY += maxLogoH + 4;
+          } catch {
+            currY += 46;
+          }
         } else {
-          currY += 50;
+          currY += 46;
         }
 
         // Nome do produto (em negrito, centralizado)
@@ -192,12 +214,20 @@ export function useQRCodeGenerator() {
         );
         currY += 19;
 
-        // Data de validade
+        // Data de validade (formato dd/mm/aaaa)
         if (qrData.data_validade) {
           pdf.setFont('helvetica', 'normal');
           pdf.setFontSize(11.5);
+          // formatar para dd/mm/aaaa
+          let formatted;
+          try {
+            const d = new Date(qrData.data_validade);
+            formatted = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth()+1).padStart(2, '0')}/${d.getFullYear()}`;
+          } catch {
+            formatted = qrData.data_validade;
+          }
           pdf.text(
-            `Validade: ${new Date(qrData.data_validade).toLocaleDateString('pt-BR')}`,
+            `Validade: ${formatted}`,
             x + logoBoxWidth / 2,
             currY + 8,
             { align: 'center', baseline: 'middle' }
@@ -205,10 +235,7 @@ export function useQRCodeGenerator() {
           currY += 16;
         }
 
-        // Removido: Categoria do item.
-        // Removido: Unidade juazeiro_norte.
-
-        // Unidade (p.e. Kg, pacote...), exceto se contém "juazeiro_norte"
+        // Unidade (p.e. Kg, pacote...), exceto se contém "juazeiro_norte"
         if (qrData.unidade && qrData.unidade !== 'juazeiro_norte') {
           pdf.setFont('helvetica', 'italic');
           pdf.setFontSize(10);
@@ -247,17 +274,17 @@ export function useQRCodeGenerator() {
         });
         pdf.addImage(qrCodeDataURL, 'PNG', qrX, qrY, qrSide, qrSide);
 
-        // Pequeno ID abaixo do QR (ajuda rastreio)
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9.5);
-        pdf.setTextColor(50, 60, 150);
-        pdf.text(
-          `#${qrData.id.slice(-6).toUpperCase()}`,
-          x + logoBoxWidth + qrBoxWidth / 2,
-          qrY + qrSide + 11,
-          { align: 'center' }
-        );
-        pdf.setTextColor(0, 0, 0);
+        // REMOVIDO: NÃO desenha mais código abaixo do QR
+        // pdf.setFont('helvetica', 'bold');
+        // pdf.setFontSize(9.5);
+        // pdf.setTextColor(50, 60, 150);
+        // pdf.text(
+        //   `#${qrData.id.slice(-6).toUpperCase()}`,
+        //   x + logoBoxWidth + qrBoxWidth / 2,
+        //   qrY + qrSide + 11,
+        //   { align: 'center' }
+        // );
+        // pdf.setTextColor(0, 0, 0);
       }
 
       setIsGenerating(false);

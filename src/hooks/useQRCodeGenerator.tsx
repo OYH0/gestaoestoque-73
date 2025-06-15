@@ -17,7 +17,7 @@ export interface QRCodeData {
 }
 
 // Atualiza para nova logo enviada pelo usuário
-const LOGO_URL = '/lovable-uploads/041b3ef8-3841-4053-8434-b637c0a3f68c.png';
+const LOGO_URL = '/lovable-uploads/1f655875-b87f-4e01-b716-850dd285a60b.png';
 
 export function useQRCodeGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);

@@ -173,7 +173,7 @@ export function Dashboard() {
                   type="category"
                   dataKey="tipoAbrev" 
                   width={50}
-                  tick={{ fontSize: 10 }}
+                  tick={false}
                   interval={0}
                   axisLine={{ stroke: '#e5e7eb' }}
                   tickLine={{ stroke: '#e5e7eb' }}

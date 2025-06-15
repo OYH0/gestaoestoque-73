@@ -75,9 +75,6 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
               {item.unidade_item && getUnidadeLabel(item.unidade_item) && (
                 <p>Unidade: <span className="font-medium">{getUnidadeLabel(item.unidade_item)}</span></p>
               )}
-              {item.data_entrada && (
-                <p>Entrada: <span className="font-medium">{new Date(item.data_entrada).toLocaleDateString('pt-BR')}</span></p>
-              )}
             </div>
 
             {item.observacoes && (

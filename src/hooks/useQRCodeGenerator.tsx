@@ -57,7 +57,7 @@ export function useQRCodeGenerator() {
       // ATENÇÃO: nome precisa ser sequencial (test 1, test 2, ...), não "test 10" para todos!
       const qrCodeData = {
         id: qrCodeId,
-        nome: `${item.nome} ${i}`, // CORRIGIDO: cada etiqueta tem nome sequencial!
+        nome: `${item.nome.trim()} ${i}`, // CORRIGIDO: cada etiqueta tem nome sequencial!
         categoria: item.categoria,
         tipo,
         lote: `${new Date().toISOString().split('T')[0]}-${i.toString().padStart(3, '0')}`
@@ -81,10 +81,9 @@ export function useQRCodeGenerator() {
     setIsGenerating(true);
 
     let logoImage: string | undefined = undefined;
-
     try {
-      // Busca a logo, mas ignora erro de logo corrompida/ausente (o PDF continua)
-      const resp = await fetch('/churrasco-logo.png');
+      // Tenta carregar logo
+      const resp = await fetch(LOGO_URL);
       if (resp.ok) {
         const blob = await resp.blob();
         logoImage = await new Promise<string>((resolve) => {
@@ -94,28 +93,17 @@ export function useQRCodeGenerator() {
         });
       } else {
         logoImage = undefined;
-        toast({
-          title: "Atenção",
-          description: "Logo da Companhia do Churrasco não encontrada. Etiquetas serão geradas sem logo.",
-          variant: "destructive"
-        });
       }
-    } catch (e) {
+    } catch {
       logoImage = undefined;
-      toast({
-        title: "Atenção (Logo da etiqueta)",
-        description: "Não foi possível carregar a logo. As etiquetas foram geradas sem logo.",
-        variant: "destructive"
-      });
     }
 
     try {
       // Layout: 60x50mm em pontos
-      const labelWidthMM = 60;
-      const labelHeightMM = 50;
-      const labelWidth = labelWidthMM * 2.83465;
-      const labelHeight = labelHeightMM * 2.83465;
-      const margin = 14;
+      const MM_TO_PT = 2.83465;
+      const labelWidth = 60 * MM_TO_PT;   // ~170pt
+      const labelHeight = 50 * MM_TO_PT;  // ~141pt
+      const margin = 12; // diminui para caber mais coisas
 
       for (let i = 0; i < qrCodes.length; i++) {
         const qrData = qrCodes[i];
@@ -127,103 +115,102 @@ export function useQRCodeGenerator() {
 
         let y = margin;
 
-        // ===== Nome do produto (nome sequencial agora!) =====
+        // Nome do produto (negrito)
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(15);
-        pdf.text(qrData.nome, margin, y + 10);
+        pdf.setFontSize(12);
+        const nomeMaxLen = 23; // quebra se for grande
+        const nomeProduto = qrData.nome.length > nomeMaxLen
+          ? qrData.nome.slice(0, nomeMaxLen) + '...'
+          : qrData.nome;
+        pdf.text(nomeProduto, margin, y + 9);
 
-        // ===== Tipo / status =====
+        // Tipo
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
+        pdf.setFontSize(9);
         let statusText = '';
         switch (qrData.tipo) {
           case 'CF': statusText = 'CÂMARA FRIA'; break;
           case 'ES': statusText = 'ESTOQUE SECO'; break;
           case 'DESC': statusText = 'DESCARTÁVEIS'; break;
         }
-        pdf.setTextColor('#222');
-        pdf.text(statusText, margin, y + 30);
+        pdf.text(statusText, margin, y + 24);
 
-        // ===== Peso/quantidade =====
+        // Peso/qtde
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(13);
-        pdf.text('1 kg', labelWidth - margin - 38, y + 30);
+        pdf.setFontSize(11);
+        pdf.text('1 kg', labelWidth - margin - 27, y + 24);
 
-        // ===== Linha =====
+        // Linha divisória
         pdf.setDrawColor(80, 80, 80);
-        pdf.setLineWidth(0.4);
-        pdf.line(margin, y + 36, labelWidth - margin, y + 36);
+        pdf.setLineWidth(0.3);
+        pdf.line(margin, y + 28, labelWidth - margin, y + 28);
 
-        y += 44;
+        y += 32; // novo ponto Y
 
-        // ===== Dados em bloco à esquerda (alinhado para não cortar) =====
-        pdf.setFontSize(9);
+        // ===== Bloco de informações da lateral esquerda =====
         const infos1 = [
           { label: 'VAL. ORIGINAL:', value: '21/04/2025' },
-          { label: 'MANIPULAÇÃO:', value: '09/04/2025 - 12:59:23' },
-          { label: 'VALIDADE:', value: '11/04/2025 - 12:59:23' },
+          { label: 'MANIPULAÇÃO:', value: '09/04/2025 - 12:59' },
+          { label: 'VALIDADE:', value: '11/04/2025 - 12:59' },
           { label: 'MARCA / FORN:', value: 'SWIFT' },
-          { label: 'SIF:', value: '358' },
+          { label: 'SIF:', value: '358' }
         ];
-
         let offsetY = 0;
+        pdf.setFontSize(8);
         for (const info of infos1) {
           pdf.setFont('helvetica', 'bold');
           pdf.text(info.label, margin, y + offsetY);
           pdf.setFont('helvetica', 'normal');
-          pdf.text(info.value, margin + 84, y + offsetY);
-          offsetY += 13;
+          pdf.text(info.value, margin + 74, y + offsetY);
+          offsetY += 11;
         }
 
-        // ===== QR code à direita exatamente como no exemplo =====
-        // (QR no topo-direita do bloco de dados)
-        const qrSide = 65; // pixels, proporcional ao label
-        const qrX = labelWidth - margin - qrSide;
+        // QR code lado direito, ocupando altura do bloco de informações (nunca cortando)
+        const qrSide = 50;
+        const qrX = labelWidth - margin - qrSide; // à direita dentro da margem
         const qrY = y;
 
         const qrCodeDataURL = await QRCode.toDataURL(qrData.id, {
           width: qrSide,
-          margin: 1,
+          margin: 0,
         });
         pdf.addImage(qrCodeDataURL, 'PNG', qrX, qrY, qrSide, qrSide);
 
-        // Linha separadora 2, abaixo QR e bloco de dados
-        const line2Y = Math.max(y + offsetY, qrY + qrSide) + 6;
+        // Linha divisória 2
+        const afterInfoY = Math.max(y + offsetY, qrY + qrSide) + 3;
         pdf.setDrawColor(180, 180, 180);
-        pdf.setLineWidth(0.4);
-        pdf.line(margin, line2Y, labelWidth - margin, line2Y);
+        pdf.setLineWidth(0.3);
+        pdf.line(margin, afterInfoY, labelWidth - margin, afterInfoY);
 
-        y = line2Y + 10;
+        y = afterInfoY + 7;
 
-        // ===== Dados da empresa, responsável, etc (como imagem) =====
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9);
-        pdf.text('RESP.: LUCIANA', margin, y);
+        // Bloco da empresa
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8);
+        pdf.text('RESP.: LUCIANA', margin, y + 2);
 
         pdf.setFont('helvetica', 'normal');
         pdf.text('RESTAURANTE SUFLEX', margin, y + 12);
-        pdf.setFontSize(8);
-        pdf.text('CNPJ: 12.345.678.0001-12', margin, y + 21);
-        pdf.text('RUA PURPURINA, 400', margin, y + 29);
-        pdf.text('SÃO PAULO - SP', margin, y + 37);
-        pdf.text('CEP: 05435-030', margin + 90, y + 29);
+        pdf.setFontSize(7.3);
+        pdf.text('CNPJ: 12.345.678.0001-12', margin, y + 20);
+        pdf.text('RUA PURPURINA, 400', margin, y + 27);
+        pdf.text('SÃO PAULO - SP', margin, y + 33);
+        pdf.text('CEP: 05435-030', margin + 90, y + 27);
 
-        y += 51;
+        y += 39;
 
-        // ===== Código (número final) =====
+        // Código -- grande, azul
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.setTextColor('#12126a');
+        pdf.setFontSize(10.7);
+        pdf.setTextColor(32,48,140);
         pdf.text(`#${qrData.id.slice(-6).toUpperCase()}`, margin, y);
+        pdf.setTextColor(0,0,0);
 
-        pdf.setTextColor('#111');
-
-        // ===== Logo, se houver =====
+        // Logo, se houver
         if (logoImage) {
           try {
-            pdf.addImage(logoImage, 'PNG', labelWidth - 46, margin, 34, 34);
+            pdf.addImage(logoImage, 'PNG', labelWidth - 44, margin, 28, 28);
           } catch (e) {
-            // Se der erro, apenas mostra toast e pula
+            // só avisa uma vez, não trava
             toast({
               title: "Logo não adicionada",
               description: "Houve um erro ao adicionar a logo na etiqueta.",
@@ -232,15 +219,21 @@ export function useQRCodeGenerator() {
           }
         }
 
-        // ===== Salva arquivo =====
-        const fileName = `etiqueta-qrcode-${qrData.nome.replace(/\s+/g, '-').toLowerCase()}-${qrData.id.slice(-6)}.pdf`;
+        // Salva arquivo
+        const safeNome = qrData.nome.replace(/\s+/g, '-').toLowerCase();
+        const fileName = `etiqueta-qrcode-${safeNome}-${qrData.id.slice(-6)}.pdf`;
+
+        // Baixa o PDF da etiqueta individualmente
         pdf.save(fileName);
       }
       setIsGenerating(false);
+      toast({
+        title: `PDF${qrCodes.length > 1 ? 's' : ''} gerado${qrCodes.length > 1 ? 's' : ''} com sucesso!`,
+        description: `Foram geradas ${qrCodes.length} etiquetas com QR code.`,
+      });
       return { success: true };
     } catch (error) {
       setIsGenerating(false);
-      console.error('❌ Erro ao gerar etiqueta PDF:', error);
       toast({
         title: "Erro ao gerar etiquetas",
         description: "Ocorreu um problema ao gerar as etiquetas.",

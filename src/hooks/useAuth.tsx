@@ -178,16 +178,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const { error } = await supabase.auth.signOut();
       
+      // Ignorar erros de sessão não encontrada
       if (error) {
         console.error('Erro no logout:', error);
-        if (!error.message?.includes('rate limit')) {
+        if (
+          error.message?.toLowerCase().includes('session not found') ||
+          error.message?.toLowerCase().includes('auth session missing') ||
+          error.message?.toLowerCase().includes('session_missing') // variação visto em libs antigas
+        ) {
+          // Não mostre toast, apenas prossiga com o logout local normalmente
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+          // Opcional: toast amistoso de logout
+          toast({
+            title: "Logout realizado",
+            description: "Até logo!",
+          });
+          return;
+        } else {
           toast({
             title: "Erro no logout",
             description: error.message,
             variant: "destructive",
           });
+          setLoading(false);
+          return;
         }
-        return;
       }
 
       // Limpar estado local imediatamente
@@ -201,10 +218,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     } catch (error: any) {
       console.error('Falha no logout:', error);
-      if (!error.message?.includes('rate limit')) {
+      if (
+        error?.message?.toLowerCase().includes('session not found') ||
+        error?.message?.toLowerCase().includes('auth session missing') ||
+        error?.message?.toLowerCase().includes('session_missing')
+      ) {
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        toast({
+          title: "Logout realizado",
+          description: "Até logo!",
+        });
+      } else {
         toast({
           title: "Erro no logout",
-          description: error.message,
+          description: error?.message,
           variant: "destructive",
         });
       }

@@ -66,7 +66,6 @@ export function CamaraRefrigerada() {
             quantidade: item.quantidade,
             unidade: item.unidade,
             categoria: item.categoria,
-            temperatura_ideal: item.temperatura_ideal || -18,
             observacoes: 'Retornado da câmara refrigerada',
             data_entrada: new Date().toISOString().split('T')[0],
             unidade_item: selectedUnidade === 'todas' ? 'juazeiro_norte' : selectedUnidade,

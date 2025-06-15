@@ -15,9 +15,12 @@ export interface CamaraFriaItem {
   data_entrada?: string;
   data_validade?: string;
   temperatura?: number;
+  temperatura_ideal?: number;
   fornecedor?: string;
   observacoes?: string;
   unidade_item?: 'juazeiro_norte' | 'fortaleza';
+  minimo?: number;
+  preco_unitario?: number;
 }
 
 export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas') {
@@ -73,9 +76,12 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         data_entrada: item.data_entrada,
         data_validade: item.data_validade,
         temperatura: item.temperatura,
+        temperatura_ideal: item.temperatura_ideal,
         fornecedor: item.fornecedor,
         observacoes: item.observacoes,
         unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
+        minimo: item.minimo || 5,
+        preco_unitario: item.preco_unitario,
       }));
       
       setItems(mappedItems);
@@ -141,7 +147,8 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
       
       const mappedData = {
         ...data,
-        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza'
+        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
+        minimo: data.minimo || 5
       };
       
       setItems(prev => [...prev, mappedData]);
@@ -314,6 +321,36 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
     }
   };
 
+  const transferItemsToUnidade = async (itemIds: string[], targetUnidade: 'juazeiro_norte' | 'fortaleza') => {
+    try {
+      const { error } = await supabase
+        .from('camara_fria_items')
+        .update({ unidade: targetUnidade })
+        .in('id', itemIds);
+
+      if (error) throw error;
+
+      // Atualizar o estado local
+      setItems(prev => prev.map(item => 
+        itemIds.includes(item.id) 
+          ? { ...item, unidade_item: targetUnidade }
+          : item
+      ));
+
+      toast({
+        title: "Transferência realizada",
+        description: `${itemIds.length} itens foram transferidos para ${targetUnidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza'}.`,
+      });
+    } catch (error) {
+      console.error('Error transferring items:', error);
+      toast({
+        title: "Erro na transferência",
+        description: "Não foi possível transferir os itens.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     items,
     loading,
@@ -321,6 +358,7 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
     updateItemQuantity,
     deleteItem,
     transferToRefrigerada,
+    transferItemsToUnidade,
     fetchItems,
     qrCodes,
     showQRGenerator,

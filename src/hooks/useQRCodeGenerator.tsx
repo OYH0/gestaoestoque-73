@@ -16,7 +16,7 @@ export interface QRCodeData {
   preco_unitario?: number;
 }
 
-const LOGO_URL = '/churrasco-logo.png'; // deve estar em public/churrasco-logo.png
+const LOGO_URL = '/lovable-uploads/1fe9b367-5306-4aac-9882-fb616f61549e.png'; // Usa imagem enviada pelo usuário
 
 export function useQRCodeGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -87,59 +87,33 @@ export function useQRCodeGenerator() {
     return qrCodes;
   };
 
-  // Agora: cada etiqueta terá 100x150mm (convertido para pontos)
+  // Novas dimensões: 95,2mm x 50,8mm (padrão Avery 5260 / etiqueta tipo mailing horizontal)
   const generateQRCodePDF = async (qrCodes: QRCodeData[]) => {
     setIsGenerating(true);
 
+    // Conversão mm para pontos
     const MM_TO_PT = 2.83465;
-    // 💡 Atualizado para 100mm x 150mm etiquetas!
-    const labelWidthMM = 100;
-    const labelHeightMM = 150;
-    const labelWidth = labelWidthMM * MM_TO_PT; // 283.465 pt
-    const labelHeight = labelHeightMM * MM_TO_PT; // 425.1975 pt
-    const margin = 10; // espaço interno na etiqueta, em pt
-    const paddingBetween = 8; // espaço entre etiquetas
+    const labelWidthMM = 95.2;
+    const labelHeightMM = 50.8;
+    const labelWidth = labelWidthMM * MM_TO_PT; // ~270 pt
+    const labelHeight = labelHeightMM * MM_TO_PT; // ~144 pt
 
-    // Layout da folha (A4): 210 x 297 mm (595.276 x 841.89 pt)
-    const pageWidth = 210 * MM_TO_PT;
-    const pageHeight = 297 * MM_TO_PT;
+    // Margens internas do layout
+    const marginX = 16;
+    const marginY = 10;
+    const spacingX = 10; // espaçamento horizontal entre etiquetas
+    const spacingY = 10; // espaçamento vertical entre etiquetas
 
-    // Margens externas
-    const horizontalMargin = 6 * MM_TO_PT;
-    const verticalMargin = 6 * MM_TO_PT;
+    // Usaremos orientação landscape numa folha A4
+    const pageWidth = 297 * MM_TO_PT;  // A4 landscape: 297mm
+    const pageHeight = 210 * MM_TO_PT; // A4 landscape: 210mm
 
-    // Área útil
-    const usableWidth = pageWidth - 2 * horizontalMargin;
-    const usableHeight = pageHeight - 2 * verticalMargin;
-
-    // Novo: para 100x150mm, só cabe 1 etiqueta por linha em A4 na horizontal, 
-    // e no máximo 1 por coluna se for retrato.
-    // Melhor usar orientação landscape p/ caber mais etiquetas por folha.
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'pt',
-      format: 'a4',
-    });
-
-    const landscapePageWidth = pageHeight;  // 841.89 pt (A4 landscape)
-    const landscapePageHeight = pageWidth;  // 595.276 pt
-
-    // Cálculo das linhas/colunas POR FOLHA
-    const usableLandscapeWidth = landscapePageWidth - 2 * horizontalMargin;
-    const usableLandscapeHeight = landscapePageHeight - 2 * verticalMargin;
-
-    // Exemplo: cabem no máximo 2 colunas (200mm + espaço), 3 linhas (450mm)
-    const columns = Math.max(
-      1,
-      Math.floor((usableLandscapeWidth + paddingBetween) / (labelWidth + paddingBetween))
-    );
-    const rows = Math.max(
-      1,
-      Math.floor((usableLandscapeHeight + paddingBetween) / (labelHeight + paddingBetween))
-    );
+    // Calcular quantas cabem por folha
+    const columns = Math.max(1, Math.floor((pageWidth + spacingX) / (labelWidth + spacingX))); // horizontal
+    const rows = Math.max(1, Math.floor((pageHeight + spacingY) / (labelHeight + spacingY))); // vertical
     const labelsPerPage = columns * rows;
 
-    // Garantir logo opcional
+    // Carregar logo (usando blob DataURL)
     let logoImage: string | undefined = undefined;
     try {
       const resp = await fetch(LOGO_URL);
@@ -156,114 +130,133 @@ export function useQRCodeGenerator() {
     }
 
     try {
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'pt',
+        format: 'a4',
+      });
+
       for (let i = 0; i < qrCodes.length; i++) {
         const qrData = qrCodes[i];
         const labelIdxInPage = i % labelsPerPage;
-        const pageIdx = Math.floor(i / labelsPerPage);
 
         // Add página se necessário (não na primeira)
         if (i !== 0 && labelIdxInPage === 0) {
           pdf.addPage();
         }
 
-        // Posição da etiqueta
+        // Calcula posição da etiqueta na folha
         const row = Math.floor(labelIdxInPage / columns);
         const col = labelIdxInPage % columns;
-        const x = horizontalMargin + col * (labelWidth + paddingBetween);
-        const y = verticalMargin + row * (labelHeight + paddingBetween);
+        const x = col * (labelWidth + spacingX) + spacingX / 2;
+        const y = row * (labelHeight + spacingY) + spacingY / 2;
 
-        // Bordas de referência
-        pdf.setLineWidth(0.5);
-        pdf.setDrawColor(210, 210, 210);
+        // Desenha borda leve para referência de corte (opcional)
+        pdf.setDrawColor(220, 220, 220);
+        pdf.setLineWidth(0.7);
         pdf.rect(x, y, labelWidth, labelHeight);
 
-        let currY = y + margin;
+        // Layout principal:
+        // >> À esquerda: logo + nome + data
+        // >> À direita: QR Code
 
-        // Nome produto
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(20);
-        const nomeProduto = qrData.nome?.length > 32
-          ? qrData.nome.slice(0, 32) + '...'
-          : qrData.nome;
-        pdf.text(nomeProduto, x + margin, currY + 18);
+        // --- Bloco da logo ---
+        const logoBoxWidth = labelWidth * 0.38; // Cerca de 38% para logo/textos
+        const qrBoxWidth = labelWidth - logoBoxWidth;
 
-        // Tipo/Categoria
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(16);
-        let statusText = '';
-        switch (qrData.tipo) {
-          case 'CF': statusText = 'CÂMARA FRIA'; break;
-          case 'ES': statusText = 'ESTOQUE SECO'; break;
-          case 'DESC': statusText = 'DESCARTÁVEIS'; break;
+        let currY = y + marginY;
+
+        // Desenha logo centralizado no bloco esquerdo
+        if (logoImage) {
+          try {
+            // logo altura ~40pt, centrada horizontalmente
+            const logoWidth = logoBoxWidth - 12;
+            const logoHeight = 40;
+            const logoX = x + (logoBoxWidth - logoWidth) / 2;
+            pdf.addImage(logoImage, 'PNG', logoX, currY, logoWidth, logoHeight, undefined, 'FAST');
+            currY += logoHeight + 6;
+          } catch { /* falha em adicionar imagem não quebra */ }
+        } else {
+          currY += 50;
         }
-        // Inclui a categoria ao lado do tipo
+
+        // Nome do produto (em negrito, centralizado)
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14.5);
         pdf.text(
-          (statusText ? `${statusText} - ` : '') + (qrData.categoria || ''),
-          x + margin, currY + 38
+          qrData.nome?.length > 30 ? qrData.nome.slice(0, 30) + '...' : qrData.nome,
+          x + logoBoxWidth / 2,
+          currY + 8,
+          { align: 'center', baseline: 'middle' }
         );
+        currY += 19;
 
-        // Peso (direita topo): unidade do item + "kg" apenas se for unidade tipo peso
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(15);
-        let unidadeImpressa = qrData.unidade
-          ? qrData.unidade
-          : '1 un.';
-        if (['kg', 'Kg', 'quilogramas', 'quilograma', 'peso'].includes(qrData.unidade?.toLowerCase?.() || '')) {
-          unidadeImpressa = '1 kg';
+        // Data de entrada (ou validade, se existir)
+        let infoLine = '';
+        if (qrData.data_validade) {
+          infoLine = `Validade: ${new Date(qrData.data_validade).toLocaleDateString('pt-BR')}`;
+        } else if (qrData.data_entrada) {
+          infoLine = `Entrada: ${new Date(qrData.data_entrada).toLocaleDateString('pt-BR')}`;
+        } else {
+          infoLine = '';
         }
-        pdf.text(unidadeImpressa, x + labelWidth - margin - 50, currY + 38);
-
-        // Linha divisória
-        pdf.setDrawColor(80, 80, 80);
-        pdf.setLineWidth(0.6);
-        pdf.line(x + margin, currY + 55, x + labelWidth - margin, currY + 55);
-
-        currY += 65;
-
-        // Informações do bloco lateral personalizadas
-        const infos1 = [
-          {
-            label: 'FORNECEDOR:',
-            value: qrData.fornecedor || '-'
-          },
-          {
-            label: 'DATA DE ENTRADA:',
-            value: qrData.data_entrada
-              ? new Date(qrData.data_entrada).toLocaleDateString('pt-BR')
-              : '-'
-          },
-          {
-            label: 'VALIDADE:',
-            value: qrData.data_validade
-              ? new Date(qrData.data_validade).toLocaleDateString('pt-BR')
-              : '-'
-          },
-          {
-            label: 'UNIDADE:',
-            value: qrData.unidade || '-'
-          },
-          {
-            label: 'VALOR UNIT.:',
-            value: (qrData.preco_unitario
-              ? `R$ ${Number(qrData.preco_unitario).toFixed(2)}`
-              : '-')
-          }
-        ];
-
-        let lineY = 0;
-        pdf.setFontSize(12.5);
-        for (const info of infos1) {
-          pdf.setFont('helvetica', 'bold');
-          pdf.text(info.label, x + margin, currY + lineY);
+        if (infoLine) {
           pdf.setFont('helvetica', 'normal');
-          pdf.text(String(info.value), x + margin + 120, currY + lineY);
-          lineY += 19;
+          pdf.setFontSize(11.5);
+          pdf.text(
+            infoLine,
+            x + logoBoxWidth / 2,
+            currY + 8,
+            { align: 'center', baseline: 'middle' }
+          );
+          currY += 16;
         }
 
-        // QR code
-        const qrSide = 100;
-        const qrX = x + labelWidth - margin - qrSide;
-        const qrY = currY;
+        // Categoria (opcional, menor)
+        if (qrData.categoria) {
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(10.5);
+          pdf.text(
+            qrData.categoria,
+            x + logoBoxWidth / 2,
+            currY + 6,
+            { align: 'center', baseline: 'middle' }
+          );
+          currY += 13;
+        }
+
+        // Unidade (p.e. Kg, pacote...)
+        if (qrData.unidade) {
+          pdf.setFont('helvetica', 'italic');
+          pdf.setFontSize(10);
+          pdf.text(
+            qrData.unidade,
+            x + logoBoxWidth / 2,
+            currY + 6,
+            { align: 'center', baseline: 'middle' }
+          );
+          currY += 13;
+        }
+
+        // Fornecedor (opcional, pequenino)
+        if (qrData.fornecedor) {
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(8);
+          pdf.text(
+            qrData.fornecedor,
+            x + logoBoxWidth / 2,
+            currY + 6,
+            { align: 'center', baseline: 'middle' }
+          );
+          currY += 10;
+        }
+
+        // --- QR code à direita ---
+        // Proporcional ao bloco disponível
+        const qrSide = Math.min(qrBoxWidth - 2 * marginX, labelHeight - 18);
+
+        const qrX = x + logoBoxWidth + (qrBoxWidth - qrSide) / 2;
+        const qrY = y + (labelHeight - qrSide) / 2;
 
         const qrCodeDataURL = await QRCode.toDataURL(qrData.id, {
           width: qrSide,
@@ -271,43 +264,17 @@ export function useQRCodeGenerator() {
         });
         pdf.addImage(qrCodeDataURL, 'PNG', qrX, qrY, qrSide, qrSide);
 
-        // Segunda linha divisória
-        const afterInfoY = Math.max(currY + lineY, qrY + qrSide) + 8;
-        pdf.setDrawColor(180, 180, 180);
-        pdf.setLineWidth(0.5);
-        pdf.line(x + margin, afterInfoY, x + labelWidth - margin, afterInfoY);
-
-        let rodapeY = afterInfoY + 17;
-
-        // Nome ou responsável padrão
+        // Pequeno ID abaixo do QR (ajuda rastreio)
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12.5);
-        pdf.text('RESPONSÁVEL: Sistema', x + margin, rodapeY + 2);
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.text('ESTOQUE DIGITAL', x + margin, rodapeY + 22);
-        pdf.setFontSize(11.7);
-        pdf.text('QR Etiquetas', x + margin, rodapeY + 38);
-
-        // Rodapé de endereço fictício (ajuste caso queira mais info)
-        pdf.text('Churrascaria Exemplo', x + margin, rodapeY + 52);
-        pdf.text('SÃO PAULO - SP', x + margin, rodapeY + 64);
-
-        rodapeY += 72;
-
-        // Código azul destacado
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(17);
-        pdf.setTextColor(32, 48, 140);
-        pdf.text(`#${qrData.id.slice(-6).toUpperCase()}`, x + margin, rodapeY);
+        pdf.setFontSize(9.5);
+        pdf.setTextColor(50, 60, 150);
+        pdf.text(
+          `#${qrData.id.slice(-6).toUpperCase()}`,
+          x + logoBoxWidth + qrBoxWidth / 2,
+          qrY + qrSide + 11,
+          { align: 'center' }
+        );
         pdf.setTextColor(0, 0, 0);
-
-        // Logo canto direito
-        if (logoImage) {
-          try {
-            pdf.addImage(logoImage, 'PNG', x + labelWidth - 60, y + margin, 38, 38);
-          } catch { /* não quebra em erro */ }
-        }
       }
 
       setIsGenerating(false);
@@ -317,8 +284,8 @@ export function useQRCodeGenerator() {
       pdf.save(fileName);
 
       toast({
-        title: "PDF gerado com sucesso",
-        description: `Todas as ${qrCodes.length} etiquetas estão no mesmo arquivo.`,
+        title: "PDF gerado no novo padrão",
+        description: `Suas etiquetas de ${labelWidthMM}x${labelHeightMM}mm (${columns}x${rows} por folha) estão prontas!`,
       });
       return { success: true };
     } catch (error) {

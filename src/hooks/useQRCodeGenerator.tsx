@@ -141,7 +141,7 @@ export function useQRCodeGenerator() {
         const qrData = qrCodes[i];
         const labelIdxInPage = i % labelsPerPage;
 
-        // Add página se necessário (não na primeira)
+        // Add página se necessário
         if (i !== 0 && labelIdxInPage === 0) {
           pdf.addPage();
         }
@@ -152,26 +152,17 @@ export function useQRCodeGenerator() {
         const x = col * (labelWidth + spacingX) + spacingX / 2;
         const y = row * (labelHeight + spacingY) + spacingY / 2;
 
-        // Desenha borda leve para referência de corte (opcional)
-        pdf.setDrawColor(220, 220, 220);
-        pdf.setLineWidth(0.7);
-        pdf.rect(x, y, labelWidth, labelHeight);
-
-        // Layout principal:
-        // >> À esquerda: logo + nome + data
-        // >> À direita: QR Code
-
-        // --- Bloco da logo ---
-        const logoBoxWidth = labelWidth * 0.38; // Cerca de 38% para logo/textos
+        // Layout principal
+        const logoBoxWidth = labelWidth * 0.45; // AUMENTA para ~45% do bloco, ocupando mais espaço para a logo
         const qrBoxWidth = labelWidth - logoBoxWidth;
         let currY = y + marginY;
 
-        // Ajuste: Logo com "contain"/fit e centralizada SEM esticar/cortar
+        // Exibe a logo maior, centralizada e sem esticar/cortar
         if (logoImage) {
           try {
-            // Logo área disponível
-            const maxLogoW = logoBoxWidth - 12;
-            const maxLogoH = 42; // aumenta um pouco p/dar mais espaço para proporção original
+            // Permite uma altura de logo maior (até metade da altura da etiqueta)
+            const maxLogoW = logoBoxWidth - 8; // um pouco menos de padding
+            const maxLogoH = labelHeight * 0.5; // até metade da altura
 
             // Criar img temporária p/detectar proporção
             const img = new window.Image();
@@ -197,55 +188,54 @@ export function useQRCodeGenerator() {
             pdf.addImage(logoImage, 'PNG', logoX, logoY, renderW, renderH, undefined, 'FAST');
             currY += maxLogoH + 4;
           } catch {
-            currY += 46;
+            currY += labelHeight * 0.5 + 4;
           }
         } else {
-          currY += 46;
+          currY += labelHeight * 0.5 + 4;
         }
 
         // Nome do produto (em negrito, centralizado)
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(14.5);
+        pdf.setFontSize(15);
         pdf.text(
           qrData.nome?.length > 30 ? qrData.nome.slice(0, 30) + '...' : qrData.nome,
           x + logoBoxWidth / 2,
-          currY + 8,
+          currY + 6,
           { align: 'center', baseline: 'middle' }
         );
-        currY += 19;
+        currY += 18;
 
-        // Data de validade (formato dd/mm/aaaa)
-        if (qrData.data_validade) {
+        // Exibir somente data_entrada no formato dd/mm/aaaa
+        if (qrData.data_entrada) {
           pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(11.5);
-          // formatar para dd/mm/aaaa
-          let formatted;
+          pdf.setFontSize(12);
+          let formatted = '';
           try {
-            const d = new Date(qrData.data_validade);
-            formatted = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth()+1).padStart(2, '0')}/${d.getFullYear()}`;
+            const d = new Date(qrData.data_entrada);
+            formatted = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
           } catch {
-            formatted = qrData.data_validade;
+            formatted = qrData.data_entrada;
           }
           pdf.text(
-            `Validade: ${formatted}`,
+            formatted,
             x + logoBoxWidth / 2,
-            currY + 8,
+            currY + 7,
             { align: 'center', baseline: 'middle' }
           );
-          currY += 16;
+          currY += 15;
         }
 
-        // Unidade (p.e. Kg, pacote...), exceto se contém "juazeiro_norte"
+        // Unidade (exceto juazeiro_norte), se existir e diferente
         if (qrData.unidade && qrData.unidade !== 'juazeiro_norte') {
           pdf.setFont('helvetica', 'italic');
           pdf.setFontSize(10);
           pdf.text(
             qrData.unidade,
             x + logoBoxWidth / 2,
-            currY + 6,
+            currY + 5,
             { align: 'center', baseline: 'middle' }
           );
-          currY += 13;
+          currY += 12;
         }
 
         // Fornecedor (opcional, pequenino)
@@ -255,14 +245,13 @@ export function useQRCodeGenerator() {
           pdf.text(
             qrData.fornecedor,
             x + logoBoxWidth / 2,
-            currY + 6,
+            currY + 5,
             { align: 'center', baseline: 'middle' }
           );
           currY += 10;
         }
 
         // --- QR code à direita ---
-        // Proporcional ao bloco disponível
         const qrSide = Math.min(qrBoxWidth - 2 * marginX, labelHeight - 18);
 
         const qrX = x + logoBoxWidth + (qrBoxWidth - qrSide) / 2;
@@ -274,17 +263,8 @@ export function useQRCodeGenerator() {
         });
         pdf.addImage(qrCodeDataURL, 'PNG', qrX, qrY, qrSide, qrSide);
 
-        // REMOVIDO: NÃO desenha mais código abaixo do QR
-        // pdf.setFont('helvetica', 'bold');
-        // pdf.setFontSize(9.5);
-        // pdf.setTextColor(50, 60, 150);
-        // pdf.text(
-        //   `#${qrData.id.slice(-6).toUpperCase()}`,
-        //   x + logoBoxWidth + qrBoxWidth / 2,
-        //   qrY + qrSide + 11,
-        //   { align: 'center' }
-        // );
-        // pdf.setTextColor(0, 0, 0);
+        // NÃO exibe nenhum texto abaixo do QR code!
+        // (Já removido)
       }
 
       setIsGenerating(false);

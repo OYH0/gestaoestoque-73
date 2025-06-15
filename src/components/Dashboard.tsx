@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -189,7 +188,7 @@ export function Dashboard() {
                   dataKey="quantidade" 
                   stroke="#ffffff"
                   strokeWidth={1}
-                  radius={[0, 12, 12, 0]} // Somente extremidade direita arredondada
+                  radius={[0, 6, 6, 0]} // Arredondamento reduzido nas extremidades direitas
                 />
               </BarChart>
             </ResponsiveContainer>

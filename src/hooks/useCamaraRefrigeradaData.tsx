@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,10 +39,15 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     }
     
     try {
-      const query = supabase
+      let query = supabase
         .from('camara_refrigerada_items')
         .select('*')
         .order('nome');
+
+      // Aplicar filtro por unidade se não for "todas" - usando o campo 'unidade' que existe no banco
+      if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
+        query = query.eq('unidade', stableSelectedUnidade.current);
+      }
 
       console.log('Filtro selecionado:', stableSelectedUnidade.current);
 
@@ -56,15 +62,16 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         id: item.id,
         nome: item.nome,
         quantidade: item.quantidade,
-        unidade: item.unidade || 'pç', // Use unidade from database for unit of measure
+        unidade: item.unidade_medida || item.unidade || 'pç', // Tentar unidade_medida primeiro, depois unidade
         categoria: item.categoria,
         status: item.status as 'descongelando' | 'pronto',
         data_entrada: item.data_entrada,
         temperatura_ideal: item.temperatura_ideal,
         observacoes: item.observacoes,
-        // Note: Since unidade_empresa doesn't exist in DB, we'll use a temporary approach
-        // Items will be filtered client-side based on a naming convention or other logic
-        unidade_item: 'juazeiro_norte', // Default value since field doesn't exist in DB
+        // Mapear a unidade corretamente - usar o campo 'unidade' do banco para unidade da empresa
+        unidade_item: (item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza') 
+          ? item.unidade as 'juazeiro_norte' | 'fortaleza'
+          : 'juazeiro_norte', // Fallback se não for uma unidade válida
       }));
       
       setItems(mappedItems);
@@ -115,16 +122,17 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       console.log('=== ADICIONANDO ITEM NA CÂMARA REFRIGERADA ===');
       console.log('Item recebido:', newItem);
       
-      // Preparar dados para inserção no banco - usar apenas os campos que existem
+      // Preparar dados para inserção no banco - usar o campo 'unidade' para armazenar a unidade da empresa
       const itemToInsert = {
         nome: newItem.nome,
         quantidade: newItem.quantidade,
-        unidade: newItem.unidade, // Campo correto para unidade de medida
+        unidade_medida: newItem.unidade, // Campo para unidade de medida (kg, pç, etc)
         categoria: newItem.categoria,
         status: newItem.status || 'descongelando',
         data_entrada: newItem.data_entrada,
         temperatura_ideal: newItem.temperatura_ideal,
         observacoes: newItem.observacoes,
+        unidade: newItem.unidade_item || 'juazeiro_norte', // Campo 'unidade' para armazenar unidade da empresa
         user_id: user.id,
       };
 
@@ -148,13 +156,13 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         id: data.id,
         nome: data.nome,
         quantidade: data.quantidade,
-        unidade: data.unidade || newItem.unidade, // Mapear corretamente a unidade de medida
+        unidade: data.unidade_medida || newItem.unidade, // Usar unidade_medida do banco ou fallback
         categoria: data.categoria,
         status: data.status as 'descongelando' | 'pronto',
         data_entrada: data.data_entrada,
         temperatura_ideal: data.temperatura_ideal,
         observacoes: data.observacoes,
-        unidade_item: newItem.unidade_item || 'juazeiro_norte', // Use from newItem since DB doesn't have this field
+        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza', // Mapear do campo 'unidade' do banco
       };
       
       setItems(prev => [...prev, mappedItem]);

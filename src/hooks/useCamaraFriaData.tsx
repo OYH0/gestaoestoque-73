@@ -72,16 +72,16 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         quantidade: item.quantidade,
         unidade: item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza' ? 'pç' : item.unidade,
         categoria: item.categoria,
-        peso_kg: item.peso_kg,
+        peso_kg: item.peso_kg || undefined,
         data_entrada: item.data_entrada,
         data_validade: item.data_validade,
-        temperatura: item.temperatura,
-        temperatura_ideal: item.temperatura_ideal,
+        temperatura: item.temperatura || undefined,
+        temperatura_ideal: item.temperatura_ideal || undefined,
         fornecedor: item.fornecedor,
         observacoes: item.observacoes,
         unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
         minimo: item.minimo || 5,
-        preco_unitario: item.preco_unitario,
+        preco_unitario: item.preco_unitario || undefined,
       }));
       
       setItems(mappedItems);
@@ -148,7 +148,11 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
       const mappedData = {
         ...data,
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
-        minimo: data.minimo || 5
+        minimo: data.minimo || 5,
+        peso_kg: data.peso_kg || undefined,
+        temperatura: data.temperatura || undefined,
+        temperatura_ideal: data.temperatura_ideal || undefined,
+        preco_unitario: data.preco_unitario || undefined
       };
       
       setItems(prev => [...prev, mappedData]);

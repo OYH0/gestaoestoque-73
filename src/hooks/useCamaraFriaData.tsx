@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -72,10 +73,10 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         quantidade: item.quantidade,
         unidade: item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza' ? 'pç' : item.unidade,
         categoria: item.categoria,
-        peso_kg: item.peso_kg || undefined,
+        peso_kg: undefined, // Not available in database
         data_entrada: item.data_entrada,
         data_validade: item.data_validade,
-        temperatura: item.temperatura || undefined,
+        temperatura: undefined, // Not available in database
         temperatura_ideal: item.temperatura_ideal || undefined,
         fornecedor: item.fornecedor,
         observacoes: item.observacoes,
@@ -149,8 +150,8 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         ...data,
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
         minimo: data.minimo || 5,
-        peso_kg: data.peso_kg || undefined,
-        temperatura: data.temperatura || undefined,
+        peso_kg: undefined, // Not available in database
+        temperatura: undefined, // Not available in database
         temperatura_ideal: data.temperatura_ideal || undefined,
         preco_unitario: data.preco_unitario || undefined
       };

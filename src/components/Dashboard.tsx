@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -223,7 +222,7 @@ export function Dashboard() {
         <div className="h-96">
           {top5MeatUsageWithPercentage.length > 0 ? (
             <div className="space-y-4">
-              <div className="h-64">
+              <div className="h-64 transition-transform duration-200 hover:scale-105">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -259,7 +258,6 @@ export function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              
               <div className="grid grid-cols-1 gap-2 text-xs">
                 {top5MeatUsageWithPercentage.map((item, index) => (
                   <div key={index} className="flex items-center justify-center gap-2">

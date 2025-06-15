@@ -59,13 +59,13 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         id: item.id,
         nome: item.nome,
         quantidade: item.quantidade,
-        unidade: item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza' ? 'pç' : item.unidade,
+        unidade: item.unidade_medida || 'pç', // Use unidade_medida from database for unit of measure
         categoria: item.categoria,
         status: item.status as 'descongelando' | 'pronto',
         data_entrada: item.data_entrada,
         temperatura_ideal: item.temperatura_ideal,
         observacoes: item.observacoes,
-        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
+        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza', // Use unidade from database for company unit
       }));
       
       setItems(mappedItems);
@@ -120,19 +120,21 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       console.log('Item recebido:', newItem);
       console.log('Unidade para salvar:', unidadeParaSalvar);
       
-      // Preparar dados para inserção no banco
+      // Preparar dados para inserção no banco - usar os campos corretos do banco
       const itemToInsert = {
         nome: newItem.nome,
         quantidade: newItem.quantidade,
-        unidade_medida: newItem.unidade, // Unidade de medida (kg, pç, etc)
+        unidade_medida: newItem.unidade, // Campo correto para unidade de medida
         categoria: newItem.categoria,
         status: newItem.status || 'descongelando',
         data_entrada: newItem.data_entrada,
         temperatura_ideal: newItem.temperatura_ideal,
         observacoes: newItem.observacoes,
         user_id: user.id,
-        unidade: unidadeParaSalvar // Unidade da empresa (juazeiro_norte, fortaleza)
+        unidade: unidadeParaSalvar // Campo correto para unidade da empresa
       };
+
+      console.log('Dados para inserção:', itemToInsert);
 
       const { data, error } = await supabase
         .from('camara_refrigerada_items')
@@ -152,13 +154,13 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         id: data.id,
         nome: data.nome,
         quantidade: data.quantidade,
-        unidade: newItem.unidade, // Manter a unidade de medida original
+        unidade: data.unidade_medida || newItem.unidade, // Mapear corretamente a unidade de medida
         categoria: data.categoria,
         status: data.status as 'descongelando' | 'pronto',
         data_entrada: data.data_entrada,
         temperatura_ideal: data.temperatura_ideal,
         observacoes: data.observacoes,
-        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
+        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza', // Mapear corretamente a unidade da empresa
       };
       
       setItems(prev => [...prev, mappedItem]);

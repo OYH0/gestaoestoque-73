@@ -113,27 +113,46 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     if (!user) return;
 
     try {
+      // Usar unidade_item se fornecido, senão usar padrão
       const unidadeParaSalvar = newItem.unidade_item || 'juazeiro_norte';
       
+      console.log('=== ADICIONANDO ITEM NA CÂMARA REFRIGERADA ===');
+      console.log('Item recebido:', newItem);
+      console.log('Unidade para salvar:', unidadeParaSalvar);
+      
+      // Preparar dados para inserção no banco - remover unidade_item e usar unidade
+      const itemToInsert = {
+        nome: newItem.nome,
+        quantidade: newItem.quantidade,
+        unidade: newItem.unidade, // Esta é a unidade de medida (kg, pç, etc)
+        categoria: newItem.categoria,
+        status: newItem.status || 'descongelando',
+        data_entrada: newItem.data_entrada,
+        temperatura_ideal: newItem.temperatura_ideal,
+        observacoes: newItem.observacoes,
+        user_id: user.id,
+        unidade: unidadeParaSalvar // Esta é a unidade da empresa (juazeiro_norte, fortaleza)
+      };
+
       const { data, error } = await supabase
         .from('camara_refrigerada_items')
-        .insert([{ 
-          ...newItem, 
-          user_id: user.id,
-          status: newItem.status || 'descongelando',
-          unidade: unidadeParaSalvar
-        }])
+        .insert([itemToInsert])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao inserir no banco:', error);
+        throw error;
+      }
+      
+      console.log('Item inserido com sucesso:', data);
       
       // Map the returned data to our interface
       const mappedItem: CamaraRefrigeradaItem = {
         id: data.id,
         nome: data.nome,
         quantidade: data.quantidade,
-        unidade: data.unidade === 'juazeiro_norte' || data.unidade === 'fortaleza' ? 'pç' : data.unidade,
+        unidade: newItem.unidade, // Manter a unidade de medida original
         categoria: data.categoria,
         status: data.status as 'descongelando' | 'pronto',
         data_entrada: data.data_entrada,

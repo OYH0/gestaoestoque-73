@@ -19,38 +19,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
 
-    // Simple auth state listener - only handle essential events
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!mounted) return;
-        
-        console.log('Auth state change:', event, session?.user?.email);
-        
-        // Only handle key events, ignore TOKEN_REFRESHED to avoid loops
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
-      }
-    );
-
     // Get initial session
     const getInitialSession = async () => {
-      if (!mounted) return;
+      if (!mounted || initialized) return;
       
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error getting session:', error);
+          console.warn('Session check error:', error);
           if (mounted) {
+            setSession(null);
+            setUser(null);
             setLoading(false);
+            setInitialized(true);
           }
           return;
         }
@@ -59,22 +47,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
+          setInitialized(true);
         }
       } catch (error) {
-        console.error('Session check failed:', error);
+        console.warn('Session initialization failed:', error);
         if (mounted) {
+          setSession(null);
+          setUser(null);
           setLoading(false);
+          setInitialized(true);
         }
       }
     };
 
     getInitialSession();
 
+    // Auth state listener - only set up after initial load
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!mounted || !initialized) return;
+        
+        console.log('Auth event:', event);
+        
+        // Handle critical auth events only
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+        
+        // Ignore TOKEN_REFRESHED events to prevent loops
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refreshed silently');
+        }
+      }
+    );
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [initialized]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -178,36 +190,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const { error } = await supabase.auth.signOut();
       
-      // Ignorar erros de sessão não encontrada
-      if (error) {
+      if (error && !error.message?.toLowerCase().includes('session not found')) {
         console.error('Erro no logout:', error);
-        if (
-          error.message?.toLowerCase().includes('session not found') ||
-          error.message?.toLowerCase().includes('auth session missing') ||
-          error.message?.toLowerCase().includes('session_missing') // variação visto em libs antigas
-        ) {
-          // Não mostre toast, apenas prossiga com o logout local normalmente
-          setSession(null);
-          setUser(null);
-          setLoading(false);
-          // Opcional: toast amistoso de logout
-          toast({
-            title: "Logout realizado",
-            description: "Até logo!",
-          });
-          return;
-        } else {
-          toast({
-            title: "Erro no logout",
-            description: error.message,
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
+        toast({
+          title: "Erro no logout",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
       }
 
-      // Limpar estado local imediatamente
+      // Limpar estado local
       setSession(null);
       setUser(null);
       
@@ -218,14 +211,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     } catch (error: any) {
       console.error('Falha no logout:', error);
-      if (
-        error?.message?.toLowerCase().includes('session not found') ||
-        error?.message?.toLowerCase().includes('auth session missing') ||
-        error?.message?.toLowerCase().includes('session_missing')
-      ) {
+      // Para erros de sessão não encontrada, ainda fazemos logout local
+      if (error?.message?.toLowerCase().includes('session not found')) {
         setSession(null);
         setUser(null);
-        setLoading(false);
         toast({
           title: "Logout realizado",
           description: "Até logo!",

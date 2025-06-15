@@ -151,12 +151,17 @@ export function useQRCodeGenerator() {
         const x = col * (labelWidth + spacingX) + spacingX / 2;
         const y = row * (labelHeight + spacingY) + spacingY / 2;
 
+        // --- Demarcação da região da etiqueta ---
+        pdf.setDrawColor(180, 180, 180); // cinza claro para linha de corte
+        pdf.setLineWidth(1);
+        pdf.rect(x, y, labelWidth, labelHeight, 'S'); // 'S' = somente contorno
+
         // Layout principal
-        const logoBoxWidth = labelWidth * 0.45; // 45% do bloco
+        const logoBoxWidth = labelWidth * 0.45;
         const qrBoxWidth = labelWidth - logoBoxWidth;
         let currY = y + marginY;
 
-        // Exibe a logo maior, centralizada e sem esticar/cortar
+        // Logo centralizada e maior (mantém ajuste feito anteriormente)
         if (logoImage) {
           try {
             const maxLogoW = logoBoxWidth - 8;
@@ -180,9 +185,9 @@ export function useQRCodeGenerator() {
             const logoY = currY + (maxLogoH - renderH) / 2;
 
             pdf.addImage(logoImage, 'PNG', logoX, logoY, renderW, renderH, undefined, 'FAST');
-            currY += maxLogoH + 14; // +14 para afastar mais o texto da logo (aqui está a mudança)
+            currY += maxLogoH + 14; // mantém distância extra do texto
           } catch {
-            currY += labelHeight * 0.5 + 14; // mantém distância extra mesmo em caso de erro
+            currY += labelHeight * 0.5 + 14;
           }
         } else {
           currY += labelHeight * 0.5 + 14;
@@ -199,9 +204,9 @@ export function useQRCodeGenerator() {
         );
         currY += 18;
 
-        // Exibir somente data_entrada no formato dd/mm/aaaa
+        // Data de entrada em negrito (dd/mm/aaaa)
         if (qrData.data_entrada) {
-          pdf.setFont('helvetica', 'normal');
+          pdf.setFont('helvetica', 'bold'); // NEGRITO
           pdf.setFontSize(12);
           let formatted = '';
           try {

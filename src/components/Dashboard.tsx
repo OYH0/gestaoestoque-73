@@ -38,29 +38,30 @@ const PIE_COLORS = [
 // Função para abreviar nomes longos
 const abreviarNome = (nome: string): string => {
   const abreviacoes: { [key: string]: string } = {
-    'Filé de Peito': 'Peito',
-    'Coxa e Sobrecoxa': 'Sobrecoxa',
-    'Coração de Frango': 'Coração',
-    'Coração de Frango ': 'Coração', // Versão com espaço no final
-    'Picanha Suína': 'Picanha Suína',
-    'Coxão Duro': 'Coxão Duro',
-    'Costela Janelinha': 'Costela Jan.',
-    'Alcatra com Maminha': 'Alcatra c/ Mam.',
-    'Capa de Filé G': 'Capa Filé G',
-    'Linguiça Mista': 'Linguiça Mista',
-    'Costelão Bovino 9': 'Costelão Bovino',
-    'Cupim': 'Cupim',
-    'Contra Filé': 'Contra Filé',
-    'Coxinha da Asa': 'Coxinha Asa',
-    'Fralda': 'Fralda',
-    'Capa de Filé P': 'Capa Filé P',
-    'Costela Suína': 'Costela Suína',
-    'Coxão Mole': 'Coxão Mole',
-    'Picanha Bovina': 'Picanha Bov.',
-    'Linguiça de Frango': 'Ling. Frango',
-    'Pernil Suíno': 'Pernil Suíno',
-    'Linguiça Apimentada': 'Ling. Apiment.',
-    'Maminha da Alcatra': 'Maminha Alc.'
+    'Filé de Peito': 'Pt',
+    'Coxa e Sobrecoxa': 'Sbcx',
+    'Coração de Frango': 'Crç',
+    'Coração de Frango ': 'Crç', // Versão com espaço no final
+    'Picanha Suína': 'PcS',
+    'Coxão Duro': 'CxD',
+    'Costela Janelinha': 'CtJ',
+    'Alcatra com Maminha': 'AlcM',
+    'Capa de Filé G': 'CpFG',
+    'Linguiça Mista': 'LgM',
+    'Costelão Bovino 9': 'CstB',
+    'Costelão Bovino': 'CstB',
+    'Cupim': 'Cpm',
+    'Contra Filé': 'CtF',
+    'Coxinha da Asa': 'CxA',
+    'Fralda': 'Frl',
+    'Capa de Filé P': 'CpFP',
+    'Costela Suína': 'CtS',
+    'Coxão Mole': 'CxM',
+    'Picanha Bovina': 'PcB',
+    'Linguiça de Frango': 'LgF',
+    'Pernil Suíno': 'PrS',
+    'Linguiça Apimentada': 'LgA',
+    'Maminha da Alcatra': 'MmA'
   };
   
   return abreviacoes[nome] || nome;

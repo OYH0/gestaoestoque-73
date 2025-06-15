@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { QrCode, Printer, Download, Loader2 } from 'lucide-react';
 import { useQRCodeGenerator, QRCodeData } from '@/hooks/useQRCodeGenerator';
+import { toast } from '@/hooks/use-toast';
 
 interface QRCodeGeneratorProps {
   qrCodes: QRCodeData[];
@@ -17,9 +18,34 @@ export function QRCodeGenerator({ qrCodes, onClose, itemName, stockType }: QRCod
   const [isOpen, setIsOpen] = React.useState(true);
 
   const handleGeneratePDF = async () => {
+    if (!qrCodes || qrCodes.length === 0) {
+      toast({
+        title: 'Sem QR codes para gerar',
+        description: 'Não há códigos QR para gerar para este item.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    console.log('🖨 Iniciando geração dos PDFs de QR codes!', { qrCodes });
     const result = await generateQRCodePDF(qrCodes);
-    
-    if (result.success) {
+
+    // Exibe erro para feedback rápido se falhar e marca no console
+    if (result && !result.success) {
+      console.error('❌ Falha ao gerar PDF dos QR codes:', result.error);
+      toast({
+        title: 'Erro ao gerar PDF dos QR codes',
+        description: result.error?.message || 'Ocorreu um erro ao gerar os arquivos.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (result && result.success) {
+      toast({
+        title: "PDFs gerados com sucesso",
+        description: "As etiquetas com QR codes foram baixadas.",
+      });
       handleClose();
     }
   };
@@ -37,6 +63,9 @@ export function QRCodeGenerator({ qrCodes, onClose, itemName, stockType }: QRCod
             <QrCode className="w-5 h-5" />
             Gerar QR Codes
           </DialogTitle>
+          <DialogDescription>
+            Monte e baixe as etiquetas individuais para cada unidade deste item. Cole as etiquetas nas embalagens para facilitar o rastreio automático no estoque.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

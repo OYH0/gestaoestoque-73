@@ -80,25 +80,30 @@ export function useQRCodeGenerator() {
     setIsGenerating(true);
 
     let logoImage: string | undefined = undefined;
-    let logoErro = false;
 
     try {
-      // Corrigir fetch da logo (sem /public no caminho)
-      const resp = await fetch(LOGO_URL);
-      if (!resp.ok) throw new Error('Logo não encontrada');
-      const blob = await resp.blob();
-      logoImage = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
-      });
+      // Busca a logo, mas ignora erro de logo corrompida/ausente (o PDF continua)
+      const resp = await fetch('/churrasco-logo.png');
+      if (resp.ok) {
+        const blob = await resp.blob();
+        logoImage = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      } else {
+        logoImage = undefined;
+        toast({
+          title: "Atenção",
+          description: "Logo da Companhia do Churrasco não encontrada. Etiquetas serão geradas sem logo.",
+          variant: "destructive"
+        });
+      }
     } catch (e) {
-      logoErro = true;
       logoImage = undefined;
-      // Não bloqueia geração, apenas avisa usuário
       toast({
-        title: "Atenção",
-        description: "Logo da Companhia do Churrasco não foi encontrada ou está corrompida. Etiquetas serão geradas sem a logo.",
+        title: "Atenção (Logo da etiqueta)",
+        description: "Não foi possível carregar a logo. As etiquetas foram geradas sem logo.",
         variant: "destructive"
       });
     }
@@ -149,7 +154,7 @@ export function useQRCodeGenerator() {
 
         y += 48;
 
-        // Bloco de datas/info
+        // Bloco de datas/info (pode customizar com campos reais)
         pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9);
         pdf.text('VAL. ORIGINAL:', margin, y);
         pdf.setFont('helvetica', 'normal');
@@ -203,7 +208,7 @@ export function useQRCodeGenerator() {
 
         pdf.setTextColor('#111');
 
-        // QRCode como sempre
+        // QRCode
         const qrCodeDataURL = await QRCode.toDataURL(qrData.id, {
           width: 240,
           margin: 1,
@@ -216,8 +221,13 @@ export function useQRCodeGenerator() {
           try {
             pdf.addImage(logoImage, 'PNG', labelWidth - 50, margin, 38, 38);
           } catch (e) {
-            // Se ainda assim der erro, não quebra o fluxo
+            // Se ainda assim der erro, apenas loga e continua
             console.error("Erro ao adicionar a logo na etiqueta:", e);
+            toast({
+              title: "Logo não adicionada",
+              description: "Houve um erro ao adicionar a logo na etiqueta.",
+              variant: "destructive"
+            });
           }
         }
         const fileName = `etiqueta-qrcode-${qrData.nome.replace(/\s+/g, '-').toLowerCase()}-${qrData.id.slice(-6)}.pdf`;

@@ -77,7 +77,7 @@ export function Login() {
         {/* Right side - Login form */}
         <div className="flex-1 flex items-center justify-center p-4 lg:p-12 py-8">
           <div className="w-full max-w-md">
-            <Card className="rounded-3xl overflow-hidden bg-black/70 backdrop-blur-md">
+            <Card className="shadow-2xl rounded-3xl overflow-hidden border-0">
               {/* Mobile logo (visible only on small screens) */}
               <div className="lg:hidden pt-8 pb-6">
                 <div className="text-center space-y-4">

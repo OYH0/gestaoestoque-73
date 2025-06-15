@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,6 +22,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const mountedRef = useRef(true);
+  const loggedRef = useRef(false);
   
   // Create a stable reference for the selected unit
   const stableSelectedUnidade = useRef(selectedUnidade);
@@ -31,7 +31,11 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
   const fetchItems = useCallback(async () => {
     if (!user || !mountedRef.current) return;
     
-    console.log('=== INICIANDO FETCH DA CÂMARA REFRIGERADA ===');
+    // Log apenas uma vez por sessão
+    if (!loggedRef.current) {
+      console.log('=== FETCH INICIAL DA CÂMARA REFRIGERADA ===');
+      loggedRef.current = true;
+    }
     
     try {
       let query = supabase
@@ -65,8 +69,6 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       }));
       
       setItems(mappedItems);
-      console.log('=== FETCH CONCLUÍDO - CÂMARA REFRIGERADA ===');
-      console.log('Total de itens:', mappedItems.length);
     } catch (error) {
       console.error('Error fetching items:', error);
       if (mountedRef.current) {

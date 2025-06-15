@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { useQRCodeGenerator } from '@/hooks/useQRCodeGenerator';
 import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
-import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export interface CamaraFriaItem {
   id: string;
@@ -12,17 +11,16 @@ export interface CamaraFriaItem {
   quantidade: number;
   unidade: string;
   categoria: string;
-  minimo?: number;
+  peso_kg?: number;
   data_entrada?: string;
   data_validade?: string;
-  temperatura_ideal?: number;
-  preco_unitario?: number;
+  temperatura?: number;
   fornecedor?: string;
   observacoes?: string;
   unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
-export function useCamaraFriaData() {
+export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas') {
   const [items, setItems] = useState<CamaraFriaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [qrCodes, setQrCodes] = useState<any[]>([]);
@@ -31,10 +29,21 @@ export function useCamaraFriaData() {
   const { user } = useAuth();
   const { generateQRCodeData } = useQRCodeGenerator();
   const { addHistoricoItem } = useCamaraFriaHistorico();
-  const { getFilterForUserUnidade, canModifyUnidade, canTransferItems } = useUserPermissions();
+  const mountedRef = useRef(true);
+  const loggedRef = useRef(false);
 
-  const fetchItems = async () => {
-    if (!user) return;
+  // Create a stable reference for the selected unit
+  const stableSelectedUnidade = useRef(selectedUnidade);
+  stableSelectedUnidade.current = selectedUnidade;
+
+  const fetchItems = useCallback(async () => {
+    if (!user || !mountedRef.current) return;
+    
+    // Log apenas uma vez por sessão
+    if (!loggedRef.current) {
+      console.log('=== FETCH INICIAL DA CÂMARA FRIA ===');
+      loggedRef.current = true;
+    }
     
     try {
       let query = supabase
@@ -42,144 +51,133 @@ export function useCamaraFriaData() {
         .select('*')
         .order('nome');
 
-      // Aplicar filtro por unidade se necessário
-      const unidadeFilter = getFilterForUserUnidade();
-      if (unidadeFilter) {
-        query = query.eq('unidade', unidadeFilter);
+      // Aplicar filtro por unidade se não for "todas"
+      if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
+        query = query.eq('unidade', stableSelectedUnidade.current);
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
       
-      console.log('=== DADOS CARREGADOS DO BANCO ===');
-      console.log('Total de itens:', data?.length || 0);
-      console.log('Filtro aplicado para unidade:', unidadeFilter || 'nenhum (todos podem ver todas as unidades)');
+      if (!mountedRef.current) return;
       
-      // Mapear o campo 'unidade' do banco para 'unidade_item' no frontend
-      const itemsMapeados: CamaraFriaItem[] = (data || []).map(item => ({
-        ...item,
-        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza'
+      // Map the database data to our interface
+      const mappedItems: CamaraFriaItem[] = (data || []).map(item => ({
+        id: item.id,
+        nome: item.nome,
+        quantidade: item.quantidade,
+        unidade: item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza' ? 'pç' : item.unidade,
+        categoria: item.categoria,
+        peso_kg: item.peso_kg,
+        data_entrada: item.data_entrada,
+        data_validade: item.data_validade,
+        temperatura: item.temperatura,
+        fornecedor: item.fornecedor,
+        observacoes: item.observacoes,
+        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
       }));
       
-      setItems(itemsMapeados);
+      setItems(mappedItems);
     } catch (error) {
       console.error('Error fetching items:', error);
-      toast({
-        title: "Erro ao carregar dados",
-        description: "Não foi possível carregar os itens da câmara fria.",
-        variant: "destructive",
-      });
+      if (mountedRef.current) {
+        toast({
+          title: "Erro ao carregar dados",
+          description: "Não foi possível carregar os itens da câmara fria.",
+          variant: "destructive",
+        });
+      }
     } finally {
+      if (mountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [user]);
+
+  // Effect for initial load and user changes
+  useEffect(() => {
+    if (user) {
+      fetchItems();
+    } else {
       setLoading(false);
     }
-  };
+  }, [user, fetchItems]);
 
-  const addItem = async (newItem: Omit<CamaraFriaItem, 'id'>) => {
+  // Effect for unit changes
+  useEffect(() => {
+    if (user && stableSelectedUnidade.current !== selectedUnidade) {
+      stableSelectedUnidade.current = selectedUnidade;
+      fetchItems();
+    }
+  }, [selectedUnidade, user, fetchItems]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const addItem = async (newItem: Omit<CamaraFriaItem, 'id'> & { unidade_item?: 'juazeiro_norte' | 'fortaleza' }) => {
     if (!user) return;
 
-    // Verificar se o usuário pode modificar essa unidade
-    const targetUnidade = newItem.unidade_item || 'juazeiro_norte';
-    if (!canModifyUnidade(targetUnidade)) {
-      toast({
-        title: "Acesso negado",
-        description: "Você só pode adicionar itens na sua unidade responsável.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    console.log('=== INÍCIO addItem NO HOOK ===');
-    console.log('Item recebido no hook:', newItem);
-    console.log('Unidade do item:', newItem.unidade_item);
-    
-    // GARANTIR que quantidade seja um número inteiro válido
-    let quantidadeSegura: number;
-    
-    if (typeof newItem.quantidade === 'string') {
-      quantidadeSegura = parseInt(newItem.quantidade, 10);
-    } else if (typeof newItem.quantidade === 'number') {
-      quantidadeSegura = Math.floor(newItem.quantidade);
-    } else {
-      quantidadeSegura = 0;
-    }
-    
-    // Validar se é um número válido
-    if (isNaN(quantidadeSegura) || quantidadeSegura < 0) {
-      quantidadeSegura = 0;
-    }
-    
-    console.log('Quantidade após conversão e validação:', quantidadeSegura);
-    
-    // Garantir que a unidade seja sempre definida
-    const unidadeSegura = newItem.unidade_item || 'juazeiro_norte';
-    
-    // Garantir que data_entrada seja sempre definida
-    const dataEntradaSegura = newItem.data_entrada || new Date().toISOString().split('T')[0];
-    
-    const itemParaSalvar = {
-      nome: newItem.nome,
-      quantidade: quantidadeSegura,
-      unidade: unidadeSegura,  // Usar a coluna 'unidade' para guardar a unidade_item
-      categoria: newItem.categoria,
-      minimo: newItem.minimo || 0,
-      data_entrada: dataEntradaSegura,  // GARANTIR que data_entrada seja sempre definida
-      data_validade: newItem.data_validade,
-      temperatura_ideal: newItem.temperatura_ideal,
-      preco_unitario: newItem.preco_unitario,
-      fornecedor: newItem.fornecedor,
-      observacoes: newItem.observacoes,
-      user_id: user.id
-    };
-    
-    console.log('Item final para salvar no banco:', itemParaSalvar);
-
     try {
+      const itemToInsert = {
+        ...newItem,
+        user_id: user.id,
+        unidade: newItem.unidade_item || 'juazeiro_norte'
+      };
+      
+      delete (itemToInsert as any).unidade_item;
+
       const { data, error } = await supabase
         .from('camara_fria_items')
-        .insert([itemParaSalvar])
+        .insert([itemToInsert])
         .select()
         .single();
 
       if (error) throw error;
       
-      console.log('✅ ITEM SALVO NO BANCO COM SUCESSO!');
-      console.log('Dados retornados do banco:', data);
-      
-      // Mapear o campo 'unidade' do banco para 'unidade_item' no frontend
-      const itemMapeado: CamaraFriaItem = {
+      const mappedData = {
         ...data,
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza'
       };
       
-      setItems(prev => [...prev, itemMapeado]);
-      setLastAddedItem(itemMapeado);
+      setItems(prev => [...prev, mappedData]);
+      setLastAddedItem(mappedData);
       
-      // Gerar QR codes APENAS se quantidade > 0
-      if (data.quantidade > 0) {
-        console.log('=== INICIANDO GERAÇÃO DE QR CODES ===');
-        const qrCodesData = generateQRCodeData(itemMapeado, 'CF', data.quantidade);
+      // Registrar no histórico
+      if (newItem.quantidade > 0) {
+        await addHistoricoItem({
+          item_nome: newItem.nome,
+          quantidade: newItem.quantidade,
+          unidade: newItem.unidade,
+          categoria: newItem.categoria,
+          tipo: 'entrada',
+          observacoes: 'Item adicionado ao estoque',
+          unidade_item: newItem.unidade_item || 'juazeiro_norte'
+        });
+      }
+      
+      // Gerar QR codes para o item apenas se quantidade > 0
+      if (newItem.quantidade > 0) {
+        const qrCodesData = generateQRCodeData(mappedData, 'CF', newItem.quantidade);
         setQrCodes(qrCodesData);
         
         setTimeout(() => {
           setShowQRGenerator(true);
         }, 100);
-        
-        toast({
-          title: "Item adicionado",
-          description: `${data.nome} foi adicionado ao estoque! ${qrCodesData.length} QR codes serão gerados.`,
-        });
-      } else {
-        console.log('Quantidade zero - não gerando QR codes');
-        toast({
-          title: "Item adicionado",
-          description: `${data.nome} foi adicionado ao estoque com quantidade zero!`,
-        });
       }
       
-      console.log('=== FIM addItem NO HOOK ===');
+      toast({
+        title: "Item adicionado",
+        description: newItem.quantidade > 0 
+          ? `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`
+          : `${newItem.nome} foi adicionado ao estoque!`,
+      });
     } catch (error) {
-      console.error('❌ ERRO ao adicionar item:', error);
+      console.error('Error adding item:', error);
       toast({
         title: "Erro ao adicionar item",
         description: "Não foi possível adicionar o item.",
@@ -193,22 +191,7 @@ export function useCamaraFriaData() {
       const currentItem = items.find(item => item.id === id);
       if (!currentItem) return;
 
-      // Verificar se o usuário pode modificar essa unidade
-      if (!canModifyUnidade(currentItem.unidade_item || 'juazeiro_norte')) {
-        toast({
-          title: "Acesso negado",
-          description: "Você só pode modificar itens da sua unidade responsável.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const quantityIncrease = newQuantity - currentItem.quantidade;
-
-      console.log('=== updateItemQuantity ===');
-      console.log('Quantidade atual:', currentItem.quantidade);
-      console.log('Nova quantidade:', newQuantity);
-      console.log('Aumento de quantidade:', quantityIncrease);
+      const quantityDifference = newQuantity - currentItem.quantidade;
 
       const { error } = await supabase
         .from('camara_fria_items')
@@ -221,14 +204,24 @@ export function useCamaraFriaData() {
         item.id === id ? { ...item, quantidade: newQuantity } : item
       ));
 
-      // Gerar QR codes apenas se houve aumento de quantidade
-      if (quantityIncrease > 0) {
+      // Registrar no histórico
+      if (quantityDifference !== 0) {
+        await addHistoricoItem({
+          item_nome: currentItem.nome,
+          quantidade: Math.abs(quantityDifference),
+          unidade: currentItem.unidade,
+          categoria: currentItem.categoria,
+          tipo: quantityDifference > 0 ? 'entrada' : 'saida',
+          observacoes: quantityDifference > 0 ? 'Quantidade aumentada' : 'Quantidade reduzida',
+          unidade_item: currentItem.unidade_item || 'juazeiro_norte'
+        });
+      }
+
+      if (quantityDifference > 0) {
         const updatedItem = { ...currentItem, quantidade: newQuantity };
         setLastAddedItem(updatedItem);
         
-        console.log('Gerando QR codes para aumento de quantidade:', quantityIncrease);
-        const qrCodesData = generateQRCodeData(updatedItem, 'CF', quantityIncrease);
-        console.log('QR codes gerados para aumento:', qrCodesData.length);
+        const qrCodesData = generateQRCodeData(updatedItem, 'CF', quantityDifference);
         setQrCodes(qrCodesData);
         
         setTimeout(() => {
@@ -250,16 +243,6 @@ export function useCamaraFriaData() {
       const currentItem = items.find(item => item.id === id);
       if (!currentItem) return;
 
-      // Verificar se o usuário pode modificar essa unidade
-      if (!canModifyUnidade(currentItem.unidade_item || 'juazeiro_norte')) {
-        toast({
-          title: "Acesso negado",
-          description: "Você só pode deletar itens da sua unidade responsável.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { error } = await supabase
         .from('camara_fria_items')
         .delete()
@@ -268,6 +251,18 @@ export function useCamaraFriaData() {
       if (error) throw error;
 
       setItems(prev => prev.filter(item => item.id !== id));
+      
+      // Registrar no histórico
+      await addHistoricoItem({
+        item_nome: currentItem.nome,
+        quantidade: currentItem.quantidade,
+        unidade: currentItem.unidade,
+        categoria: currentItem.categoria,
+        tipo: 'saida',
+        observacoes: 'Item removido do estoque',
+        unidade_item: currentItem.unidade_item || 'juazeiro_norte'
+      });
+
       toast({
         title: "Item removido",
         description: "Item foi removido do estoque.",
@@ -282,72 +277,42 @@ export function useCamaraFriaData() {
     }
   };
 
-  const transferItemsToUnidade = async (itemIds: string[], targetUnidade: 'juazeiro_norte' | 'fortaleza') => {
-    if (!user) return;
-
-    // Verificar se o usuário pode fazer transferências (apenas admins)
-    if (!canTransferItems()) {
-      toast({
-        title: "Acesso negado",
-        description: "Apenas administradores podem transferir itens entre unidades.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    console.log('=== TRANSFERINDO ITENS PARA NOVA UNIDADE ===');
-    console.log('Item IDs:', itemIds);
-    console.log('Unidade de destino:', targetUnidade);
-
+  const transferToRefrigerada = async (item: CamaraFriaItem) => {
     try {
-      const { error } = await supabase
-        .from('camara_fria_items')
-        .update({ unidade: targetUnidade })
-        .in('id', itemIds);
+      // Remover o item da câmara fria
+      await deleteItem(item.id);
+
+      // Preparar os dados para adicionar na câmara refrigerada
+      const newItem = {
+        nome: item.nome,
+        quantidade: item.quantidade,
+        unidade: item.unidade,
+        categoria: item.categoria,
+        unidade_item: item.unidade_item,
+      };
+
+      // Adicionar o item na câmara refrigerada
+      const { data, error } = await supabase
+        .from('camara_refrigerada_items')
+        .insert([{ ...newItem, user_id: user.id }])
+        .select()
+        .single();
 
       if (error) throw error;
 
-      // Atualizar o estado local
-      setItems(prev => prev.map(item => 
-        itemIds.includes(item.id) 
-          ? { ...item, unidade_item: targetUnidade }
-          : item
-      ));
-
-      // Registrar no histórico para cada item transferido
-      const transferredItems = items.filter(item => itemIds.includes(item.id));
-      
-      for (const item of transferredItems) {
-        await addHistoricoItem({
-          item_nome: item.nome,
-          quantidade: item.quantidade,
-          unidade: item.unidade,
-          categoria: item.categoria,
-          tipo: 'entrada',
-          observacoes: `Transferido para ${targetUnidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza'}`,
-          unidade_item: targetUnidade
-        });
-      }
-
       toast({
-        title: "Transferência realizada",
-        description: `${transferredItems.length} itens foram transferidos para ${targetUnidade === 'juazeiro_norte' ? 'Juazeiro do Norte' : 'Fortaleza'}`,
+        title: "Item transferido",
+        description: `${item.nome} foi transferido para a câmara refrigerada.`,
       });
-
-      console.log('✅ Transferência concluída com sucesso');
     } catch (error) {
-      console.error('❌ ERRO na transferência:', error);
+      console.error('Error transferring item:', error);
       toast({
-        title: "Erro na transferência",
-        description: "Não foi possível transferir os itens.",
+        title: "Erro ao transferir item",
+        description: "Não foi possível transferir o item para a câmara refrigerada.",
         variant: "destructive",
       });
     }
   };
-
-  useEffect(() => {
-    fetchItems();
-  }, [user, getFilterForUserUnidade]);
 
   return {
     items,
@@ -355,11 +320,11 @@ export function useCamaraFriaData() {
     addItem,
     updateItemQuantity,
     deleteItem,
+    transferToRefrigerada,
     fetchItems,
     qrCodes,
     showQRGenerator,
     setShowQRGenerator,
-    lastAddedItem,
-    transferItemsToUnidade
+    lastAddedItem
   };
 }

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -28,9 +29,16 @@ export function useDescartaveisData() {
   const { user } = useAuth();
   const { generateQRCodeData } = useQRCodeGenerator();
   const { addHistoricoItem } = useDescartaveisHistorico();
+  const loggedRef = useRef(false);
 
   const fetchItems = async () => {
     if (!user) return;
+    
+    // Log apenas uma vez por sessão
+    if (!loggedRef.current) {
+      console.log('=== FETCH INICIAL DOS DESCARTÁVEIS ===');
+      loggedRef.current = true;
+    }
     
     try {
       const { data, error } = await supabase

@@ -16,7 +16,8 @@ export interface QRCodeData {
   preco_unitario?: number;
 }
 
-const LOGO_URL = '/lovable-uploads/1fe9b367-5306-4aac-9882-fb616f61549e.png'; // Usa imagem enviada pelo usuário
+// Atualiza para nova logo enviada pelo usuário
+const LOGO_URL = '/lovable-uploads/041b3ef8-3841-4053-8434-b637c0a3f68c.png';
 
 export function useQRCodeGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -191,20 +192,12 @@ export function useQRCodeGenerator() {
         );
         currY += 19;
 
-        // Data de entrada (ou validade, se existir)
-        let infoLine = '';
+        // Data de validade
         if (qrData.data_validade) {
-          infoLine = `Validade: ${new Date(qrData.data_validade).toLocaleDateString('pt-BR')}`;
-        } else if (qrData.data_entrada) {
-          infoLine = `Entrada: ${new Date(qrData.data_entrada).toLocaleDateString('pt-BR')}`;
-        } else {
-          infoLine = '';
-        }
-        if (infoLine) {
           pdf.setFont('helvetica', 'normal');
           pdf.setFontSize(11.5);
           pdf.text(
-            infoLine,
+            `Validade: ${new Date(qrData.data_validade).toLocaleDateString('pt-BR')}`,
             x + logoBoxWidth / 2,
             currY + 8,
             { align: 'center', baseline: 'middle' }
@@ -212,21 +205,11 @@ export function useQRCodeGenerator() {
           currY += 16;
         }
 
-        // Categoria (opcional, menor)
-        if (qrData.categoria) {
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(10.5);
-          pdf.text(
-            qrData.categoria,
-            x + logoBoxWidth / 2,
-            currY + 6,
-            { align: 'center', baseline: 'middle' }
-          );
-          currY += 13;
-        }
+        // Removido: Categoria do item.
+        // Removido: Unidade juazeiro_norte.
 
-        // Unidade (p.e. Kg, pacote...)
-        if (qrData.unidade) {
+        // Unidade (p.e. Kg, pacote...), exceto se contém "juazeiro_norte"
+        if (qrData.unidade && qrData.unidade !== 'juazeiro_norte') {
           pdf.setFont('helvetica', 'italic');
           pdf.setFontSize(10);
           pdf.text(

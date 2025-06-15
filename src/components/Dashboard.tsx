@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
@@ -71,6 +71,43 @@ export function Dashboard() {
   const { historico: camaraFriaHistorico } = useCamaraFriaHistorico();
   const { items: estoqueSecoItems } = useEstoqueSecoData();
   const { items: descartaveisItems } = useDescartaveisData();
+
+  // Estado para fatia ativa do gráfico de pizza
+  const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
+
+  // Função customizada para desenhar slice ativo
+  const renderActiveShape = (props: any) => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+    const RADIAN = Math.PI / 180;
+    // Offset de "salto"
+    const sin = Math.sin(-RADIAN * midAngle);
+    const cos = Math.cos(-RADIAN * midAngle);
+    const sx = cx + (outerRadius + 10) * cos;
+    const sy = cy + (outerRadius + 10) * sin;
+    const mx = cx + (outerRadius + 16) * cos;
+    const my = cy + (outerRadius + 16) * sin;
+
+    return (
+      <g>
+        <text x={cx} y={cy-5} dy={8} textAnchor="middle" fill={fill} className="font-semibold text-xs">
+          {payload.nome}
+        </text>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 8}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          cornerRadius={6}
+        />
+        <text x={mx} y={my} textAnchor="middle" fill="#222" fontSize={12} fontWeight={500}>
+          {`${value}pç`}
+        </text>
+      </g>
+    );
+  };
 
   // Memorizar processamento dos dados para gráfico de barras
   const meatTypesDataWithColors = useMemo(() => {
@@ -206,7 +243,7 @@ export function Dashboard() {
     </Card>
   ), [meatTypesDataWithColors, camaraFriaItems]);
 
-  // Componente do gráfico de pizza
+  // PieChartCard atualizado com animação de slice "saltando"
   const PieChartCard = useMemo(() => (
     <Card className="shadow-md border-0">
       <CardHeader>
@@ -222,7 +259,7 @@ export function Dashboard() {
         <div className="h-96">
           {top5MeatUsageWithPercentage.length > 0 ? (
             <div className="space-y-4">
-              <div className="h-64 transition-transform duration-200 hover:scale-105">
+              <div className="h-64 transition-transform duration-200">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -237,7 +274,11 @@ export function Dashboard() {
                       dataKey="totalSaidas"
                       strokeWidth={2}
                       stroke="#ffffff"
-                      cornerRadius={6} // Levemente mais arredondado
+                      cornerRadius={6}
+                      activeIndex={activePieIndex}
+                      activeShape={renderActiveShape}
+                      onMouseEnter={(_, index) => setActivePieIndex(index)}
+                      onMouseLeave={() => setActivePieIndex(null)}
                     >
                       {top5MeatUsageWithPercentage.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
@@ -283,7 +324,7 @@ export function Dashboard() {
         </div>
       </CardContent>
     </Card>
-  ), [top5MeatUsageWithPercentage]);
+  ), [top5MeatUsageWithPercentage, activePieIndex]);
 
   return (
     <div className="space-y-6">
@@ -364,3 +405,5 @@ export function Dashboard() {
     </div>
   );
 }
+
+import { Sector } from 'recharts';

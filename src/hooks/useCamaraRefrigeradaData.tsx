@@ -120,18 +120,18 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       console.log('Item recebido:', newItem);
       console.log('Unidade para salvar:', unidadeParaSalvar);
       
-      // Preparar dados para inserção no banco - remover unidade_item e usar unidade
+      // Preparar dados para inserção no banco
       const itemToInsert = {
         nome: newItem.nome,
         quantidade: newItem.quantidade,
-        unidade: newItem.unidade, // Esta é a unidade de medida (kg, pç, etc)
+        unidade_medida: newItem.unidade, // Unidade de medida (kg, pç, etc)
         categoria: newItem.categoria,
         status: newItem.status || 'descongelando',
         data_entrada: newItem.data_entrada,
         temperatura_ideal: newItem.temperatura_ideal,
         observacoes: newItem.observacoes,
         user_id: user.id,
-        unidade: unidadeParaSalvar // Esta é a unidade da empresa (juazeiro_norte, fortaleza)
+        unidade: unidadeParaSalvar // Unidade da empresa (juazeiro_norte, fortaleza)
       };
 
       const { data, error } = await supabase

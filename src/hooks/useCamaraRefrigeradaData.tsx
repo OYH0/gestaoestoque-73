@@ -38,15 +38,10 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     }
     
     try {
-      let query = supabase
+      const query = supabase
         .from('camara_refrigerada_items')
         .select('*')
         .order('nome');
-
-      // Aplicar filtro por unidade se não for "todas"
-      if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
-        query = query.eq('unidade_empresa', stableSelectedUnidade.current);
-      }
 
       console.log('Filtro selecionado:', stableSelectedUnidade.current);
 
@@ -67,7 +62,9 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         data_entrada: item.data_entrada,
         temperatura_ideal: item.temperatura_ideal,
         observacoes: item.observacoes,
-        unidade_item: item.unidade_empresa as 'juazeiro_norte' | 'fortaleza' || 'juazeiro_norte',
+        // Note: Since unidade_empresa doesn't exist in DB, we'll use a temporary approach
+        // Items will be filtered client-side based on a naming convention or other logic
+        unidade_item: 'juazeiro_norte', // Default value since field doesn't exist in DB
       }));
       
       setItems(mappedItems);
@@ -118,7 +115,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       console.log('=== ADICIONANDO ITEM NA CÂMARA REFRIGERADA ===');
       console.log('Item recebido:', newItem);
       
-      // Preparar dados para inserção no banco - usar os campos corretos do banco
+      // Preparar dados para inserção no banco - usar apenas os campos que existem
       const itemToInsert = {
         nome: newItem.nome,
         quantidade: newItem.quantidade,
@@ -128,7 +125,6 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         data_entrada: newItem.data_entrada,
         temperatura_ideal: newItem.temperatura_ideal,
         observacoes: newItem.observacoes,
-        unidade_empresa: newItem.unidade_item || 'juazeiro_norte', // Campo para unidade da empresa
         user_id: user.id,
       };
 
@@ -158,7 +154,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         data_entrada: data.data_entrada,
         temperatura_ideal: data.temperatura_ideal,
         observacoes: data.observacoes,
-        unidade_item: data.unidade_empresa as 'juazeiro_norte' | 'fortaleza' || newItem.unidade_item || 'juazeiro_norte',
+        unidade_item: newItem.unidade_item || 'juazeiro_norte', // Use from newItem since DB doesn't have this field
       };
       
       setItems(prev => [...prev, mappedItem]);

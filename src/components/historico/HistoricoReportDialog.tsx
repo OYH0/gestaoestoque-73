@@ -119,7 +119,7 @@ export function HistoricoReportDialog({ historico, tipoEstoque, onClose }: Histo
           Gerar Relatório de Histórico
         </DialogTitle>
         <DialogDescription>
-          Configure e baixe um relatório detalhado das movimentações do estoque
+          Configure e baixe um relatório detalhado das movimentações do estoque de {getTituloEstoque()}
         </DialogDescription>
       </DialogHeader>
       

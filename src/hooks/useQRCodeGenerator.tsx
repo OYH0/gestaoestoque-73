@@ -77,12 +77,35 @@ export function useQRCodeGenerator() {
     return qrCodes;
   };
 
+  // NOVO: gerar um PDF ÚNICO com todas etiquetas por página
   const generateQRCodePDF = async (qrCodes: QRCodeData[]) => {
     setIsGenerating(true);
 
+    const MM_TO_PT = 2.83465;
+    const labelWidthMM = 60;
+    const labelHeightMM = 50;
+    const labelWidth = labelWidthMM * MM_TO_PT;
+    const labelHeight = labelHeightMM * MM_TO_PT;
+    const margin = 8;
+    const paddingBetween = 6;
+
+    // Layout da folha (A4): 210 x 297 mm
+    const pageWidth = 210 * MM_TO_PT;
+    const pageHeight = 297 * MM_TO_PT;
+
+    // Quantas colunas/linhas cabem em uma página?
+    // Deixar uns 12mm de margem lateral e topo/baixo
+    const horizontalMargin = 12 * MM_TO_PT;
+    const verticalMargin = 12 * MM_TO_PT;
+    const usableWidth = pageWidth - 2 * horizontalMargin;
+    const usableHeight = pageHeight - 2 * verticalMargin;
+    const columns = Math.floor((usableWidth + paddingBetween) / (labelWidth + paddingBetween)); // ex: 2
+    const rows = Math.floor((usableHeight + paddingBetween) / (labelHeight + paddingBetween));  // ex: 3
+    const labelsPerPage = columns * rows;
+
+    // Carrega logo se houver
     let logoImage: string | undefined = undefined;
     try {
-      // Tenta carregar logo
       const resp = await fetch(LOGO_URL);
       if (resp.ok) {
         const blob = await resp.blob();
@@ -91,63 +114,74 @@ export function useQRCodeGenerator() {
           reader.onload = () => resolve(reader.result as string);
           reader.readAsDataURL(blob);
         });
-      } else {
-        logoImage = undefined;
       }
     } catch {
       logoImage = undefined;
     }
 
     try {
-      // Layout: 60x50mm em pontos
-      const MM_TO_PT = 2.83465;
-      const labelWidth = 60 * MM_TO_PT;   // ~170pt
-      const labelHeight = 50 * MM_TO_PT;  // ~141pt
-      const margin = 12; // diminui para caber mais coisas
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: 'a4'
+      });
 
       for (let i = 0; i < qrCodes.length; i++) {
         const qrData = qrCodes[i];
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'pt',
-          format: [labelWidth, labelHeight],
-        });
+        const labelIdxInPage = i % labelsPerPage;
+        const pageIdx = Math.floor(i / labelsPerPage);
 
-        let y = margin;
+        // Calcular posição (col, row)
+        const row = Math.floor(labelIdxInPage / columns);
+        const col = labelIdxInPage % columns;
+        const x = horizontalMargin + col * (labelWidth + paddingBetween);
+        const y = verticalMargin + row * (labelHeight + paddingBetween);
 
-        // Nome do produto (negrito)
+        // Adiciona nova página se necessário (skip primeira)
+        if (i !== 0 && labelIdxInPage === 0) {
+          pdf.addPage();
+        }
+
+        // Desenha borda da etiqueta (opcional, para visual)
+        pdf.setLineWidth(0.1);
+        pdf.setDrawColor(210, 210, 210);
+        pdf.rect(x, y, labelWidth, labelHeight);
+
+        let currY = y + margin;
+
+        // Nome do produto (quebra até 23 chars)
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        const nomeMaxLen = 23; // quebra se for grande
+        pdf.setFontSize(11);
+        const nomeMaxLen = 23;
         const nomeProduto = qrData.nome.length > nomeMaxLen
           ? qrData.nome.slice(0, nomeMaxLen) + '...'
           : qrData.nome;
-        pdf.text(nomeProduto, margin, y + 9);
+        pdf.text(nomeProduto, x + margin, currY + 8);
 
-        // Tipo
+        // Tipo (em cima do QR)
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(9);
+        pdf.setFontSize(8.2);
         let statusText = '';
         switch (qrData.tipo) {
           case 'CF': statusText = 'CÂMARA FRIA'; break;
           case 'ES': statusText = 'ESTOQUE SECO'; break;
           case 'DESC': statusText = 'DESCARTÁVEIS'; break;
         }
-        pdf.text(statusText, margin, y + 24);
+        pdf.text(statusText, x + margin, currY + 20);
 
-        // Peso/qtde
+        // Peso/qtde (canto superior direito)
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.text('1 kg', labelWidth - margin - 27, y + 24);
+        pdf.setFontSize(10);
+        pdf.text('1 kg', x + labelWidth - margin - 27, currY + 20);
 
         // Linha divisória
         pdf.setDrawColor(80, 80, 80);
-        pdf.setLineWidth(0.3);
-        pdf.line(margin, y + 28, labelWidth - margin, y + 28);
+        pdf.setLineWidth(0.2);
+        pdf.line(x + margin, currY + 23, x + labelWidth - margin, currY + 23);
 
-        y += 32; // novo ponto Y
+        currY += 27;
 
-        // ===== Bloco de informações da lateral esquerda =====
+        // Bloco lateral de informações
         const infos1 = [
           { label: 'VAL. ORIGINAL:', value: '21/04/2025' },
           { label: 'MANIPULAÇÃO:', value: '09/04/2025 - 12:59' },
@@ -155,20 +189,20 @@ export function useQRCodeGenerator() {
           { label: 'MARCA / FORN:', value: 'SWIFT' },
           { label: 'SIF:', value: '358' }
         ];
-        let offsetY = 0;
-        pdf.setFontSize(8);
+        let lineY = 0;
+        pdf.setFontSize(7.5);
         for (const info of infos1) {
           pdf.setFont('helvetica', 'bold');
-          pdf.text(info.label, margin, y + offsetY);
+          pdf.text(info.label, x + margin, currY + lineY);
           pdf.setFont('helvetica', 'normal');
-          pdf.text(info.value, margin + 74, y + offsetY);
-          offsetY += 11;
+          pdf.text(info.value, x + margin + 68, currY + lineY);
+          lineY += 9;
         }
 
-        // QR code lado direito, ocupando altura do bloco de informações (nunca cortando)
-        const qrSide = 50;
-        const qrX = labelWidth - margin - qrSide; // à direita dentro da margem
-        const qrY = y;
+        // QR code (lado direito, metade da altura)
+        const qrSide = 46;
+        const qrX = x + labelWidth - margin - qrSide;
+        const qrY = currY;
 
         const qrCodeDataURL = await QRCode.toDataURL(qrData.id, {
           width: qrSide,
@@ -177,59 +211,51 @@ export function useQRCodeGenerator() {
         pdf.addImage(qrCodeDataURL, 'PNG', qrX, qrY, qrSide, qrSide);
 
         // Linha divisória 2
-        const afterInfoY = Math.max(y + offsetY, qrY + qrSide) + 3;
+        const afterInfoY = Math.max(currY + lineY, qrY + qrSide) + 3;
         pdf.setDrawColor(180, 180, 180);
-        pdf.setLineWidth(0.3);
-        pdf.line(margin, afterInfoY, labelWidth - margin, afterInfoY);
+        pdf.setLineWidth(0.2);
+        pdf.line(x + margin, afterInfoY, x + labelWidth - margin, afterInfoY);
 
-        y = afterInfoY + 7;
+        let rodapeY = afterInfoY + 7;
 
-        // Bloco da empresa
-        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8);
-        pdf.text('RESP.: LUCIANA', margin, y + 2);
+        // Bloco empresa
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5);
+        pdf.text('RESP.: LUCIANA', x + margin, rodapeY + 2);
 
         pdf.setFont('helvetica', 'normal');
-        pdf.text('RESTAURANTE SUFLEX', margin, y + 12);
-        pdf.setFontSize(7.3);
-        pdf.text('CNPJ: 12.345.678.0001-12', margin, y + 20);
-        pdf.text('RUA PURPURINA, 400', margin, y + 27);
-        pdf.text('SÃO PAULO - SP', margin, y + 33);
-        pdf.text('CEP: 05435-030', margin + 90, y + 27);
+        pdf.text('RESTAURANTE SUFLEX', x + margin, rodapeY + 11);
+        pdf.setFontSize(6.7);
+        pdf.text('CNPJ: 12.345.678.0001-12', x + margin, rodapeY + 18);
+        pdf.text('RUA PURPURINA, 400', x + margin, rodapeY + 24);
+        pdf.text('SÃO PAULO - SP', x + margin, rodapeY + 30);
+        pdf.text('CEP: 05435-030', x + margin + 80, rodapeY + 24);
 
-        y += 39;
+        rodapeY += 34;
 
-        // Código -- grande, azul
+        // Código azul final
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(10.7);
+        pdf.setFontSize(9.7);
         pdf.setTextColor(32,48,140);
-        pdf.text(`#${qrData.id.slice(-6).toUpperCase()}`, margin, y);
+        pdf.text(`#${qrData.id.slice(-6).toUpperCase()}`, x + margin, rodapeY);
         pdf.setTextColor(0,0,0);
 
-        // Logo, se houver
+        // Logo
         if (logoImage) {
           try {
-            pdf.addImage(logoImage, 'PNG', labelWidth - 44, margin, 28, 28);
-          } catch (e) {
-            // só avisa uma vez, não trava
-            toast({
-              title: "Logo não adicionada",
-              description: "Houve um erro ao adicionar a logo na etiqueta.",
-              variant: "destructive"
-            });
-          }
+            pdf.addImage(logoImage, 'PNG', x + labelWidth - 42, y + margin, 24, 24);
+          } catch { /* não trava */ }
         }
-
-        // Salva arquivo
-        const safeNome = qrData.nome.replace(/\s+/g, '-').toLowerCase();
-        const fileName = `etiqueta-qrcode-${safeNome}-${qrData.id.slice(-6)}.pdf`;
-
-        // Baixa o PDF da etiqueta individualmente
-        pdf.save(fileName);
       }
+
       setIsGenerating(false);
+
+      const mainNome = qrCodes[0]?.nome?.split(' ')[0] || 'etiqueta';
+      const fileName = `etiquetas-qrcode-${mainNome}-${qrCodes.length}.pdf`;
+      pdf.save(fileName);
+
       toast({
-        title: `PDF${qrCodes.length > 1 ? 's' : ''} gerado${qrCodes.length > 1 ? 's' : ''} com sucesso!`,
-        description: `Foram geradas ${qrCodes.length} etiquetas com QR code.`,
+        title: "PDF gerado com sucesso",
+        description: `Todas as ${qrCodes.length} etiquetas estão no mesmo arquivo.`,
       });
       return { success: true };
     } catch (error) {

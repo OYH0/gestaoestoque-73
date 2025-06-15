@@ -32,13 +32,6 @@ export default function CamaraFria() {
   
   const { addItem: addCamaraRefrigeradaItem } = useCamaraRefrigeradaData();
   const { canModify, canTransferItems } = useUserPermissions();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('Todos');
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
-  const [showTransferDialog, setShowTransferDialog] = useState(false);
-  const isMobile = useIsMobile();
   
   // Estados para o formulário de adicionar item
   const [newItem, setNewItem] = useState({
@@ -69,6 +62,14 @@ export default function CamaraFria() {
     console.log(`Item: ${item.nome} - Unidade: ${item.unidade_item || 'undefined'}`);
   });
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('Todos');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const isMobile = useIsMobile();
+  
   const handleAddNewItem = async () => {
     if (!canModify) {
       console.error('Acesso negado: apenas administradores e gerentes podem adicionar itens');
@@ -223,8 +224,13 @@ export default function CamaraFria() {
       const newQuantity = item.quantidade - thawQuantity;
       await updateItemQuantity(id, newQuantity);
       
-      // Usar a unidade do próprio item ao invés da unidade selecionada
+      // CORREÇÃO: Usar a unidade do próprio item para garantir consistência
       const unidadeParaRefrigerada = item.unidade_item || 'juazeiro_norte';
+      
+      console.log('=== MOVENDO PARA CÂMARA REFRIGERADA ===');
+      console.log('Item:', item.nome);
+      console.log('Unidade do item:', item.unidade_item);
+      console.log('Unidade para câmara refrigerada:', unidadeParaRefrigerada);
       
       await addCamaraRefrigeradaItem({
         nome: item.nome,
@@ -235,7 +241,7 @@ export default function CamaraFria() {
         data_entrada: new Date().toISOString().split('T')[0],
         temperatura_ideal: item.temperatura_ideal,
         observacoes: `Movido da câmara fria para descongelamento`,
-        unidade_item: unidadeParaRefrigerada
+        unidade_item: unidadeParaRefrigerada // CORREÇÃO: Garantir que a unidade seja passada corretamente
       });
       
       await addHistoricoItem({

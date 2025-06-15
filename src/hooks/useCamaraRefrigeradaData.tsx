@@ -43,8 +43,11 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         .select('*')
         .order('nome');
 
-      // Note: The camara_refrigerada_items table doesn't have a 'unidade' field for company unit
-      // We'll need to filter differently or add this field to the database schema
+      // Aplicar filtro por unidade se não for "todas"
+      if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
+        query = query.eq('unidade_empresa', stableSelectedUnidade.current);
+      }
+
       console.log('Filtro selecionado:', stableSelectedUnidade.current);
 
       const { data, error } = await query;
@@ -64,8 +67,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         data_entrada: item.data_entrada,
         temperatura_ideal: item.temperatura_ideal,
         observacoes: item.observacoes,
-        // Note: camara_refrigerada_items doesn't have company unit field, using default
-        unidade_item: 'juazeiro_norte', 
+        unidade_item: item.unidade_empresa as 'juazeiro_norte' | 'fortaleza' || 'juazeiro_norte',
       }));
       
       setItems(mappedItems);
@@ -126,6 +128,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         data_entrada: newItem.data_entrada,
         temperatura_ideal: newItem.temperatura_ideal,
         observacoes: newItem.observacoes,
+        unidade_empresa: newItem.unidade_item || 'juazeiro_norte', // Campo para unidade da empresa
         user_id: user.id,
       };
 
@@ -155,7 +158,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         data_entrada: data.data_entrada,
         temperatura_ideal: data.temperatura_ideal,
         observacoes: data.observacoes,
-        unidade_item: newItem.unidade_item || 'juazeiro_norte', // Use from newItem since DB doesn't have this field
+        unidade_item: data.unidade_empresa as 'juazeiro_norte' | 'fortaleza' || newItem.unidade_item || 'juazeiro_norte',
       };
       
       setItems(prev => [...prev, mappedItem]);

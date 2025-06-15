@@ -9,6 +9,11 @@ export interface QRCodeData {
   categoria: string;
   tipo: 'CF' | 'ES' | 'DESC';
   lote?: string;
+  unidade?: string;
+  fornecedor?: string;
+  data_entrada?: string;
+  data_validade?: string;
+  preco_unitario?: number;
 }
 
 const LOGO_URL = '/churrasco-logo.png'; // deve estar em public/churrasco-logo.png
@@ -55,12 +60,17 @@ export function useQRCodeGenerator() {
     for (let i = 1; i <= quantidadeValidada; i++) {
       const qrCodeId = generateQRCodeId(tipo, item.id, i);
       // ATENÇÃO: nome precisa ser sequencial (test 1, test 2, ...), não "test 10" para todos!
-      const qrCodeData = {
+      const qrCodeData: QRCodeData = {
         id: qrCodeId,
-        nome: `${item.nome.trim()} ${i}`, // CORRIGIDO: cada etiqueta tem nome sequencial!
-        categoria: item.categoria,
+        nome: `${item.nome?.trim?.() || ''} ${i}`, // CORRIGIDO: cada etiqueta tem nome sequencial!
+        categoria: item.categoria || '',
         tipo,
-        lote: `${new Date().toISOString().split('T')[0]}-${i.toString().padStart(3, '0')}`
+        lote: item.lote || `${new Date().toISOString().split('T')[0]}-${i.toString().padStart(3, '0')}`,
+        unidade: item.unidade || (item.unidade_item ? item.unidade_item : ''), // usa unidade preferencialmente
+        fornecedor: item.fornecedor || '',
+        data_entrada: item.data_entrada || '',
+        data_validade: item.data_validade || '',
+        preco_unitario: item.preco_unitario,
       };
       
       qrCodes.push(qrCodeData);
@@ -169,16 +179,15 @@ export function useQRCodeGenerator() {
 
         let currY = y + margin;
 
-        // Nome produto (quebra até 32 chars)
+        // Nome produto
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(20);
-        const nomeMaxLen = 32;
-        const nomeProduto = qrData.nome.length > nomeMaxLen
-          ? qrData.nome.slice(0, nomeMaxLen) + '...'
+        const nomeProduto = qrData.nome?.length > 32
+          ? qrData.nome.slice(0, 32) + '...'
           : qrData.nome;
         pdf.text(nomeProduto, x + margin, currY + 18);
 
-        // Tipo
+        // Tipo/Categoria
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(16);
         let statusText = '';
@@ -187,12 +196,22 @@ export function useQRCodeGenerator() {
           case 'ES': statusText = 'ESTOQUE SECO'; break;
           case 'DESC': statusText = 'DESCARTÁVEIS'; break;
         }
-        pdf.text(statusText, x + margin, currY + 38);
+        // Inclui a categoria ao lado do tipo
+        pdf.text(
+          (statusText ? `${statusText} - ` : '') + (qrData.categoria || ''),
+          x + margin, currY + 38
+        );
 
-        // Peso (topo direito)
+        // Peso (direita topo): unidade do item + "kg" apenas se for unidade tipo peso
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(15);
-        pdf.text('1 kg', x + labelWidth - margin - 50, currY + 38);
+        let unidadeImpressa = qrData.unidade
+          ? qrData.unidade
+          : '1 un.';
+        if (['kg', 'Kg', 'quilogramas', 'quilograma', 'peso'].includes(qrData.unidade?.toLowerCase?.() || '')) {
+          unidadeImpressa = '1 kg';
+        }
+        pdf.text(unidadeImpressa, x + labelWidth - margin - 50, currY + 38);
 
         // Linha divisória
         pdf.setDrawColor(80, 80, 80);
@@ -201,25 +220,47 @@ export function useQRCodeGenerator() {
 
         currY += 65;
 
-        // Info bloco lateral
+        // Informações do bloco lateral personalizadas
         const infos1 = [
-          { label: 'VAL. ORIGINAL:', value: '21/04/2025' },
-          { label: 'MANIPULAÇÃO:', value: '09/04/2025 - 12:59' },
-          { label: 'VALIDADE:', value: '11/04/2025 - 12:59' },
-          { label: 'MARCA / FORN:', value: 'SWIFT' },
-          { label: 'SIF:', value: '358' }
+          {
+            label: 'FORNECEDOR:',
+            value: qrData.fornecedor || '-'
+          },
+          {
+            label: 'DATA DE ENTRADA:',
+            value: qrData.data_entrada
+              ? new Date(qrData.data_entrada).toLocaleDateString('pt-BR')
+              : '-'
+          },
+          {
+            label: 'VALIDADE:',
+            value: qrData.data_validade
+              ? new Date(qrData.data_validade).toLocaleDateString('pt-BR')
+              : '-'
+          },
+          {
+            label: 'UNIDADE:',
+            value: qrData.unidade || '-'
+          },
+          {
+            label: 'VALOR UNIT.:',
+            value: (qrData.preco_unitario
+              ? `R$ ${Number(qrData.preco_unitario).toFixed(2)}`
+              : '-')
+          }
         ];
+
         let lineY = 0;
         pdf.setFontSize(12.5);
         for (const info of infos1) {
           pdf.setFont('helvetica', 'bold');
           pdf.text(info.label, x + margin, currY + lineY);
           pdf.setFont('helvetica', 'normal');
-          pdf.text(info.value, x + margin + 120, currY + lineY);
+          pdf.text(String(info.value), x + margin + 120, currY + lineY);
           lineY += 19;
         }
 
-        // QR code (lado direito)
+        // QR code
         const qrSide = 100;
         const qrX = x + labelWidth - margin - qrSide;
         const qrY = currY;
@@ -238,32 +279,34 @@ export function useQRCodeGenerator() {
 
         let rodapeY = afterInfoY + 17;
 
-        // Bloco empresa
-        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(12.5);
-        pdf.text('RESP.: LUCIANA', x + margin, rodapeY + 2);
+        // Nome ou responsável padrão
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12.5);
+        pdf.text('RESPONSÁVEL: Sistema', x + margin, rodapeY + 2);
 
         pdf.setFont('helvetica', 'normal');
-        pdf.text('RESTAURANTE SUFLEX', x + margin, rodapeY + 22);
+        pdf.text('ESTOQUE DIGITAL', x + margin, rodapeY + 22);
         pdf.setFontSize(11.7);
-        pdf.text('CNPJ: 12.345.678.0001-12', x + margin, rodapeY + 38);
-        pdf.text('RUA PURPURINA, 400', x + margin, rodapeY + 52);
+        pdf.text('QR Etiquetas', x + margin, rodapeY + 38);
+
+        // Rodapé de endereço fictício (ajuste caso queira mais info)
+        pdf.text('Churrascaria Exemplo', x + margin, rodapeY + 52);
         pdf.text('SÃO PAULO - SP', x + margin, rodapeY + 64);
-        pdf.text('CEP: 05435-030', x + margin + 120, rodapeY + 52);
 
         rodapeY += 72;
 
         // Código azul destacado
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(17);
-        pdf.setTextColor(32,48,140);
+        pdf.setTextColor(32, 48, 140);
         pdf.text(`#${qrData.id.slice(-6).toUpperCase()}`, x + margin, rodapeY);
-        pdf.setTextColor(0,0,0);
+        pdf.setTextColor(0, 0, 0);
 
         // Logo canto direito
         if (logoImage) {
           try {
             pdf.addImage(logoImage, 'PNG', x + labelWidth - 60, y + margin, 38, 38);
-          } catch { /* sem erro bloqueante */ }
+          } catch { /* não quebra em erro */ }
         }
       }
 

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +34,7 @@ export function Login() {
 
   return (
     <div className="relative flex items-center justify-center min-h-[100svh] overflow-hidden">
-      {/* Bg image churrasco - em toda a tela */}
+      {/* Background image sem blur e overlay escuro forte */}
       <div
         className="absolute inset-0 w-full h-full z-0"
         aria-hidden="true"
@@ -41,11 +42,11 @@ export function Login() {
           backgroundImage: "url('/lovable-uploads/dec7bb0c-8b1d-4d76-bfb6-ecd835292847.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          filter: "blur(12px)",
+          // Removido o blur para acabar com a luz branca
         }}
       />
-      {/* Overlay para escurecer e garantir contraste */}
-      <div className="absolute inset-0 bg-black/40 z-10" aria-hidden="true" />
+      {/* Overlay preto, mais sólido para sumir com o esbranquiçado */}
+      <div className="absolute inset-0 bg-black/80 z-10" aria-hidden="true" />
 
       {/* Conteúdo */}
       <div className="relative z-20 flex w-full">
@@ -228,3 +229,4 @@ export function Login() {
 }
 
 export default Login;
+

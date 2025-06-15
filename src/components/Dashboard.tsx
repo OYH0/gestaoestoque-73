@@ -189,7 +189,7 @@ export function Dashboard() {
                   dataKey="quantidade" 
                   stroke="#ffffff"
                   strokeWidth={1}
-                  radius={[0, 12, 12, 0]} // Somente extremidade direita arredondada
+                  radius={[0, 6, 6, 0]} // Reduzido o arredondamento para 6
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -238,7 +238,7 @@ export function Dashboard() {
                       dataKey="totalSaidas"
                       strokeWidth={2}
                       stroke="#ffffff"
-                      cornerRadius={10} // Aumenta o arredondamento das fatias
+                      cornerRadius={4} // Reduzido de 10 para 4
                     >
                       {top5MeatUsageWithPercentage.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />

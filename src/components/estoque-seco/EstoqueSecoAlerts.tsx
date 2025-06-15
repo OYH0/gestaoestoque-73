@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
@@ -10,6 +9,10 @@ interface EstoqueSecoAlertsProps {
 
 export function EstoqueSecoAlerts({ itemsBaixoEstoque }: EstoqueSecoAlertsProps) {
   if (itemsBaixoEstoque.length === 0) return null;
+
+  function unidadeSemJuazeiro(unidade: string) {
+    return unidade === 'juazeiro_norte' ? '' : unidade;
+  }
 
   return (
     <Card className="border-red-200 bg-red-50">
@@ -28,7 +31,8 @@ export function EstoqueSecoAlerts({ itemsBaixoEstoque }: EstoqueSecoAlertsProps)
             <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded border">
               <span className="font-medium text-sm">{item.nome}</span>
               <span className="text-red-600 font-medium text-sm">
-                Estoque: {item.quantidade} {item.unidade}
+                Estoque: {item.quantidade}{' '}
+                {item.unidade && unidadeSemJuazeiro(item.unidade)}
               </span>
             </div>
           ))}

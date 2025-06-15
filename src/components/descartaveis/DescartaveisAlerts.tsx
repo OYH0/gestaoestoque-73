@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
@@ -19,6 +18,11 @@ interface DescartaveisAlertsProps {
 export function DescartaveisAlerts({ itemsBaixoEstoque }: DescartaveisAlertsProps) {
   if (itemsBaixoEstoque.length === 0) return null;
 
+  // Função para ocultar "juazeiro_norte" da unidade
+  function unidadeSemJuazeiro(unidade: string) {
+    return unidade === 'juazeiro_norte' ? '' : unidade;
+  }
+
   return (
     <Card className="border-red-200 bg-red-50">
       <CardHeader className="pb-3">
@@ -36,7 +40,8 @@ export function DescartaveisAlerts({ itemsBaixoEstoque }: DescartaveisAlertsProp
             <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded border">
               <span className="font-medium text-sm">{item.nome}</span>
               <span className="text-red-600 font-medium text-sm">
-                Estoque: {item.quantidade} {item.unidade}
+                Estoque: {item.quantidade}{' '}
+                {item.unidade && unidadeSemJuazeiro(item.unidade)}
               </span>
             </div>
           ))}

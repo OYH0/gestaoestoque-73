@@ -238,7 +238,7 @@ export function Dashboard() {
                       dataKey="totalSaidas"
                       strokeWidth={2}
                       stroke="#ffffff"
-                      cornerRadius={4} // Reduzido para bordas menos arredondadas
+                      cornerRadius={6} // Levemente mais arredondado
                     >
                       {top5MeatUsageWithPercentage.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />

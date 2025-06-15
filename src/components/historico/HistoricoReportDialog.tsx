@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -118,6 +118,9 @@ export function HistoricoReportDialog({ historico, tipoEstoque, onClose }: Histo
           <FileText className="w-5 h-5" />
           Gerar Relatório de Histórico
         </DialogTitle>
+        <DialogDescription>
+          Configure e baixe um relatório detalhado das movimentações do estoque
+        </DialogDescription>
       </DialogHeader>
       
       <div className="space-y-4">

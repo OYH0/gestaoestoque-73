@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +35,9 @@ export function EstoqueSecoAddDialog({
     <DialogContent>
       <DialogHeader>
         <DialogTitle>Adicionar Novo Item</DialogTitle>
+        <DialogDescription>
+          Preencha os dados do novo item do estoque seco para adicionar ao inventário
+        </DialogDescription>
       </DialogHeader>
       <div className="space-y-4">
         <div className="space-y-2">

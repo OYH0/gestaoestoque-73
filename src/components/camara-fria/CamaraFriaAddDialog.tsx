@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -100,6 +100,9 @@ export function CamaraFriaAddDialog({
     <DialogContent>
       <DialogHeader>
         <DialogTitle>Adicionar Nova Carne</DialogTitle>
+        <DialogDescription>
+          Preencha os dados da nova carne para adicionar ao estoque da câmara fria
+        </DialogDescription>
       </DialogHeader>
       <div className="space-y-4">
         <div className="space-y-2">

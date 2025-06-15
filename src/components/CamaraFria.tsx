@@ -223,6 +223,9 @@ export default function CamaraFria() {
       const newQuantity = item.quantidade - thawQuantity;
       await updateItemQuantity(id, newQuantity);
       
+      // Usar a unidade do próprio item ao invés da unidade selecionada
+      const unidadeParaRefrigerada = item.unidade_item || 'juazeiro_norte';
+      
       await addCamaraRefrigeradaItem({
         nome: item.nome,
         quantidade: thawQuantity,
@@ -231,7 +234,8 @@ export default function CamaraFria() {
         status: 'descongelando',
         data_entrada: new Date().toISOString().split('T')[0],
         temperatura_ideal: item.temperatura_ideal,
-        observacoes: `Movido da câmara fria para descongelamento`
+        observacoes: `Movido da câmara fria para descongelamento`,
+        unidade_item: unidadeParaRefrigerada
       });
       
       await addHistoricoItem({

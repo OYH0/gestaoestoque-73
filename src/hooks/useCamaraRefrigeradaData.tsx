@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,7 +46,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
 
       // Aplicar filtro por unidade se não for "todas"
       if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
-        query = query.eq('unidade', stableSelectedUnidade.current);
+        query = query.eq('unidade_item', stableSelectedUnidade.current);
       }
 
       const { data, error } = await query;
@@ -65,7 +66,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         data_entrada: item.data_entrada,
         temperatura_ideal: item.temperatura_ideal,
         observacoes: item.observacoes,
-        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
+        unidade_item: item.unidade_item as 'juazeiro_norte' | 'fortaleza',
       }));
       
       setItems(mappedItems);
@@ -121,7 +122,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
           ...newItem, 
           user_id: user.id,
           status: newItem.status || 'descongelando',
-          unidade: unidadeParaSalvar
+          unidade_item: unidadeParaSalvar
         }])
         .select()
         .single();
@@ -139,7 +140,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         data_entrada: data.data_entrada,
         temperatura_ideal: data.temperatura_ideal,
         observacoes: data.observacoes,
-        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
+        unidade_item: data.unidade_item as 'juazeiro_norte' | 'fortaleza',
       };
       
       setItems(prev => [...prev, mappedItem]);

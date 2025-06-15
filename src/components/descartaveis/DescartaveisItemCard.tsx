@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Minus, Plus, Check, X, Trash2 } from 'lucide-react';
+import { Minus, Plus, Check, X, Trash2, Package } from 'lucide-react';
 import { DescartaveisItem } from '@/hooks/useDescartaveisData';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AdminGuard } from '@/components/AdminGuard';
@@ -12,6 +12,17 @@ interface DescartaveisItemCardProps {
   item: DescartaveisItem;
   onUpdateQuantity: (id: string, newQuantity: number) => void;
   onDelete: (id: string) => void;
+}
+
+function getUnidadeLabel(unidade: string | undefined) {
+  switch (unidade) {
+    case 'juazeiro_norte':
+      return 'Juazeiro do Norte';
+    case 'fortaleza':
+      return 'Fortaleza';
+    default:
+      return unidade || '';
+  }
 }
 
 export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: DescartaveisItemCardProps) {
@@ -46,7 +57,10 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row items-center'} gap-4`}>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="font-semibold text-lg">{item.nome}</h3>
+              <div className="flex items-center gap-2">
+                <Package className="w-4 h-4 text-yellow-600" />
+                <h3 className="font-semibold text-lg">{item.nome}</h3>
+              </div>
               <Badge variant={isLowStock ? "destructive" : "secondary"}>
                 {item.categoria}
               </Badge>
@@ -58,8 +72,14 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
             </div>
             
             <div className="space-y-1 text-sm text-gray-600">
-              <p>Quantidade: <span className="font-medium">{item.quantidade} {item.unidade}</span></p>
-              <p>Mínimo: <span className="font-medium">{item.minimo || 10} {item.unidade}</span></p>
+              <p>Quantidade: <span className="font-medium">{item.quantidade}{item.unidade && (' ' + item.unidade)}</span></p>
+              <p>Mínimo: <span className="font-medium">{item.minimo || 10}{item.unidade && (' ' + item.unidade)}</span></p>
+              {item.unidade_item && (
+                <p>Unidade: <span className="font-medium">{getUnidadeLabel(item.unidade_item)}</span></p>
+              )}
+              {item.data_entrada && (
+                <p>Entrada: <span className="font-medium">{new Date(item.data_entrada).toLocaleDateString('pt-BR')}</span></p>
+              )}
             </div>
 
             {item.observacoes && (
@@ -136,3 +156,4 @@ export function DescartaveisItemCard({ item, onUpdateQuantity, onDelete }: Desca
     </Card>
   );
 }
+

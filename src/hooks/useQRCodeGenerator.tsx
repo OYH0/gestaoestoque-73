@@ -11,6 +11,8 @@ export interface QRCodeData {
   lote?: string;
 }
 
+const LOGO_URL = '/public/churrasco-logo.png'; // Altere para o caminho correto se necessário
+
 export function useQRCodeGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -75,129 +77,162 @@ export function useQRCodeGenerator() {
   };
 
   const generateQRCodePDF = async (qrCodes: QRCodeData[]) => {
-    console.log('📄 === INÍCIO generateQRCodePDF ===');
-    console.log('📦 QR codes recebidos para PDF:', qrCodes.length);
-    console.log('🔍 VERIFICAÇÃO DE TODOS OS QR CODES:');
-    qrCodes.forEach((qr, index) => {
-      console.log(`${index + 1}. ${qr.nome} (ID: ${qr.id})`);
-    });
-    
-    if (qrCodes.length === 0) {
-      console.error('❌ ERRO: Nenhum QR code fornecido para gerar PDF!');
-      return { success: false, error: 'Nenhum QR code fornecido' };
-    }
-    
     setIsGenerating(true);
-    
+
     try {
-      const pdf = new jsPDF();
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      
-      // Configuração ajustada para 6 QR codes por página (2 colunas x 3 linhas)
-      const qrSize = 55;
-      const margin = 20;
-      const spacingX = 25;
-      const spacingY = 40; // Aumentado para dar mais espaço ao texto
-      const codesPerRow = 2;
-      const rowsPerPage = 3;
-      const codesPerPage = 6; // FIXO: 6 QR codes por página
-      
-      console.log('⚙️ CONFIGURAÇÃO PDF AJUSTADA (6 por página):', {
-        pageWidth,
-        pageHeight,
-        qrSize,
-        margin,
-        spacingX,
-        spacingY,
-        codesPerRow,
-        rowsPerPage,
-        codesPerPage,
-        totalQRCodes: qrCodes.length,
-        totalPaginas: Math.ceil(qrCodes.length / codesPerPage)
-      });
-      
-      let qrCodesProcessados = 0;
-      
-      console.log(`🔄 Processando ${qrCodes.length} QR codes com MÁXIMO de 6 por página...`);
-      
+      // Define o tamanho da etiqueta (60mm x 50mm em pontos, 1mm ~ 2.83465pt)
+      const labelWidthMM = 60;
+      const labelHeightMM = 50;
+      const labelWidth = labelWidthMM * 2.83465;
+      const labelHeight = labelHeightMM * 2.83465;
+
+      // Carrega a logo da empresa como base64
+      let logoImage: string | undefined;
+      try {
+        // Precisa que a logo esteja no public/ e se possa acessar via fetch.
+        const resp = await fetch(LOGO_URL);
+        const blob = await resp.blob();
+        logoImage = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      } catch (e) {
+        console.error('Erro ao carregar logo da empresa:', e);
+        logoImage = undefined;
+      }
+
       for (let i = 0; i < qrCodes.length; i++) {
         const qrData = qrCodes[i];
-        const pageIndex = Math.floor(i / codesPerPage);
-        const indexInPage = i % codesPerPage;
-        const row = Math.floor(indexInPage / codesPerRow);
-        const col = indexInPage % codesPerRow;
-        
-        console.log(`📍 PROCESSANDO QR ${i + 1}/${qrCodes.length}: ${qrData.nome}`);
-        console.log(`📄 Página: ${pageIndex + 1}, Posição na página: ${indexInPage + 1}/6, Linha: ${row + 1}/3, Coluna: ${col + 1}/2`);
-        
-        // Adicionar nova página se necessário
-        if (i > 0 && indexInPage === 0) {
-          pdf.addPage();
-          console.log(`📄 NOVA PÁGINA ${pageIndex + 1} adicionada para QR ${i + 1}`);
+        // Cria uma nova página por etiqueta
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'pt',
+          format: [labelWidth, labelHeight],
+        });
+
+        // MARGENS e medidas
+        const margin = 16;
+        let y = margin;
+
+        // Nome do produto (destaque)
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(17);
+        pdf.text(qrData.nome, margin, y + 10);
+
+        // Linha de status/categoria + quantidade/kg (exemplo suposto: 1kg)
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(11);
+        let statusText = '';
+        switch (qrData.tipo) {
+          case 'CF':
+            statusText = 'RESFRIADO / DESCONGELANDO';
+            break;
+          case 'ES':
+            statusText = 'ESTOQUE SECO';
+            break;
+          case 'DESC':
+            statusText = 'DESCARTÁVEIS';
+            break;
+          default:
+            statusText = '';
         }
-        
-        // Calcular posições com espaçamento ajustado para 6 QR codes
-        const x = margin + col * (qrSize + spacingX);
-        const y = margin + row * (qrSize + spacingY);
-        
-        console.log(`📍 Posição calculada: x=${x}, y=${y}, tamanho=${qrSize}`);
-        
-        try {
-          // Gerar QR code como base64
-          const qrCodeDataURL = await QRCode.toDataURL(qrData.id, {
-            width: 200,
-            margin: 1,
-          });
-          
-          // Adicionar QR code ao PDF
-          pdf.addImage(qrCodeDataURL, 'PNG', x, y, qrSize, qrSize);
-          
-          // Adicionar texto abaixo do QR code com formatação melhorada
-          const textY = y + qrSize + 3;
-          const maxTextWidth = qrSize;
-          
-          // Nome do produto - MAIS VISÍVEL
-          pdf.setFontSize(9); // Aumentado de 7 para 9
-          pdf.setFont('helvetica', 'bold'); // Negrito para destaque
-          const nameText = qrData.nome.length > 12 ? qrData.nome.substring(0, 12) + '...' : qrData.nome;
-          pdf.text(nameText, x, textY, { maxWidth: maxTextWidth });
-          
-          // ID em fonte menor e normal
-          pdf.setFontSize(6);
-          pdf.setFont('helvetica', 'normal');
-          const idText = `${qrData.id.slice(-10)}`;
-          pdf.text(idText, x, textY + 6, { maxWidth: maxTextWidth });
-          
-          qrCodesProcessados++;
-          console.log(`✅ QR code ${i + 1} INCLUÍDO COM SUCESSO no PDF (${qrCodesProcessados}/${qrCodes.length})`);
-          
-        } catch (qrError) {
-          console.error(`❌ ERRO ao processar QR code ${i + 1}:`, qrError);
+        pdf.setTextColor('#111');
+        pdf.text(statusText, margin, y + 32);
+
+        // Peso ou quantidade fictício na direita (ajuste para sua regra/dado real)
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.text('1 kg', labelWidth - margin - 36, y + 32); // Você pode ajustar '1 kg' para outro campo se existir
+
+        // Linha horizontal separadora
+        pdf.setDrawColor(60, 60, 60);
+        pdf.setLineWidth(0.5);
+        pdf.line(margin, y + 38, labelWidth - margin, y + 38);
+
+        y += 48;
+
+        // Bloco de datas e info
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        pdf.text('VAL. ORIGINAL:', margin, y);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('21/04/2025', margin + 78, y); // Exemplo, ajuste conforme disponível
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('MANIPULAÇÃO:', margin, y + 14);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('09/04/2025 - 12:59:23', margin + 78, y + 14);
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('VALIDADE:', margin, y + 28);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('11/04/2025 - 12:59:23', margin + 78, y + 28);
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('MARCA / FORN:', margin, y + 42);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('SWIFT', margin + 78, y + 42);
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('SIF:', margin, y + 56);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('358', margin + 78, y + 56);
+
+        // Linha horizontal separadora 2
+        pdf.setDrawColor(180, 180, 180);
+        pdf.setLineWidth(0.5);
+        pdf.line(margin, y + 62, labelWidth - margin, y + 62);
+
+        y = y + 76;
+
+        // Dados do responsável e empresa
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        pdf.text('RESP.: LUCIANA', margin, y);
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('RESTAURANTE SUFLEX', margin, y + 12);
+        pdf.setFontSize(8);
+        pdf.text('CNPJ: 12.345.678.0001-12', margin, y + 22);
+        pdf.text('RUA PURPURINA, 400', margin, y + 32);
+        pdf.text('SÃO PAULO - SP', margin, y + 42);
+        pdf.text('CEP: 05435-030', margin + 100, y + 32);
+
+        // Código #TXXXX
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(11);
+        pdf.setTextColor('#12126a');
+        pdf.text(`#${qrData.id.slice(-6).toUpperCase()}`, margin, y + 54);
+
+        pdf.setTextColor('#111');
+
+        // QR Code
+        const qrCodeDataURL = await QRCode.toDataURL(qrData.id, {
+          width: 240,
+          margin: 1,
+        });
+        // O QR deve ficar no canto inferior direito da etiqueta
+        const qrSide = 62;
+        pdf.addImage(qrCodeDataURL, 'PNG', labelWidth - margin - qrSide, labelHeight - margin - qrSide, qrSide, qrSide);
+
+        // Logo da empresa
+        if (logoImage) {
+          // Logo fica no canto superior direito
+          pdf.addImage(logoImage, 'PNG', labelWidth - 50, margin, 38, 38);
         }
+
+        // Apenas salva cada etiqueta separada (caso prefira um PDF únido, adapte para fazer addPage)
+        const fileName = `etiqueta-qrcode-${qrData.nome.replace(/\s+/g, '-').toLowerCase()}-${qrData.id.slice(-6)}.pdf`;
+        pdf.save(fileName);
       }
-      
-      console.log('🏁 === VERIFICAÇÃO FINAL DO PDF ===');
-      console.log('📋 QR codes solicitados:', qrCodes.length);
-      console.log('📦 QR codes processados:', qrCodesProcessados);
-      console.log('🎯 Todos processados?:', qrCodesProcessados === qrCodes.length ? '✅ SIM' : '❌ NÃO');
-      console.log('📄 Páginas criadas:', Math.ceil(qrCodes.length / codesPerPage));
-      
-      // Salvar PDF
-      const fileName = `qr-codes-${new Date().toISOString().split('T')[0]}.pdf`;
-      pdf.save(fileName);
-      
-      console.log('📄 PDF gerado com sucesso:', fileName);
-      console.log('📦 Total de QR codes incluídos no PDF:', qrCodesProcessados);
-      console.log('📄 Total de páginas:', Math.ceil(qrCodes.length / codesPerPage));
-      console.log('🚀 === FIM generateQRCodePDF ===');
-      
-      return { success: true, fileName };
-    } catch (error) {
-      console.error('❌ Erro ao gerar PDF:', error);
-      return { success: false, error };
-    } finally {
+
       setIsGenerating(false);
+      return { success: true };
+    } catch (error) {
+      setIsGenerating(false);
+      console.error('❌ Erro ao gerar etiqueta PDF:', error);
+      return { success: false, error };
     }
   };
 

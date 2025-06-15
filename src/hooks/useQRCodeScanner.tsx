@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,9 +24,14 @@ export function useQRCodeScanner() {
       return { success: false, error: 'Usuário não autenticado' };
     }
 
-    // Verificar se o QR code já foi escaneado
+    // Checagem se já foi escaneado anteriormente (inclui toast de erro)
     if (scannedQRCodes.has(qrCodeData)) {
       console.log('QR Code já foi escaneado anteriormente:', qrCodeData);
+      toast({
+        title: "QR Code já utilizado",
+        description: "Este QR Code já foi escaneado nesta sessão.",
+        variant: "destructive",
+      });
       return { success: false, error: 'Este QR Code já foi escaneado anteriormente' };
     }
 

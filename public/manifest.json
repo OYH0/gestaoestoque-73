@@ -3,7 +3,7 @@
   "name": "Sistema de Gestão de Estoque - Companhia do Churrasco",
   "short_name": "Gestão Estoque",
   "description": "Controle inteligente e eficiente do seu estoque, desde a câmara fria até os descartáveis.",
-  "theme_color": "#ffffff",
+  "theme_color": "#faf8f6",
   "background_color": "#ffffff",
   "display": "standalone",
   "orientation": "portrait",

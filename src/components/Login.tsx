@@ -32,8 +32,8 @@ export function Login() {
   };
 
   return (
-    <div className="relative flex items-center justify-center min-h-[100svh] overflow-hidden">
-      {/* Background image sem blur e overlay escuro forte */}
+    <div className="relative flex items-center justify-center min-h-[100svh] bg-churrasco-cream overflow-hidden">
+      {/* Bg image churrasco - em toda a tela */}
       <div
         className="absolute inset-0 w-full h-full z-0"
         aria-hidden="true"
@@ -41,11 +41,11 @@ export function Login() {
           backgroundImage: "url('/lovable-uploads/dec7bb0c-8b1d-4d76-bfb6-ecd835292847.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          // Sem blur!
+          filter: "blur(6px)",
         }}
       />
-      {/* Overlay preto, mais sólido para sumir com o esbranquiçado */}
-      <div className="absolute inset-0 bg-black/80 z-10" aria-hidden="true" />
+      {/* Overlay para escurecer e garantir contraste */}
+      <div className="absolute inset-0 bg-black/40 z-10" aria-hidden="true" />
 
       {/* Conteúdo */}
       <div className="relative z-20 flex w-full">
@@ -77,7 +77,7 @@ export function Login() {
         {/* Right side - Login form */}
         <div className="flex-1 flex items-center justify-center p-4 lg:p-12 py-8">
           <div className="w-full max-w-md">
-            <Card className="shadow-2xl rounded-3xl overflow-hidden border-0 bg-white/80">
+            <Card className="shadow-2xl rounded-3xl overflow-hidden border-0">
               {/* Mobile logo (visible only on small screens) */}
               <div className="lg:hidden pt-8 pb-6">
                 <div className="text-center space-y-4">

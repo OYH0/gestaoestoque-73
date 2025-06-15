@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -188,7 +189,7 @@ export function Dashboard() {
                   dataKey="quantidade" 
                   stroke="#ffffff"
                   strokeWidth={1}
-                  radius={[0, 6, 6, 0]} // Arredondamento reduzido nas extremidades direitas
+                  radius={[0, 12, 12, 0]} // Somente extremidade direita arredondada
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -237,7 +238,7 @@ export function Dashboard() {
                       dataKey="totalSaidas"
                       strokeWidth={2}
                       stroke="#ffffff"
-                      cornerRadius={6} // Levemente mais arredondado
+                      cornerRadius={10} // Aumenta o arredondamento das fatias
                     >
                       {top5MeatUsageWithPercentage.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />

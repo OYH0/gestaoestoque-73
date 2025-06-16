@@ -69,7 +69,7 @@ export function CamaraRefrigeradaItemCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onMoveToReady(item.id)}
-                className="text-green-600 border-green-300 hover:bg-green-50"
+                className="text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700 hover:border-green-400"
               >
                 <ArrowRight className="w-3 h-3 mr-1" />
                 Marcar como Pronto
@@ -79,7 +79,7 @@ export function CamaraRefrigeradaItemCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onRemoveFromChamber(item.id)}
-                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400"
               >
                 Retirar da Câmara
               </Button>
@@ -89,7 +89,7 @@ export function CamaraRefrigeradaItemCard({
               variant="outline"
               size="sm"
               onClick={() => onMoveToFreezer(item.id)}
-              className="text-blue-600 border-blue-300 hover:bg-blue-50"
+              className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400"
             >
               <ArrowLeft className="w-3 h-3 mr-1" />
               Voltar ao Freezer

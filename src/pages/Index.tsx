@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -40,7 +41,24 @@ const Index = () => {
                   loop: false,
                   skipSnaps: false,
                   dragFree: false,
-                  axis: "x"
+                  axis: "x",
+                  watchDrag: (emblaApi, evt) => {
+                    // Apenas permitir drag horizontal se o movimento for mais horizontal que vertical
+                    if (evt.type === 'touchstart' || evt.type === 'touchmove') {
+                      const touch = (evt as TouchEvent).touches?.[0];
+                      if (touch) {
+                        const rect = emblaApi.containerNode().getBoundingClientRect();
+                        const startX = touch.clientX - rect.left;
+                        const startY = touch.clientY - rect.top;
+                        
+                        // Se o movimento for mais vertical, não interceptar
+                        if (Math.abs(startY) > Math.abs(startX)) {
+                          return false;
+                        }
+                      }
+                    }
+                    return true;
+                  }
                 }}
               >
                 <CarouselContent className="h-full -ml-0">
@@ -49,7 +67,8 @@ const Index = () => {
                       <div 
                         className="h-full overflow-y-auto overflow-x-hidden" 
                         style={{
-                          WebkitOverflowScrolling: 'touch'
+                          WebkitOverflowScrolling: 'touch',
+                          touchAction: 'pan-y pinch-zoom'
                         }}
                       >
                         <main className="p-4 md:p-6 relative">

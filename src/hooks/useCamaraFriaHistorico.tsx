@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -20,17 +20,43 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
   const [historico, setHistorico] = useState<CamaraFriaHistoricoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const lastFetchRef = useRef<number>(0);
+  const cacheRef = useRef<{ data: CamaraFriaHistoricoItem[], timestamp: number, unidade: string } | null>(null);
+
+  // Cache duration: 60 seconds for history
+  const CACHE_DURATION = 60 * 1000;
 
   const fetchHistorico = async () => {
     if (!user) return;
     
+    const now = Date.now();
+    const cacheKey = selectedUnidade || 'todas';
+    
+    // Check cache first
+    if (cacheRef.current && 
+        (now - cacheRef.current.timestamp) < CACHE_DURATION && 
+        cacheRef.current.unidade === cacheKey) {
+      console.log('Using cached data for camara fria history');
+      setHistorico(cacheRef.current.data);
+      setLoading(false);
+      return;
+    }
+
+    // Throttle requests
+    if (now - lastFetchRef.current < 10000) {
+      console.log('Throttling camara fria history fetch request');
+      return;
+    }
+
+    lastFetchRef.current = now;
+    
     try {
       let query = supabase
         .from('camara_fria_historico')
-        .select('*')
-        .order('data_operacao', { ascending: false });
+        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
+        .order('data_operacao', { ascending: false })
+        .limit(100);
 
-      // Aplicar filtro por unidade se não for "todas"
       if (selectedUnidade && selectedUnidade !== 'todas') {
         query = query.eq('unidade', selectedUnidade);
       }
@@ -51,6 +77,13 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
         unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
       }));
       
+      // Update cache
+      cacheRef.current = {
+        data: mappedHistorico,
+        timestamp: now,
+        unidade: cacheKey
+      };
+      
       setHistorico(mappedHistorico);
     } catch (error) {
       console.error('Error fetching history:', error);
@@ -67,12 +100,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
   const addHistoricoItem = async (item: Omit<CamaraFriaHistoricoItem, 'id' | 'data_operacao'>) => {
     if (!user) return;
 
-    console.log('=== REGISTRANDO NO HISTÓRICO ===');
-    console.log('Item para histórico:', item);
-    console.log('Unidade do item:', item.unidade_item);
-
     try {
-      // Garantir que a unidade seja sempre passada
       const unidadeParaSalvar = item.unidade_item || 'juazeiro_norte';
       
       const itemParaInserir = {
@@ -85,20 +113,16 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
         unidade: unidadeParaSalvar
       };
 
-      console.log('Item final para inserir no histórico:', itemParaInserir);
-
       const { data, error } = await supabase
         .from('camara_fria_historico')
         .insert([itemParaInserir])
-        .select()
+        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
         .single();
 
-      if (error) {
-        console.error('Erro ao inserir no histórico:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('✅ Histórico registrado com sucesso:', data);
+      // Clear cache on data change
+      cacheRef.current = null;
       
       const mappedItem: CamaraFriaHistoricoItem = {
         id: data.id,
@@ -112,9 +136,9 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
-      setHistorico(prev => [mappedItem, ...prev]);
+      setHistorico(prev => [mappedItem, ...prev].slice(0, 100));
     } catch (error) {
-      console.error('❌ ERRO ao registrar histórico:', error);
+      console.error('Error adding history item:', error);
       toast({
         title: "Erro ao registrar histórico",
         description: "Não foi possível registrar a operação no histórico.",
@@ -124,7 +148,11 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
   };
 
   useEffect(() => {
-    fetchHistorico();
+    const timeoutId = setTimeout(() => {
+      fetchHistorico();
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
   }, [user, selectedUnidade]);
 
   return {

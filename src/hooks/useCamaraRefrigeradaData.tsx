@@ -24,9 +24,35 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
   const { user } = useAuth();
   const mountedRef = useRef(true);
   const loggedRef = useRef(false);
+  const lastFetchRef = useRef<number>(0);
+  const cacheRef = useRef<{ data: CamaraRefrigeradaItem[], timestamp: number, unidade: string } | null>(null);
+
+  // Cache duration: 30 seconds
+  const CACHE_DURATION = 30 * 1000;
 
   const fetchItems = useCallback(async (unidadeFiltro?: 'juazeiro_norte' | 'fortaleza' | 'todas') => {
     if (!user || !mountedRef.current) return;
+    
+    const now = Date.now();
+    const cacheKey = unidadeFiltro || 'todas';
+    
+    // Check cache first
+    if (cacheRef.current && 
+        (now - cacheRef.current.timestamp) < CACHE_DURATION && 
+        cacheRef.current.unidade === cacheKey) {
+      console.log('Using cached data for camera refrigerada');
+      setItems(cacheRef.current.data);
+      setLoading(false);
+      return;
+    }
+
+    // Throttle requests - minimum 5 seconds between fetches
+    if (now - lastFetchRef.current < 5000) {
+      console.log('Throttling camera refrigerada fetch request');
+      return;
+    }
+
+    lastFetchRef.current = now;
     
     // Log apenas uma vez por sessão
     if (!loggedRef.current) {
@@ -37,18 +63,12 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     try {
       let query = supabase
         .from('camara_refrigerada_items')
-        .select('*')
+        .select('id,nome,quantidade,categoria,status,data_entrada,temperatura_ideal,observacoes,unidade')
         .order('nome');
-
-      console.log('=== FILTRO APLICADO ===');
-      console.log('Filtro selecionado:', unidadeFiltro);
 
       // Aplicar filtro no banco se não for "todas"
       if (unidadeFiltro && unidadeFiltro !== 'todas') {
-        console.log('Aplicando filtro no banco para unidade:', unidadeFiltro);
         query = query.eq('unidade', unidadeFiltro);
-      } else {
-        console.log('Sem filtro aplicado - buscando todas as unidades');
       }
 
       const { data, error } = await query;
@@ -56,13 +76,6 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       if (error) throw error;
       
       if (!mountedRef.current) return;
-      
-      console.log('=== DADOS BRUTOS DO BANCO ===');
-      console.log('Total de registros retornados pelo banco:', data?.length || 0);
-      console.log('Filtro aplicado no banco:', unidadeFiltro !== 'todas' ? unidadeFiltro : 'nenhum');
-      data?.forEach(item => {
-        console.log(`Item do banco: ${item.nome} - Unidade DB: ${item.unidade} - Observações: ${item.observacoes}`);
-      });
       
       // Map the database data to our interface and extract measurement unit from observacoes
       const mappedItems: CamaraRefrigeradaItem[] = (data || []).map(item => {
@@ -75,33 +88,26 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
           }
         }
         
-        console.log(`Mapeando item ${item.nome}: unidade empresa (do banco) = ${item.unidade}, unidade medida extraída = ${unidadeMedida}`);
-        
         return {
           id: item.id,
           nome: item.nome,
           quantidade: item.quantidade,
-          unidade: unidadeMedida, // Esta é a unidade de medida (kg, pç, etc.) extraída das observações
+          unidade: unidadeMedida,
           categoria: item.categoria,
           status: item.status as 'descongelando' | 'pronto',
           data_entrada: item.data_entrada,
           temperatura_ideal: item.temperatura_ideal,
           observacoes: item.observacoes,
-          unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza', // Esta é a unidade da empresa do banco
+          unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
         };
       });
       
-      console.log('=== ITENS MAPEADOS ===');
-      mappedItems.forEach(item => {
-        console.log(`Item mapeado: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Unidade Medida: ${item.unidade}`);
-      });
-      
-      console.log('=== RESULTADO FINAL ===');
-      console.log('Total de itens após mapeamento:', mappedItems.length);
-      console.log('Filtro selecionado para verificação:', unidadeFiltro);
-      mappedItems.forEach(item => {
-        console.log(`Item final: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Deve aparecer: ${unidadeFiltro === 'todas' || item.unidade_item === unidadeFiltro}`);
-      });
+      // Update cache
+      cacheRef.current = {
+        data: mappedItems,
+        timestamp: now,
+        unidade: cacheKey
+      };
       
       setItems(mappedItems);
     } catch (error) {
@@ -129,12 +135,14 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     }
   }, [user, fetchItems]);
 
-  // Effect for unit changes
+  // Effect for unit changes - with debounce
   useEffect(() => {
     if (user) {
-      console.log('=== MUDANÇA DE UNIDADE DETECTADA ===');
-      console.log('Nova unidade selecionada:', selectedUnidade);
-      fetchItems(selectedUnidade);
+      const timeoutId = setTimeout(() => {
+        fetchItems(selectedUnidade);
+      }, 500); // 500ms debounce
+
+      return () => clearTimeout(timeoutId);
     }
   }, [selectedUnidade, user, fetchItems]);
 
@@ -149,45 +157,47 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     if (!user) return;
 
     try {
-      console.log('=== ADICIONANDO ITEM NA CÂMARA REFRIGERADA ===');
-      console.log('Item recebido:', newItem);
-      console.log('Unidade da empresa recebida:', newItem.unidade_item);
-      console.log('Unidade de medida recebida:', newItem.unidade);
-      
       // Include measurement unit info in observacoes
       const observacoesComMedida = `${newItem.observacoes || ''} MEDIDA:${newItem.unidade || 'pç'}`.trim();
-      
-      console.log('Observações com unidade de medida:', observacoesComMedida);
       
       const itemToInsert = {
         nome: newItem.nome,
         quantidade: newItem.quantidade,
-        unidade: newItem.unidade_item || 'juazeiro_norte', // Esta é a unidade da empresa no banco
+        unidade: newItem.unidade_item || 'juazeiro_norte',
         categoria: newItem.categoria,
         status: newItem.status || 'descongelando',
         data_entrada: newItem.data_entrada,
         temperatura_ideal: newItem.temperatura_ideal,
-        observacoes: observacoesComMedida, // Aqui salvamos a unidade de medida
+        observacoes: observacoesComMedida,
         user_id: user.id,
       };
-
-      console.log('Dados para inserção no banco:', itemToInsert);
 
       const { data, error } = await supabase
         .from('camara_refrigerada_items')
         .insert([itemToInsert])
-        .select()
+        .select('id,nome,quantidade,categoria,status,data_entrada,temperatura_ideal,observacoes,unidade')
         .single();
 
-      if (error) {
-        console.error('Erro ao inserir no banco:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('Item inserido no banco:', data);
+      // Clear cache on data change
+      cacheRef.current = null;
       
-      // Refetch items to ensure the list is updated with proper filtering
-      await fetchItems(selectedUnidade);
+      // Add to local state immediately
+      const mappedItem = {
+        id: data.id,
+        nome: data.nome,
+        quantidade: data.quantidade,
+        unidade: newItem.unidade || 'pç',
+        categoria: data.categoria,
+        status: data.status as 'descongelando' | 'pronto',
+        data_entrada: data.data_entrada,
+        temperatura_ideal: data.temperatura_ideal,
+        observacoes: data.observacoes,
+        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
+      };
+      
+      setItems(prev => [...prev, mappedItem]);
       
       toast({
         title: "Item adicionado à câmara refrigerada",
@@ -212,6 +222,9 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
 
       if (error) throw error;
 
+      // Clear cache on data change
+      cacheRef.current = null;
+
       setItems(prev => prev.map(item => 
         item.id === id ? { ...item, status } : item
       ));
@@ -233,6 +246,9 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         .eq('id', id);
 
       if (error) throw error;
+
+      // Clear cache on data change
+      cacheRef.current = null;
 
       setItems(prev => prev.filter(item => item.id !== id));
       toast({

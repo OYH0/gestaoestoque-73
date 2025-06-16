@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -20,15 +20,42 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
   const [historico, setHistorico] = useState<EstoqueSecoHistoricoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const lastFetchRef = useRef<number>(0);
+  const cacheRef = useRef<{ data: EstoqueSecoHistoricoItem[], timestamp: number, unidade: string } | null>(null);
+
+  // Cache duration: 60 seconds for history (less frequently changing data)
+  const CACHE_DURATION = 60 * 1000;
 
   const fetchHistorico = async () => {
     if (!user) return;
     
+    const now = Date.now();
+    const cacheKey = selectedUnidade || 'todas';
+    
+    // Check cache first
+    if (cacheRef.current && 
+        (now - cacheRef.current.timestamp) < CACHE_DURATION && 
+        cacheRef.current.unidade === cacheKey) {
+      console.log('Using cached data for estoque seco history');
+      setHistorico(cacheRef.current.data);
+      setLoading(false);
+      return;
+    }
+
+    // Throttle requests - minimum 10 seconds between fetches
+    if (now - lastFetchRef.current < 10000) {
+      console.log('Throttling estoque seco history fetch request');
+      return;
+    }
+
+    lastFetchRef.current = now;
+    
     try {
       let query = supabase
         .from('estoque_seco_historico')
-        .select('*')
-        .order('data_operacao', { ascending: false });
+        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
+        .order('data_operacao', { ascending: false })
+        .limit(100); // Limit to 100 most recent records
 
       // Aplicar filtro por unidade se não for "todas"
       if (selectedUnidade && selectedUnidade !== 'todas') {
@@ -51,6 +78,13 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
         unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
       }));
       
+      // Update cache
+      cacheRef.current = {
+        data: mappedHistorico,
+        timestamp: now,
+        unidade: cacheKey
+      };
+      
       setHistorico(mappedHistorico);
     } catch (error) {
       console.error('Error fetching history:', error);
@@ -68,8 +102,6 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
     if (!user) return;
 
     try {
-      console.log('Adding history item:', { ...item, user_id: user.id });
-      
       const { data, error } = await supabase
         .from('estoque_seco_historico')
         .insert([{ 
@@ -81,15 +113,13 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
           user_id: user.id,
           unidade: item.unidade_item || 'juazeiro_norte'
         }])
-        .select()
+        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
         .single();
 
-      if (error) {
-        console.error('Error inserting history:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('History item added successfully:', data);
+      // Clear cache on data change
+      cacheRef.current = null;
       
       const mappedItem: EstoqueSecoHistoricoItem = {
         id: data.id,
@@ -103,7 +133,7 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
-      setHistorico(prev => [mappedItem, ...prev]);
+      setHistorico(prev => [mappedItem, ...prev].slice(0, 100)); // Keep only 100 most recent
     } catch (error) {
       console.error('Error adding history item:', error);
       toast({
@@ -115,7 +145,11 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
   };
 
   useEffect(() => {
-    fetchHistorico();
+    const timeoutId = setTimeout(() => {
+      fetchHistorico();
+    }, 300); // Debounce
+
+    return () => clearTimeout(timeoutId);
   }, [user, selectedUnidade]);
 
   return {

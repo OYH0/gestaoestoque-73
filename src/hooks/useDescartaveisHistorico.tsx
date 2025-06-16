@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -20,17 +20,43 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
   const [historico, setHistorico] = useState<DescartaveisHistoricoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const lastFetchRef = useRef<number>(0);
+  const cacheRef = useRef<{ data: DescartaveisHistoricoItem[], timestamp: number, unidade: string } | null>(null);
+
+  // Cache duration: 60 seconds for history
+  const CACHE_DURATION = 60 * 1000;
 
   const fetchHistorico = async () => {
     if (!user) return;
     
+    const now = Date.now();
+    const cacheKey = selectedUnidade || 'todas';
+    
+    // Check cache first
+    if (cacheRef.current && 
+        (now - cacheRef.current.timestamp) < CACHE_DURATION && 
+        cacheRef.current.unidade === cacheKey) {
+      console.log('Using cached data for descartaveis history');
+      setHistorico(cacheRef.current.data);
+      setLoading(false);
+      return;
+    }
+
+    // Throttle requests
+    if (now - lastFetchRef.current < 10000) {
+      console.log('Throttling descartaveis history fetch request');
+      return;
+    }
+
+    lastFetchRef.current = now;
+    
     try {
       let query = supabase
         .from('descartaveis_historico')
-        .select('*')
-        .order('data_operacao', { ascending: false });
+        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
+        .order('data_operacao', { ascending: false })
+        .limit(100);
 
-      // Aplicar filtro por unidade se não for "todas"
       if (selectedUnidade && selectedUnidade !== 'todas') {
         query = query.eq('unidade', selectedUnidade);
       }
@@ -51,6 +77,13 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
         unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
       }));
       
+      // Update cache
+      cacheRef.current = {
+        data: mappedHistorico,
+        timestamp: now,
+        unidade: cacheKey
+      };
+      
       setHistorico(mappedHistorico);
     } catch (error) {
       console.error('Error fetching history:', error);
@@ -68,8 +101,6 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
     if (!user) return;
 
     try {
-      console.log('Adding history item:', { ...item, user_id: user.id });
-      
       const { data, error } = await supabase
         .from('descartaveis_historico')
         .insert([{ 
@@ -81,15 +112,13 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
           user_id: user.id,
           unidade: item.unidade_item || 'juazeiro_norte'
         }])
-        .select()
+        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
         .single();
 
-      if (error) {
-        console.error('Error inserting history:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('History item added successfully:', data);
+      // Clear cache on data change
+      cacheRef.current = null;
       
       const mappedItem: DescartaveisHistoricoItem = {
         id: data.id,
@@ -103,7 +132,7 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
-      setHistorico(prev => [mappedItem, ...prev]);
+      setHistorico(prev => [mappedItem, ...prev].slice(0, 100));
     } catch (error) {
       console.error('Error adding history item:', error);
       toast({
@@ -115,7 +144,11 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
   };
 
   useEffect(() => {
-    fetchHistorico();
+    const timeoutId = setTimeout(() => {
+      fetchHistorico();
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
   }, [user, selectedUnidade]);
 
   return {

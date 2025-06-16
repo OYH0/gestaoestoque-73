@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -43,11 +44,15 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         .select('*')
         .order('nome');
 
+      console.log('=== FILTRO APLICADO ===');
       console.log('Filtro selecionado:', stableSelectedUnidade.current);
 
       // Aplicar filtro no banco se não for "todas"
       if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
+        console.log('Aplicando filtro no banco para unidade:', stableSelectedUnidade.current);
         query = query.eq('unidade', stableSelectedUnidade.current);
+      } else {
+        console.log('Sem filtro aplicado - buscando todas as unidades');
       }
 
       const { data, error } = await query;
@@ -57,9 +62,10 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       if (!mountedRef.current) return;
       
       console.log('=== DADOS BRUTOS DO BANCO ===');
-      console.log('Total de registros:', data?.length || 0);
+      console.log('Total de registros retornados pelo banco:', data?.length || 0);
+      console.log('Filtro aplicado no banco:', stableSelectedUnidade.current !== 'todas' ? stableSelectedUnidade.current : 'nenhum');
       data?.forEach(item => {
-        console.log(`Item: ${item.nome} - Unidade DB: ${item.unidade} - Observações: ${item.observacoes}`);
+        console.log(`Item do banco: ${item.nome} - Unidade DB: ${item.unidade} - Observações: ${item.observacoes}`);
       });
       
       // Map the database data to our interface and extract measurement unit from observacoes
@@ -73,7 +79,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
           }
         }
         
-        console.log(`Mapeando item ${item.nome}: unidade empresa = ${item.unidade}, unidade medida extraída = ${unidadeMedida}`);
+        console.log(`Mapeando item ${item.nome}: unidade empresa (do banco) = ${item.unidade}, unidade medida extraída = ${unidadeMedida}`);
         
         return {
           id: item.id,
@@ -94,10 +100,11 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         console.log(`Item mapeado: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Unidade Medida: ${item.unidade}`);
       });
       
-      console.log('=== ITENS APÓS FILTRO ===');
-      console.log('Total após filtro:', mappedItems.length);
+      console.log('=== RESULTADO FINAL ===');
+      console.log('Total de itens após mapeamento:', mappedItems.length);
+      console.log('Filtro selecionado para verificação:', stableSelectedUnidade.current);
       mappedItems.forEach(item => {
-        console.log(`Item final: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Unidade Medida: ${item.unidade}`);
+        console.log(`Item final: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Deve aparecer: ${stableSelectedUnidade.current === 'todas' || item.unidade_item === stableSelectedUnidade.current}`);
       });
       
       setItems(mappedItems);

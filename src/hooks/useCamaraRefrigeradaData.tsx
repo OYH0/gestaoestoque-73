@@ -52,6 +52,12 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       
       if (!mountedRef.current) return;
       
+      console.log('=== DADOS BRUTOS DO BANCO ===');
+      console.log('Total de registros:', data?.length || 0);
+      data?.forEach(item => {
+        console.log(`Item: ${item.nome} - Observações: ${item.observacoes}`);
+      });
+      
       // Map the database data to our interface and extract unit from observacoes
       const mappedItems: CamaraRefrigeradaItem[] = (data || []).map(item => {
         // Extract unit from observacoes if it contains unit info
@@ -62,6 +68,8 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
             unidade_item = unidadeMatch[1] as 'juazeiro_norte' | 'fortaleza';
           }
         }
+        
+        console.log(`Mapeando item ${item.nome}: unidade extraída = ${unidade_item}`);
         
         return {
           id: item.id,
@@ -77,10 +85,22 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         };
       });
       
+      console.log('=== ITENS MAPEADOS ===');
+      mappedItems.forEach(item => {
+        console.log(`Item mapeado: ${item.nome} - Unidade: ${item.unidade_item}`);
+      });
+      
       // Filter by selected unit
       const filteredItems = mappedItems.filter(item => {
-        if (stableSelectedUnidade.current === 'todas') return true;
-        return item.unidade_item === stableSelectedUnidade.current;
+        const shouldInclude = stableSelectedUnidade.current === 'todas' || item.unidade_item === stableSelectedUnidade.current;
+        console.log(`Filtro - Item: ${item.nome}, Unidade: ${item.unidade_item}, Selecionada: ${stableSelectedUnidade.current}, Incluir: ${shouldInclude}`);
+        return shouldInclude;
+      });
+      
+      console.log('=== ITENS APÓS FILTRO ===');
+      console.log('Total após filtro:', filteredItems.length);
+      filteredItems.forEach(item => {
+        console.log(`Item final: ${item.nome} - Unidade: ${item.unidade_item}`);
       });
       
       setItems(filteredItems);
@@ -130,9 +150,12 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     try {
       console.log('=== ADICIONANDO ITEM NA CÂMARA REFRIGERADA ===');
       console.log('Item recebido:', newItem);
+      console.log('Unidade do item recebido:', newItem.unidade_item);
       
       // Include unit info in observacoes to preserve company unit
       const observacoesComUnidade = `${newItem.observacoes || ''} UNIDADE:${newItem.unidade_item || 'juazeiro_norte'}`.trim();
+      
+      console.log('Observações com unidade:', observacoesComUnidade);
       
       const itemToInsert = {
         nome: newItem.nome,
@@ -146,7 +169,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         user_id: user.id,
       };
 
-      console.log('Dados para inserção:', itemToInsert);
+      console.log('Dados para inserção no banco:', itemToInsert);
 
       const { data, error } = await supabase
         .from('camara_refrigerada_items')
@@ -159,26 +182,14 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         throw error;
       }
       
-      console.log('Item inserido com sucesso:', data);
+      console.log('Item inserido no banco:', data);
       
-      // Map the returned data to our interface
-      const mappedItem: CamaraRefrigeradaItem = {
-        id: data.id,
-        nome: data.nome,
-        quantidade: data.quantidade,
-        unidade: data.unidade || newItem.unidade,
-        categoria: data.categoria,
-        status: data.status as 'descongelando' | 'pronto',
-        data_entrada: data.data_entrada,
-        temperatura_ideal: data.temperatura_ideal,
-        observacoes: data.observacoes,
-        unidade_item: newItem.unidade_item || 'juazeiro_norte',
-      };
+      // Refetch items to ensure the list is updated with proper filtering
+      await fetchItems();
       
-      setItems(prev => [...prev, mappedItem]);
       toast({
         title: "Item adicionado à câmara refrigerada",
-        description: `${newItem.nome} foi movido para descongelamento!`,
+        description: `${newItem.nome} foi movido para descongelamento na unidade ${newItem.unidade_item === 'fortaleza' ? 'Fortaleza' : 'Juazeiro do Norte'}!`,
       });
     } catch (error) {
       console.error('Error adding item:', error);

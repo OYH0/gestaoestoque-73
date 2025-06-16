@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -224,13 +225,14 @@ export default function CamaraFria() {
       const newQuantity = item.quantidade - thawQuantity;
       await updateItemQuantity(id, newQuantity);
       
-      // CORREÇÃO: Usar a unidade do próprio item para garantir consistência
-      const unidadeParaRefrigerada = item.unidade_item || 'juazeiro_norte';
-      
       console.log('=== MOVENDO PARA CÂMARA REFRIGERADA ===');
-      console.log('Item:', item.nome);
-      console.log('Unidade do item:', item.unidade_item);
-      console.log('Unidade para câmara refrigerada:', unidadeParaRefrigerada);
+      console.log('Item original:', item);
+      console.log('Unidade do item original:', item.unidade_item);
+      
+      // GARANTIR que a unidade seja preservada corretamente
+      const unidadeCorreta = item.unidade_item || 'juazeiro_norte';
+      
+      console.log('Unidade que será enviada:', unidadeCorreta);
       
       await addCamaraRefrigeradaItem({
         nome: item.nome,
@@ -241,7 +243,7 @@ export default function CamaraFria() {
         data_entrada: new Date().toISOString().split('T')[0],
         temperatura_ideal: item.temperatura_ideal,
         observacoes: `Movido da câmara fria para descongelamento`,
-        unidade_item: unidadeParaRefrigerada // CORREÇÃO: Garantir que a unidade seja passada corretamente
+        unidade_item: unidadeCorreta // USAR A UNIDADE CORRETA DO ITEM ORIGINAL
       });
       
       await addHistoricoItem({

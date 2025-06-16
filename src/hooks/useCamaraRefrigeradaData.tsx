@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,23 +52,38 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       
       if (!mountedRef.current) return;
       
-      // Map the database data to our interface
-      const mappedItems: CamaraRefrigeradaItem[] = (data || []).map(item => ({
-        id: item.id,
-        nome: item.nome,
-        quantidade: item.quantidade,
-        unidade: item.unidade || 'pç', // Use only the unidade field that exists in DB
-        categoria: item.categoria,
-        status: item.status as 'descongelando' | 'pronto',
-        data_entrada: item.data_entrada,
-        temperatura_ideal: item.temperatura_ideal,
-        observacoes: item.observacoes,
-        // Since we don't have a separate field for company unit in this table, we'll use a default
-        // This will need to be addressed in the database schema if proper filtering is needed
-        unidade_item: 'juazeiro_norte', // Default since we don't have this field in DB
-      }));
+      // Map the database data to our interface and extract unit from observacoes
+      const mappedItems: CamaraRefrigeradaItem[] = (data || []).map(item => {
+        // Extract unit from observacoes if it contains unit info
+        let unidade_item: 'juazeiro_norte' | 'fortaleza' = 'juazeiro_norte';
+        if (item.observacoes && item.observacoes.includes('UNIDADE:')) {
+          const unidadeMatch = item.observacoes.match(/UNIDADE:(juazeiro_norte|fortaleza)/);
+          if (unidadeMatch) {
+            unidade_item = unidadeMatch[1] as 'juazeiro_norte' | 'fortaleza';
+          }
+        }
+        
+        return {
+          id: item.id,
+          nome: item.nome,
+          quantidade: item.quantidade,
+          unidade: item.unidade || 'pç',
+          categoria: item.categoria,
+          status: item.status as 'descongelando' | 'pronto',
+          data_entrada: item.data_entrada,
+          temperatura_ideal: item.temperatura_ideal,
+          observacoes: item.observacoes,
+          unidade_item: unidade_item,
+        };
+      });
       
-      setItems(mappedItems);
+      // Filter by selected unit
+      const filteredItems = mappedItems.filter(item => {
+        if (stableSelectedUnidade.current === 'todas') return true;
+        return item.unidade_item === stableSelectedUnidade.current;
+      });
+      
+      setItems(filteredItems);
     } catch (error) {
       console.error('Error fetching items:', error);
       if (mountedRef.current) {
@@ -115,16 +131,18 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       console.log('=== ADICIONANDO ITEM NA CÂMARA REFRIGERADA ===');
       console.log('Item recebido:', newItem);
       
-      // Preparar dados para inserção no banco - usar apenas os campos que existem
+      // Include unit info in observacoes to preserve company unit
+      const observacoesComUnidade = `${newItem.observacoes || ''} UNIDADE:${newItem.unidade_item || 'juazeiro_norte'}`.trim();
+      
       const itemToInsert = {
         nome: newItem.nome,
         quantidade: newItem.quantidade,
-        unidade: newItem.unidade, // Campo para unidade de medida (kg, pç, etc)
+        unidade: newItem.unidade,
         categoria: newItem.categoria,
         status: newItem.status || 'descongelando',
         data_entrada: newItem.data_entrada,
         temperatura_ideal: newItem.temperatura_ideal,
-        observacoes: newItem.observacoes,
+        observacoes: observacoesComUnidade,
         user_id: user.id,
       };
 
@@ -148,13 +166,13 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         id: data.id,
         nome: data.nome,
         quantidade: data.quantidade,
-        unidade: data.unidade || newItem.unidade, // Use unidade field from DB
+        unidade: data.unidade || newItem.unidade,
         categoria: data.categoria,
         status: data.status as 'descongelando' | 'pronto',
         data_entrada: data.data_entrada,
         temperatura_ideal: data.temperatura_ideal,
         observacoes: data.observacoes,
-        unidade_item: newItem.unidade_item || 'juazeiro_norte', // Use from newItem since DB doesn't have this field
+        unidade_item: newItem.unidade_item || 'juazeiro_norte',
       };
       
       setItems(prev => [...prev, mappedItem]);

@@ -55,7 +55,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       console.log('=== DADOS BRUTOS DO BANCO ===');
       console.log('Total de registros:', data?.length || 0);
       data?.forEach(item => {
-        console.log(`Item: ${item.nome} - Observações: ${item.observacoes}`);
+        console.log(`Item: ${item.nome} - Observações: ${item.observacoes} - Unidade DB: ${item.unidade}`);
       });
       
       // Map the database data to our interface and extract unit from observacoes
@@ -75,32 +75,32 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
           id: item.id,
           nome: item.nome,
           quantidade: item.quantidade,
-          unidade: item.unidade || 'pç',
+          unidade: item.unidade || 'pç', // Esta é a unidade de medida (kg, pç, etc.)
           categoria: item.categoria,
           status: item.status as 'descongelando' | 'pronto',
           data_entrada: item.data_entrada,
           temperatura_ideal: item.temperatura_ideal,
           observacoes: item.observacoes,
-          unidade_item: unidade_item,
+          unidade_item: unidade_item, // Esta é a unidade da empresa (juazeiro_norte/fortaleza)
         };
       });
       
       console.log('=== ITENS MAPEADOS ===');
       mappedItems.forEach(item => {
-        console.log(`Item mapeado: ${item.nome} - Unidade: ${item.unidade_item}`);
+        console.log(`Item mapeado: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Unidade Medida: ${item.unidade}`);
       });
       
       // Filter by selected unit
       const filteredItems = mappedItems.filter(item => {
         const shouldInclude = stableSelectedUnidade.current === 'todas' || item.unidade_item === stableSelectedUnidade.current;
-        console.log(`Filtro - Item: ${item.nome}, Unidade: ${item.unidade_item}, Selecionada: ${stableSelectedUnidade.current}, Incluir: ${shouldInclude}`);
+        console.log(`Filtro - Item: ${item.nome}, Unidade Empresa: ${item.unidade_item}, Selecionada: ${stableSelectedUnidade.current}, Incluir: ${shouldInclude}`);
         return shouldInclude;
       });
       
       console.log('=== ITENS APÓS FILTRO ===');
       console.log('Total após filtro:', filteredItems.length);
       filteredItems.forEach(item => {
-        console.log(`Item final: ${item.nome} - Unidade: ${item.unidade_item}`);
+        console.log(`Item final: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Unidade Medida: ${item.unidade}`);
       });
       
       setItems(filteredItems);
@@ -150,22 +150,23 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     try {
       console.log('=== ADICIONANDO ITEM NA CÂMARA REFRIGERADA ===');
       console.log('Item recebido:', newItem);
-      console.log('Unidade do item recebido:', newItem.unidade_item);
+      console.log('Unidade da empresa recebida:', newItem.unidade_item);
+      console.log('Unidade de medida recebida:', newItem.unidade);
       
       // Include unit info in observacoes to preserve company unit
       const observacoesComUnidade = `${newItem.observacoes || ''} UNIDADE:${newItem.unidade_item || 'juazeiro_norte'}`.trim();
       
-      console.log('Observações com unidade:', observacoesComUnidade);
+      console.log('Observações com unidade da empresa:', observacoesComUnidade);
       
       const itemToInsert = {
         nome: newItem.nome,
         quantidade: newItem.quantidade,
-        unidade: newItem.unidade,
+        unidade: newItem.unidade, // Esta é a unidade de medida (kg, pç, etc.)
         categoria: newItem.categoria,
         status: newItem.status || 'descongelando',
         data_entrada: newItem.data_entrada,
         temperatura_ideal: newItem.temperatura_ideal,
-        observacoes: observacoesComUnidade,
+        observacoes: observacoesComUnidade, // Aqui salvamos a unidade da empresa
         user_id: user.id,
       };
 

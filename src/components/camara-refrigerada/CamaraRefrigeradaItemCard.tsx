@@ -19,11 +19,9 @@ export function CamaraRefrigeradaItemCard({
   onMoveToFreezer, 
   onRemoveFromChamber 
 }: CamaraRefrigeradaItemCardProps) {
+  // A unidade aqui é a unidade de medida (kg, pç, etc.), não a unidade da empresa
   const getUnidadeDisplay = (unidade: string) => {
-    if (unidade === 'juazeiro_norte' || unidade === 'fortaleza') {
-      return 'pç';
-    }
-    return unidade;
+    return unidade || 'pç';
   };
 
   return (
@@ -48,6 +46,10 @@ export function CamaraRefrigeradaItemCard({
                 }
               >
                 {item.status === 'pronto' ? 'Pronto' : 'Descongelando'}
+              </Badge>
+              {/* Mostrar a unidade da empresa como uma badge */}
+              <Badge variant="outline" className="text-xs">
+                {item.unidade_item === 'fortaleza' ? 'Fortaleza' : 'Juazeiro do Norte'}
               </Badge>
             </div>
             <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">

@@ -1,8 +1,8 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
@@ -297,20 +297,28 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Gráficos com ordem diferente para mobile e desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {isMobile ? (
-          <>
-            {PieChartCard}
-            {BarChartCard}
-          </>
-        ) : (
-          <>
-            {BarChartCard}
-            {PieChartCard}
-          </>
-        )}
-      </div>
+      {/* Gráficos com carousel para mobile e grid para desktop */}
+      {isMobile ? (
+        <div className="relative">
+          <Carousel className="w-full">
+            <CarouselContent>
+              <CarouselItem>
+                {PieChartCard}
+              </CarouselItem>
+              <CarouselItem>
+                {BarChartCard}
+              </CarouselItem>
+            </CarouselContent>
+            <CarouselPrevious className="left-2" />
+            <CarouselNext className="right-2" />
+          </Carousel>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {BarChartCard}
+          {PieChartCard}
+        </div>
+      )}
 
       {/* Alertas */}
       {alertsData.temAlertas && (

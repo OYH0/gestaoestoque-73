@@ -75,13 +75,24 @@ const Index = () => {
                     containScroll: "trimSnaps",
                     skipSnaps: false,
                     inViewThreshold: 0.7,
-                    watchDrag: false
+                    watchDrag: (emblaApi, evt) => {
+                      // Só permitir drag horizontal se o movimento for mais horizontal que vertical
+                      const deltaX = Math.abs(evt.deltaX || 0);
+                      const deltaY = Math.abs(evt.deltaY || 0);
+                      return deltaX > deltaY * 1.5;
+                    }
                   }}
                 >
-                  <CarouselContent className="h-full touch-pan-y">
+                  <CarouselContent className="h-full">
                     {mainPages.map((page, index) => (
-                      <CarouselItem key={page.path} className="h-full touch-pan-y">
-                        <div className="h-full overflow-y-auto overflow-x-hidden touch-pan-y" style={{ touchAction: 'pan-y' }}>
+                      <CarouselItem key={page.path} className="h-full">
+                        <div 
+                          className="h-full overflow-y-auto overflow-x-hidden" 
+                          style={{ 
+                            touchAction: 'pan-y pinch-zoom',
+                            overscrollBehavior: 'contain'
+                          }}
+                        >
                           <div className="p-4 relative z-10 max-w-full min-h-full">
                             <page.component />
                           </div>

@@ -73,8 +73,7 @@ const Index = () => {
                     dragFree: false,
                     containScroll: "trimSnaps",
                     skipSnaps: false,
-                    inViewThreshold: 0.7,
-                    watchDrag: false
+                    inViewThreshold: 0.7
                   }}
                 >
                   <CarouselContent className="h-full">
@@ -83,8 +82,8 @@ const Index = () => {
                         <div 
                           className="h-full overflow-y-auto overflow-x-hidden" 
                           style={{ 
-                            touchAction: 'pan-y pinch-zoom',
-                            overscrollBehavior: 'auto',
+                            touchAction: 'pan-y',
+                            overscrollBehavior: 'contain',
                             WebkitOverflowScrolling: 'touch'
                           }}
                         >

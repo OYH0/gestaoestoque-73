@@ -40,17 +40,19 @@ const Index = () => {
                   align: "start",
                   loop: false,
                   skipSnaps: false,
-                  dragFree: false
+                  dragFree: false,
+                  axis: "x"
                 }}
               >
-                <CarouselContent className="h-full -ml-0">
+                <CarouselContent className="h-full -ml-0" style={{ touchAction: 'pan-x pan-y' }}>
                   {tabs.map((tab) => (
                     <CarouselItem key={tab.id} className="pl-0 basis-full h-full">
                       <div 
                         className="h-full overflow-auto" 
                         style={{
-                          touchAction: 'pan-y pinch-zoom',
-                          overscrollBehavior: 'contain'
+                          touchAction: 'pan-y',
+                          overscrollBehavior: 'contain',
+                          WebkitOverflowScrolling: 'touch'
                         }}
                       >
                         <main className="p-4 md:p-6 relative h-full">

@@ -40,23 +40,7 @@ const Index = () => {
                   align: "start",
                   loop: false,
                   skipSnaps: false,
-                  dragFree: false,
-                  watchDrag: (emblaApi, evt) => {
-                    // Permitir swipe horizontal mas não interferir no scroll vertical
-                    const target = evt.target as HTMLElement;
-                    const isScrollableArea = target.closest('[data-scrollable]');
-                    
-                    if (isScrollableArea) {
-                      // Se o usuário está tentando fazer scroll vertical, não interceptar
-                      const deltaX = Math.abs(evt.deltaX || 0);
-                      const deltaY = Math.abs(evt.deltaY || 0);
-                      
-                      // Só permitir drag horizontal se o movimento for mais horizontal que vertical
-                      return deltaX > deltaY;
-                    }
-                    
-                    return true;
-                  }
+                  dragFree: false
                 }}
               >
                 <CarouselContent className="h-full -ml-0">
@@ -64,9 +48,8 @@ const Index = () => {
                     <CarouselItem key={tab.id} className="pl-0 basis-full h-full">
                       <div 
                         className="h-full overflow-auto" 
-                        data-scrollable="true"
                         style={{
-                          touchAction: 'pan-y',
+                          touchAction: 'pan-y pinch-zoom',
                           overscrollBehavior: 'contain'
                         }}
                       >

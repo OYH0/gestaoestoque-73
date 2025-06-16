@@ -297,28 +297,20 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Gráficos com carousel para mobile e grid para desktop */}
-      {isMobile ? (
-        <div className="relative">
-          <Carousel className="w-full">
-            <CarouselContent>
-              <CarouselItem>
-                {PieChartCard}
-              </CarouselItem>
-              <CarouselItem>
-                {BarChartCard}
-              </CarouselItem>
-            </CarouselContent>
-            <CarouselPrevious className="left-2" />
-            <CarouselNext className="right-2" />
-          </Carousel>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {BarChartCard}
-          {PieChartCard}
-        </div>
-      )}
+      {/* Gráficos com ordem diferente para mobile e desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {isMobile ? (
+          <>
+            {PieChartCard}
+            {BarChartCard}
+          </>
+        ) : (
+          <>
+            {BarChartCard}
+            {PieChartCard}
+          </>
+        )}
+      </div>
 
       {/* Alertas */}
       {alertsData.temAlertas && (

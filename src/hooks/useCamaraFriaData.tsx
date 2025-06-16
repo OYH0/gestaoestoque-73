@@ -135,7 +135,7 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         quantidade: Number(newItem.quantidade),
         categoria: newItem.categoria,
         minimo: newItem.minimo || 5,
-        data_entrada: newItem.data_entrada,
+        data_entrada: new Date().toISOString().split('T')[0], // Adicionar data de entrada automaticamente
         data_validade: newItem.data_validade,
         temperatura_ideal: newItem.temperatura_ideal,
         fornecedor: newItem.fornecedor,

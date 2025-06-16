@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -77,7 +78,7 @@ export function useEstoqueSecoData() {
         quantidade: Number(newItem.quantidade),
         categoria: newItem.categoria,
         minimo: newItem.minimo,
-        data_entrada: newItem.data_entrada,
+        data_entrada: new Date().toISOString().split('T')[0], // Adicionar data de entrada automaticamente
         data_validade: newItem.data_validade,
         preco_unitario: newItem.preco_unitario,
         fornecedor: newItem.fornecedor,

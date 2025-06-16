@@ -55,33 +55,33 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       console.log('=== DADOS BRUTOS DO BANCO ===');
       console.log('Total de registros:', data?.length || 0);
       data?.forEach(item => {
-        console.log(`Item: ${item.nome} - Observações: ${item.observacoes} - Unidade DB: ${item.unidade}`);
+        console.log(`Item: ${item.nome} - Unidade DB: ${item.unidade} - Observações: ${item.observacoes}`);
       });
       
-      // Map the database data to our interface and extract unit from observacoes
+      // Map the database data to our interface and extract measurement unit from observacoes
       const mappedItems: CamaraRefrigeradaItem[] = (data || []).map(item => {
-        // Extract unit from observacoes if it contains unit info
-        let unidade_item: 'juazeiro_norte' | 'fortaleza' = 'juazeiro_norte';
-        if (item.observacoes && item.observacoes.includes('UNIDADE:')) {
-          const unidadeMatch = item.observacoes.match(/UNIDADE:(juazeiro_norte|fortaleza)/);
-          if (unidadeMatch) {
-            unidade_item = unidadeMatch[1] as 'juazeiro_norte' | 'fortaleza';
+        // Extract measurement unit from observacoes if it contains unit info
+        let unidadeMedida = 'pç';
+        if (item.observacoes && item.observacoes.includes('MEDIDA:')) {
+          const medidaMatch = item.observacoes.match(/MEDIDA:([^;\s]+)/);
+          if (medidaMatch) {
+            unidadeMedida = medidaMatch[1];
           }
         }
         
-        console.log(`Mapeando item ${item.nome}: unidade extraída = ${unidade_item}`);
+        console.log(`Mapeando item ${item.nome}: unidade empresa = ${item.unidade}, unidade medida extraída = ${unidadeMedida}`);
         
         return {
           id: item.id,
           nome: item.nome,
           quantidade: item.quantidade,
-          unidade: item.unidade || 'pç', // Esta é a unidade de medida (kg, pç, etc.)
+          unidade: unidadeMedida, // Esta é a unidade de medida (kg, pç, etc.) extraída das observações
           categoria: item.categoria,
           status: item.status as 'descongelando' | 'pronto',
           data_entrada: item.data_entrada,
           temperatura_ideal: item.temperatura_ideal,
           observacoes: item.observacoes,
-          unidade_item: unidade_item, // Esta é a unidade da empresa (juazeiro_norte/fortaleza)
+          unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza', // Esta é a unidade da empresa do banco
         };
       });
       
@@ -153,20 +153,20 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       console.log('Unidade da empresa recebida:', newItem.unidade_item);
       console.log('Unidade de medida recebida:', newItem.unidade);
       
-      // Include unit info in observacoes to preserve company unit
-      const observacoesComUnidade = `${newItem.observacoes || ''} UNIDADE:${newItem.unidade_item || 'juazeiro_norte'}`.trim();
+      // Include measurement unit info in observacoes
+      const observacoesComMedida = `${newItem.observacoes || ''} MEDIDA:${newItem.unidade || 'pç'}`.trim();
       
-      console.log('Observações com unidade da empresa:', observacoesComUnidade);
+      console.log('Observações com unidade de medida:', observacoesComMedida);
       
       const itemToInsert = {
         nome: newItem.nome,
         quantidade: newItem.quantidade,
-        unidade: newItem.unidade, // Esta é a unidade de medida (kg, pç, etc.)
+        unidade: newItem.unidade_item || 'juazeiro_norte', // Esta é a unidade da empresa no banco
         categoria: newItem.categoria,
         status: newItem.status || 'descongelando',
         data_entrada: newItem.data_entrada,
         temperatura_ideal: newItem.temperatura_ideal,
-        observacoes: observacoesComUnidade, // Aqui salvamos a unidade da empresa
+        observacoes: observacoesComMedida, // Aqui salvamos a unidade de medida
         user_id: user.id,
       };
 

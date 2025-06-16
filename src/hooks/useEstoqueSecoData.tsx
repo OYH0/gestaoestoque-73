@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -49,7 +48,7 @@ export function useEstoqueSecoData() {
       
       const mappedItems = (data || []).map(item => ({
         ...item,
-        quantidade: Number(item.quantidade), // Garantir que é número
+        quantidade: Number(item.quantidade),
         unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza'
       }));
       
@@ -75,8 +74,7 @@ export function useEstoqueSecoData() {
 
       const itemToInsert = {
         nome: newItem.nome,
-        quantidade: Number(newItem.quantidade), // Garantir que é número
-        unidade: newItem.unidade,
+        quantidade: Number(newItem.quantidade),
         categoria: newItem.categoria,
         minimo: newItem.minimo,
         data_entrada: newItem.data_entrada,

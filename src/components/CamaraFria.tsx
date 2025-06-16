@@ -22,7 +22,18 @@ import { CamaraFriaTransferDialog } from '@/components/camara-fria/CamaraFriaTra
 import { AdminGuard } from '@/components/AdminGuard';
 
 export default function CamaraFria() {
-  const { items, loading, addItem, updateItemQuantity, deleteItem, transferItemsToUnidade } = useCamaraFriaData();
+  const { 
+    items, 
+    loading, 
+    addItem, 
+    updateItemQuantity, 
+    deleteItem, 
+    transferItemsToUnidade,
+    qrCodes,
+    showQRGenerator,
+    setShowQRGenerator,
+    lastAddedItem
+  } = useCamaraFriaData();
   
   // Estado para unidade selecionada
   const [selectedUnidade, setSelectedUnidade] = useState<'juazeiro_norte' | 'fortaleza' | 'todas'>('todas');
@@ -84,7 +95,7 @@ export default function CamaraFria() {
     
     const itemWithUnidade = {
       ...newItem,
-      quantidade: Number(newItem.quantidade), // Garantir que é número
+      quantidade: Number(newItem.quantidade),
       unidade_item: unidadeParaItem
     };
 

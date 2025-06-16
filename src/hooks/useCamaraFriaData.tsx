@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -68,13 +67,13 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
       const mappedItems: CamaraFriaItem[] = (data || []).map(item => ({
         id: item.id,
         nome: item.nome,
-        quantidade: item.quantidade,
+        quantidade: Number(item.quantidade),
         unidade: item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza' ? 'pç' : item.unidade,
         categoria: item.categoria,
-        peso_kg: undefined, // Not available in database
+        peso_kg: undefined,
         data_entrada: item.data_entrada,
         data_validade: item.data_validade,
-        temperatura: undefined, // Not available in database
+        temperatura: undefined,
         temperatura_ideal: item.temperatura_ideal || undefined,
         fornecedor: item.fornecedor,
         observacoes: item.observacoes,
@@ -133,8 +132,7 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
 
       const itemToInsert = {
         nome: newItem.nome,
-        quantidade: Number(newItem.quantidade), // Garantir que é número
-        unidade: newItem.unidade,
+        quantidade: Number(newItem.quantidade),
         categoria: newItem.categoria,
         minimo: newItem.minimo || 5,
         data_entrada: newItem.data_entrada,
@@ -144,7 +142,7 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         observacoes: newItem.observacoes,
         preco_unitario: newItem.preco_unitario,
         user_id: user.id,
-        unidade: newItem.unidade_item || 'juazeiro_norte' // Usar unidade_item como unidade no banco
+        unidade: newItem.unidade_item || 'juazeiro_norte'
       };
 
       console.log('Item para inserir no banco:', itemToInsert);
@@ -161,6 +159,7 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
 
       const mappedData = {
         ...data,
+        quantidade: Number(data.quantidade),
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
         minimo: data.minimo || 5,
         peso_kg: undefined,
@@ -173,8 +172,8 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
       setLastAddedItem(mappedData);
       
       // Gerar QR codes para o item apenas se quantidade > 0
-      if (newItem.quantidade > 0) {
-        const qrCodesData = generateQRCodeData(mappedData, 'CF', newItem.quantidade);
+      if (Number(newItem.quantidade) > 0) {
+        const qrCodesData = generateQRCodeData(mappedData, 'CF', Number(newItem.quantidade));
         setQrCodes(qrCodesData);
         
         setTimeout(() => {
@@ -184,12 +183,11 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
       
       toast({
         title: "Item adicionado",
-        description: newItem.quantidade > 0 
+        description: Number(newItem.quantidade) > 0 
           ? `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`
           : `${newItem.nome} foi adicionado ao estoque!`,
       });
 
-      // Retornar os dados para que o componente possa registrar no histórico
       return mappedData;
     } catch (error) {
       console.error('Error adding item:', error);
@@ -236,7 +234,6 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         }, 100);
       }
 
-      // Retornar dados para o histórico
       return {
         item: currentItem,
         quantityDifference,
@@ -272,7 +269,6 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         description: "Item foi removido do estoque.",
       });
 
-      // Retornar item removido para o histórico
       return currentItem;
     } catch (error) {
       console.error('Error deleting item:', error);

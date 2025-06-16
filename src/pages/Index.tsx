@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -75,12 +74,7 @@ const Index = () => {
                     containScroll: "trimSnaps",
                     skipSnaps: false,
                     inViewThreshold: 0.7,
-                    watchDrag: (emblaApi, evt) => {
-                      // Só permitir drag horizontal se o movimento for mais horizontal que vertical
-                      const deltaX = Math.abs(evt.deltaX || 0);
-                      const deltaY = Math.abs(evt.deltaY || 0);
-                      return deltaX > deltaY * 1.5;
-                    }
+                    watchDrag: false
                   }}
                 >
                   <CarouselContent className="h-full">
@@ -90,7 +84,8 @@ const Index = () => {
                           className="h-full overflow-y-auto overflow-x-hidden" 
                           style={{ 
                             touchAction: 'pan-y pinch-zoom',
-                            overscrollBehavior: 'contain'
+                            overscrollBehavior: 'auto',
+                            WebkitOverflowScrolling: 'touch'
                           }}
                         >
                           <div className="p-4 relative z-10 max-w-full min-h-full">

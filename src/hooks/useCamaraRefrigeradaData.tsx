@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -46,6 +45,11 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
 
       console.log('Filtro selecionado:', stableSelectedUnidade.current);
 
+      // Aplicar filtro no banco se não for "todas"
+      if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
+        query = query.eq('unidade', stableSelectedUnidade.current);
+      }
+
       const { data, error } = await query;
 
       if (error) throw error;
@@ -90,20 +94,13 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         console.log(`Item mapeado: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Unidade Medida: ${item.unidade}`);
       });
       
-      // Filter by selected unit
-      const filteredItems = mappedItems.filter(item => {
-        const shouldInclude = stableSelectedUnidade.current === 'todas' || item.unidade_item === stableSelectedUnidade.current;
-        console.log(`Filtro - Item: ${item.nome}, Unidade Empresa: ${item.unidade_item}, Selecionada: ${stableSelectedUnidade.current}, Incluir: ${shouldInclude}`);
-        return shouldInclude;
-      });
-      
       console.log('=== ITENS APÓS FILTRO ===');
-      console.log('Total após filtro:', filteredItems.length);
-      filteredItems.forEach(item => {
+      console.log('Total após filtro:', mappedItems.length);
+      mappedItems.forEach(item => {
         console.log(`Item final: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Unidade Medida: ${item.unidade}`);
       });
       
-      setItems(filteredItems);
+      setItems(mappedItems);
     } catch (error) {
       console.error('Error fetching items:', error);
       if (mountedRef.current) {

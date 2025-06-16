@@ -70,13 +70,18 @@ const Index = () => {
                   opts={{
                     align: "start",
                     loop: false,
+                    axis: "x",
+                    dragFree: false,
+                    containScroll: "trimSnaps",
+                    skipSnaps: false,
+                    inViewThreshold: 0.7
                   }}
                 >
                   <CarouselContent className="h-full">
                     {mainPages.map((page, index) => (
                       <CarouselItem key={page.path} className="h-full">
-                        <div className="h-full p-4 overflow-auto">
-                          <div className="relative z-10 max-w-full">
+                        <div className="h-full overflow-y-auto overflow-x-hidden">
+                          <div className="p-4 relative z-10 max-w-full min-h-full">
                             <page.component />
                           </div>
                         </div>

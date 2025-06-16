@@ -12,9 +12,13 @@ import Descartaveis from '@/components/Descartaveis';
 import { UserManagement } from '@/components/UserManagement';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 
 const Index = () => {
   const isMobile = useIsMobile();
+  
+  // Inicializar o hook de navegação por swipe
+  useSwipeNavigation();
 
   return (
     <ProtectedRoute>

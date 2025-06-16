@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Header } from '@/components/Header';
@@ -11,77 +12,31 @@ import Descartaveis from '@/components/Descartaveis';
 import { UserManagement } from '@/components/UserManagement';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
 const Index = () => {
   const isMobile = useIsMobile();
 
-  const tabs = [
-    { id: 'dashboard', label: 'Dashboard', component: <Dashboard /> },
-    { id: 'camara-fria', label: 'Câmara Fria', component: <CamaraFria /> },
-    { id: 'camara-refrigerada', label: 'Câmara Refrigerada', component: <CamaraRefrigerada /> },
-    { id: 'estoque-seco', label: 'Estoque Seco', component: <EstoqueSeco /> },
-    { id: 'descartaveis', label: 'Descartáveis', component: <Descartaveis /> },
-    { id: 'configuracoes', label: 'Configurações', component: <UserManagement /> }
-  ];
-
   return (
     <ProtectedRoute>
       <SidebarProvider>
-        <div className="min-h-screen flex w-full relative overflow-hidden bg-churrasco-cream">
+        <div 
+          className="min-h-screen flex w-full relative overflow-hidden bg-churrasco-cream"
+        >
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0 h-screen relative z-10">
             <Header />
-            
-            <div className="flex-1 relative overflow-hidden">
-              <Carousel 
-                className="h-full"
-                opts={{
-                  align: "start",
-                  loop: false,
-                  skipSnaps: false,
-                  dragFree: false,
-                  axis: "x",
-                  watchDrag: (emblaApi, evt) => {
-                    // Apenas permitir drag horizontal se o movimento for mais horizontal que vertical
-                    if (evt.type === 'touchstart' || evt.type === 'touchmove') {
-                      const touch = (evt as TouchEvent).touches?.[0];
-                      if (touch) {
-                        const rect = emblaApi.containerNode().getBoundingClientRect();
-                        const startX = touch.clientX - rect.left;
-                        const startY = touch.clientY - rect.top;
-                        
-                        // Se o movimento for mais vertical, não interceptar
-                        if (Math.abs(startY) > Math.abs(startX)) {
-                          return false;
-                        }
-                      }
-                    }
-                    return true;
-                  }
-                }}
-              >
-                <CarouselContent className="h-full -ml-0">
-                  {tabs.map((tab) => (
-                    <CarouselItem key={tab.id} className="pl-0 basis-full h-full">
-                      <div 
-                        className="h-full overflow-y-auto overflow-x-hidden" 
-                        style={{
-                          WebkitOverflowScrolling: 'touch',
-                          touchAction: 'pan-y pinch-zoom'
-                        }}
-                      >
-                        <main className="p-4 md:p-6 relative">
-                          <div className="relative z-10 max-w-full">
-                            {tab.component}
-                          </div>
-                        </main>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-            </div>
+            <main className="flex-1 p-4 md:p-6 relative overflow-auto">
+              <div className="relative z-10 max-w-full">
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/camara-fria" element={<CamaraFria />} />
+                  <Route path="/camara-refrigerada" element={<CamaraRefrigerada />} />
+                  <Route path="/estoque-seco" element={<EstoqueSeco />} />
+                  <Route path="/descartaveis" element={<Descartaveis />} />
+                  <Route path="/configuracoes" element={<UserManagement />} />
+                </Routes>
+              </div>
+            </main>
           </div>
         </div>
       </SidebarProvider>

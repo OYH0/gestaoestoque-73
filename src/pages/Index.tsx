@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -44,18 +43,16 @@ const Index = () => {
                   axis: "x"
                 }}
               >
-                <CarouselContent className="h-full -ml-0" style={{ touchAction: 'pan-x pan-y' }}>
+                <CarouselContent className="h-full -ml-0">
                   {tabs.map((tab) => (
                     <CarouselItem key={tab.id} className="pl-0 basis-full h-full">
                       <div 
-                        className="h-full overflow-auto" 
+                        className="h-full overflow-y-auto overflow-x-hidden" 
                         style={{
-                          touchAction: 'pan-y',
-                          overscrollBehavior: 'contain',
                           WebkitOverflowScrolling: 'touch'
                         }}
                       >
-                        <main className="p-4 md:p-6 relative h-full">
+                        <main className="p-4 md:p-6 relative">
                           <div className="relative z-10 max-w-full">
                             {tab.component}
                           </div>

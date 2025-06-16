@@ -24,12 +24,8 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
   const { user } = useAuth();
   const mountedRef = useRef(true);
   const loggedRef = useRef(false);
-  
-  // Create a stable reference for the selected unit
-  const stableSelectedUnidade = useRef(selectedUnidade);
-  stableSelectedUnidade.current = selectedUnidade;
 
-  const fetchItems = useCallback(async () => {
+  const fetchItems = useCallback(async (unidadeFiltro?: 'juazeiro_norte' | 'fortaleza' | 'todas') => {
     if (!user || !mountedRef.current) return;
     
     // Log apenas uma vez por sessão
@@ -45,12 +41,12 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
         .order('nome');
 
       console.log('=== FILTRO APLICADO ===');
-      console.log('Filtro selecionado:', stableSelectedUnidade.current);
+      console.log('Filtro selecionado:', unidadeFiltro);
 
       // Aplicar filtro no banco se não for "todas"
-      if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
-        console.log('Aplicando filtro no banco para unidade:', stableSelectedUnidade.current);
-        query = query.eq('unidade', stableSelectedUnidade.current);
+      if (unidadeFiltro && unidadeFiltro !== 'todas') {
+        console.log('Aplicando filtro no banco para unidade:', unidadeFiltro);
+        query = query.eq('unidade', unidadeFiltro);
       } else {
         console.log('Sem filtro aplicado - buscando todas as unidades');
       }
@@ -63,7 +59,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       
       console.log('=== DADOS BRUTOS DO BANCO ===');
       console.log('Total de registros retornados pelo banco:', data?.length || 0);
-      console.log('Filtro aplicado no banco:', stableSelectedUnidade.current !== 'todas' ? stableSelectedUnidade.current : 'nenhum');
+      console.log('Filtro aplicado no banco:', unidadeFiltro !== 'todas' ? unidadeFiltro : 'nenhum');
       data?.forEach(item => {
         console.log(`Item do banco: ${item.nome} - Unidade DB: ${item.unidade} - Observações: ${item.observacoes}`);
       });
@@ -102,9 +98,9 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       
       console.log('=== RESULTADO FINAL ===');
       console.log('Total de itens após mapeamento:', mappedItems.length);
-      console.log('Filtro selecionado para verificação:', stableSelectedUnidade.current);
+      console.log('Filtro selecionado para verificação:', unidadeFiltro);
       mappedItems.forEach(item => {
-        console.log(`Item final: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Deve aparecer: ${stableSelectedUnidade.current === 'todas' || item.unidade_item === stableSelectedUnidade.current}`);
+        console.log(`Item final: ${item.nome} - Unidade Empresa: ${item.unidade_item} - Deve aparecer: ${unidadeFiltro === 'todas' || item.unidade_item === unidadeFiltro}`);
       });
       
       setItems(mappedItems);
@@ -127,7 +123,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
   // Effect for initial load and user changes
   useEffect(() => {
     if (user) {
-      fetchItems();
+      fetchItems(selectedUnidade);
     } else {
       setLoading(false);
     }
@@ -135,9 +131,10 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
 
   // Effect for unit changes
   useEffect(() => {
-    if (user && stableSelectedUnidade.current !== selectedUnidade) {
-      stableSelectedUnidade.current = selectedUnidade;
-      fetchItems();
+    if (user) {
+      console.log('=== MUDANÇA DE UNIDADE DETECTADA ===');
+      console.log('Nova unidade selecionada:', selectedUnidade);
+      fetchItems(selectedUnidade);
     }
   }, [selectedUnidade, user, fetchItems]);
 
@@ -190,7 +187,7 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       console.log('Item inserido no banco:', data);
       
       // Refetch items to ensure the list is updated with proper filtering
-      await fetchItems();
+      await fetchItems(selectedUnidade);
       
       toast({
         title: "Item adicionado à câmara refrigerada",
@@ -258,6 +255,6 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     addItem,
     updateItemStatus,
     deleteItem,
-    fetchItems
+    fetchItems: () => fetchItems(selectedUnidade)
   };
 }

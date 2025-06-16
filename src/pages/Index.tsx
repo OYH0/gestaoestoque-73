@@ -74,13 +74,14 @@ const Index = () => {
                     dragFree: false,
                     containScroll: "trimSnaps",
                     skipSnaps: false,
-                    inViewThreshold: 0.7
+                    inViewThreshold: 0.7,
+                    watchDrag: false
                   }}
                 >
-                  <CarouselContent className="h-full">
+                  <CarouselContent className="h-full touch-pan-y">
                     {mainPages.map((page, index) => (
-                      <CarouselItem key={page.path} className="h-full">
-                        <div className="h-full overflow-y-auto overflow-x-hidden">
+                      <CarouselItem key={page.path} className="h-full touch-pan-y">
+                        <div className="h-full overflow-y-auto overflow-x-hidden touch-pan-y" style={{ touchAction: 'pan-y' }}>
                           <div className="p-4 relative z-10 max-w-full min-h-full">
                             <page.component />
                           </div>

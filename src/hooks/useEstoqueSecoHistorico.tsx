@@ -69,7 +69,7 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
       const mappedHistorico: EstoqueSecoHistoricoItem[] = (data || []).map(item => ({
         id: item.id,
         item_nome: item.item_nome,
-        quantidade: item.quantidade,
+        quantidade: Number(item.quantidade), // Garantir que é número
         unidade: item.unidade,
         categoria: item.categoria,
         tipo: item.tipo as 'entrada' | 'saida',
@@ -102,29 +102,38 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
     if (!user) return;
 
     try {
+      console.log('=== ADICIONANDO AO HISTÓRICO ESTOQUE SECO ===');
+      console.log('Item para histórico:', item);
+
+      const itemParaInserir = {
+        item_nome: item.item_nome,
+        quantidade: Number(item.quantidade), // Garantir que é número
+        categoria: item.categoria,
+        tipo: item.tipo,
+        observacoes: item.observacoes,
+        user_id: user.id,
+        unidade: item.unidade_item || 'juazeiro_norte'
+      };
+
+      console.log('Item para inserir no histórico:', itemParaInserir);
+
       const { data, error } = await supabase
         .from('estoque_seco_historico')
-        .insert([{ 
-          item_nome: item.item_nome,
-          quantidade: item.quantidade,
-          categoria: item.categoria,
-          tipo: item.tipo,
-          observacoes: item.observacoes,
-          user_id: user.id,
-          unidade: item.unidade_item || 'juazeiro_norte'
-        }])
+        .insert([itemParaInserir])
         .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
         .single();
 
       if (error) throw error;
       
+      console.log('Item inserido no histórico:', data);
+
       // Clear cache on data change
       cacheRef.current = null;
       
       const mappedItem: EstoqueSecoHistoricoItem = {
         id: data.id,
         item_nome: data.item_nome,
-        quantidade: data.quantidade,
+        quantidade: Number(data.quantidade),
         unidade: data.unidade,
         categoria: data.categoria,
         tipo: data.tipo as 'entrada' | 'saida',

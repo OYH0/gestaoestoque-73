@@ -68,7 +68,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
       const mappedHistorico: CamaraFriaHistoricoItem[] = (data || []).map(item => ({
         id: item.id,
         item_nome: item.item_nome,
-        quantidade: item.quantidade,
+        quantidade: Number(item.quantidade), // Garantir que é número
         unidade: item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza' ? 'pç' : item.unidade,
         categoria: item.categoria,
         tipo: item.tipo as 'entrada' | 'saida',
@@ -101,17 +101,22 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
     if (!user) return;
 
     try {
+      console.log('=== ADICIONANDO AO HISTÓRICO ===');
+      console.log('Item para histórico:', item);
+
       const unidadeParaSalvar = item.unidade_item || 'juazeiro_norte';
       
       const itemParaInserir = {
         item_nome: item.item_nome,
-        quantidade: item.quantidade,
+        quantidade: Number(item.quantidade), // Garantir que é número
         categoria: item.categoria,
         tipo: item.tipo,
         observacoes: item.observacoes || null,
         user_id: user.id,
         unidade: unidadeParaSalvar
       };
+
+      console.log('Item para inserir no histórico:', itemParaInserir);
 
       const { data, error } = await supabase
         .from('camara_fria_historico')
@@ -121,13 +126,15 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
 
       if (error) throw error;
       
+      console.log('Item inserido no histórico:', data);
+
       // Clear cache on data change
       cacheRef.current = null;
       
       const mappedItem: CamaraFriaHistoricoItem = {
         id: data.id,
         item_nome: data.item_nome,
-        quantidade: data.quantidade,
+        quantidade: Number(data.quantidade),
         unidade: data.unidade === 'juazeiro_norte' || data.unidade === 'fortaleza' ? 'pç' : data.unidade,
         categoria: data.categoria,
         tipo: data.tipo as 'entrada' | 'saida',

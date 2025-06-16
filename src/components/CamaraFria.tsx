@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, History, QrCode, FileText, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,7 @@ import { CamaraFriaTransferDialog } from '@/components/camara-fria/CamaraFriaTra
 import { AdminGuard } from '@/components/AdminGuard';
 
 export default function CamaraFria() {
-  const { items, loading, addItem, updateItemQuantity, deleteItem, qrCodes, showQRGenerator, setShowQRGenerator, lastAddedItem, transferItemsToUnidade } = useCamaraFriaData();
+  const { items, loading, addItem, updateItemQuantity, deleteItem, transferItemsToUnidade } = useCamaraFriaData();
   
   // Estado para unidade selecionada
   const [selectedUnidade, setSelectedUnidade] = useState<'juazeiro_norte' | 'fortaleza' | 'todas'>('todas');
@@ -85,36 +84,41 @@ export default function CamaraFria() {
     
     const itemWithUnidade = {
       ...newItem,
+      quantidade: Number(newItem.quantidade), // Garantir que é número
       unidade_item: unidadeParaItem
     };
 
     console.log('=== ADICIONANDO NOVO ITEM ===');
     console.log('Item com unidade:', itemWithUnidade);
 
-    await addItem(itemWithUnidade);
-    
-    // Registrar no histórico apenas se a quantidade for maior que 0
-    if (newItem.quantidade > 0) {
-      await addHistoricoItem({
-        item_nome: newItem.nome,
-        quantidade: newItem.quantidade,
-        unidade: newItem.unidade,
-        categoria: newItem.categoria,
-        tipo: 'entrada',
-        observacoes: 'Adição de novo item ao estoque',
+    try {
+      const addedItem = await addItem(itemWithUnidade);
+      
+      // Registrar no histórico apenas se a quantidade for maior que 0 e o item foi adicionado com sucesso
+      if (addedItem && Number(newItem.quantidade) > 0) {
+        await addHistoricoItem({
+          item_nome: newItem.nome,
+          quantidade: Number(newItem.quantidade),
+          unidade: newItem.unidade,
+          categoria: newItem.categoria,
+          tipo: 'entrada',
+          observacoes: 'Adição de novo item ao estoque',
+          unidade_item: unidadeParaItem
+        });
+      }
+      
+      setNewItem({
+        nome: '',
+        quantidade: 0,
+        unidade: 'kg',
+        categoria: '',
+        minimo: 0,
         unidade_item: unidadeParaItem
       });
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error('Erro ao adicionar item:', error);
     }
-    
-    setNewItem({
-      nome: '',
-      quantidade: 0,
-      unidade: 'kg',
-      categoria: '',
-      minimo: 0,
-      unidade_item: unidadeParaItem
-    });
-    setIsAddDialogOpen(false);
   };
 
   const handleUpdateQuantity = async (id: string, newQuantity: number, tipo: 'entrada' | 'saida') => {
@@ -123,24 +127,22 @@ export default function CamaraFria() {
       return;
     }
     
-    const item = items.find(i => i.id === id);
-    if (!item) return;
-
-    const quantityDifference = tipo === 'entrada' ? newQuantity - item.quantidade : item.quantidade - newQuantity;
-    
-    await updateItemQuantity(id, newQuantity);
-    
-    // Registrar no histórico apenas se houve mudança na quantidade
-    if (quantityDifference !== 0) {
-      await addHistoricoItem({
-        item_nome: item.nome,
-        quantidade: Math.abs(quantityDifference),
-        unidade: item.unidade,
-        categoria: item.categoria,
-        tipo,
-        observacoes: `${tipo === 'entrada' ? 'Entrada' : 'Saída'} de estoque`,
-        unidade_item: item.unidade_item
-      });
+    try {
+      const result = await updateItemQuantity(id, newQuantity);
+      
+      if (result && result.quantityDifference !== 0) {
+        await addHistoricoItem({
+          item_nome: result.item.nome,
+          quantidade: Math.abs(result.quantityDifference),
+          unidade: result.item.unidade,
+          categoria: result.item.categoria,
+          tipo: result.quantityDifference > 0 ? 'entrada' : 'saida',
+          observacoes: `${result.quantityDifference > 0 ? 'Entrada' : 'Saída'} de estoque`,
+          unidade_item: result.item.unidade_item
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar quantidade:', error);
     }
   };
 
@@ -278,22 +280,23 @@ export default function CamaraFria() {
       return;
     }
     
-    const item = items.find(i => i.id === id);
-    if (!item) return;
-    
-    if (item.quantidade > 0) {
-      await addHistoricoItem({
-        item_nome: item.nome,
-        quantidade: item.quantidade,
-        unidade: item.unidade,
-        categoria: item.categoria,
-        tipo: 'saida',
-        observacoes: 'Item removido do estoque',
-        unidade_item: item.unidade_item
-      });
+    try {
+      const deletedItem = await deleteItem(id);
+      
+      if (deletedItem && deletedItem.quantidade > 0) {
+        await addHistoricoItem({
+          item_nome: deletedItem.nome,
+          quantidade: deletedItem.quantidade,
+          unidade: deletedItem.unidade,
+          categoria: deletedItem.categoria,
+          tipo: 'saida',
+          observacoes: 'Item removido do estoque',
+          unidade_item: deletedItem.unidade_item
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao deletar item:', error);
     }
-    
-    await deleteItem(id);
   };
 
   const filteredItems = itemsByUnidade.filter(item => {

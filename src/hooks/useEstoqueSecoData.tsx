@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { useQRCodeGenerator } from '@/hooks/useQRCodeGenerator';
-import { useEstoqueSecoHistorico } from '@/hooks/useEstoqueSecoHistorico';
 
 export interface EstoqueSecoItem {
   id: string;
@@ -29,7 +28,6 @@ export function useEstoqueSecoData() {
   const [lastAddedItem, setLastAddedItem] = useState<EstoqueSecoItem | null>(null);
   const { user } = useAuth();
   const { generateQRCodeData } = useQRCodeGenerator();
-  const { addHistoricoItem } = useEstoqueSecoHistorico();
   const loggedRef = useRef(false);
 
   const fetchItems = async () => {
@@ -51,6 +49,7 @@ export function useEstoqueSecoData() {
       
       const mappedItems = (data || []).map(item => ({
         ...item,
+        quantidade: Number(item.quantidade), // Garantir que é número
         unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza'
       }));
       
@@ -71,13 +70,25 @@ export function useEstoqueSecoData() {
     if (!user) return;
 
     try {
+      console.log('=== ADICIONANDO ITEM ESTOQUE SECO ===');
+      console.log('Item recebido:', newItem);
+
       const itemToInsert = {
-        ...newItem,
+        nome: newItem.nome,
+        quantidade: Number(newItem.quantidade), // Garantir que é número
+        unidade: newItem.unidade,
+        categoria: newItem.categoria,
+        minimo: newItem.minimo,
+        data_entrada: newItem.data_entrada,
+        data_validade: newItem.data_validade,
+        preco_unitario: newItem.preco_unitario,
+        fornecedor: newItem.fornecedor,
+        observacoes: newItem.observacoes,
         user_id: user.id,
         unidade: newItem.unidade_item || 'juazeiro_norte'
       };
       
-      delete (itemToInsert as any).unidade_item;
+      console.log('Item para inserir no banco:', itemToInsert);
 
       const { data, error } = await supabase
         .from('estoque_seco_items')
@@ -87,30 +98,20 @@ export function useEstoqueSecoData() {
 
       if (error) throw error;
       
+      console.log('Item inserido no banco:', data);
+
       const mappedData = {
         ...data,
+        quantidade: Number(data.quantidade),
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza'
       };
       
       setItems(prev => [...prev, mappedData]);
       setLastAddedItem(mappedData);
       
-      // Registrar no histórico
-      if (newItem.quantidade > 0) {
-        await addHistoricoItem({
-          item_nome: newItem.nome,
-          quantidade: newItem.quantidade,
-          unidade: newItem.unidade,
-          categoria: newItem.categoria,
-          tipo: 'entrada',
-          observacoes: 'Item adicionado ao estoque',
-          unidade_item: newItem.unidade_item || 'juazeiro_norte'
-        });
-      }
-      
       // Gerar QR codes para o item apenas se quantidade > 0
-      if (newItem.quantidade > 0) {
-        const qrCodesData = generateQRCodeData(mappedData, 'ES', newItem.quantidade);
+      if (Number(newItem.quantidade) > 0) {
+        const qrCodesData = generateQRCodeData(mappedData, 'ES', Number(newItem.quantidade));
         setQrCodes(qrCodesData);
         
         setTimeout(() => {
@@ -120,10 +121,12 @@ export function useEstoqueSecoData() {
       
       toast({
         title: "Item adicionado",
-        description: newItem.quantidade > 0 
+        description: Number(newItem.quantidade) > 0 
           ? `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`
           : `${newItem.nome} foi adicionado ao estoque!`,
       });
+
+      return mappedData;
     } catch (error) {
       console.error('Error adding item:', error);
       toast({
@@ -131,6 +134,7 @@ export function useEstoqueSecoData() {
         description: "Não foi possível adicionar o item.",
         variant: "destructive",
       });
+      throw error;
     }
   };
 
@@ -139,34 +143,25 @@ export function useEstoqueSecoData() {
       const currentItem = items.find(item => item.id === id);
       if (!currentItem) return;
 
-      const quantityDifference = newQuantity - currentItem.quantidade;
+      console.log('=== ATUALIZANDO QUANTIDADE ESTOQUE SECO ===');
+      console.log('Quantidade atual:', currentItem.quantidade);
+      console.log('Nova quantidade:', newQuantity);
 
       const { error } = await supabase
         .from('estoque_seco_items')
-        .update({ quantidade: newQuantity })
+        .update({ quantidade: Number(newQuantity) })
         .eq('id', id);
 
       if (error) throw error;
 
       setItems(prev => prev.map(item => 
-        item.id === id ? { ...item, quantidade: newQuantity } : item
+        item.id === id ? { ...item, quantidade: Number(newQuantity) } : item
       ));
 
-      // Registrar no histórico
-      if (quantityDifference !== 0) {
-        await addHistoricoItem({
-          item_nome: currentItem.nome,
-          quantidade: Math.abs(quantityDifference),
-          unidade: currentItem.unidade,
-          categoria: currentItem.categoria,
-          tipo: quantityDifference > 0 ? 'entrada' : 'saida',
-          observacoes: quantityDifference > 0 ? 'Quantidade aumentada' : 'Quantidade reduzida',
-          unidade_item: currentItem.unidade_item || 'juazeiro_norte'
-        });
-      }
+      const quantityDifference = Number(newQuantity) - currentItem.quantidade;
 
       if (quantityDifference > 0) {
-        const updatedItem = { ...currentItem, quantidade: newQuantity };
+        const updatedItem = { ...currentItem, quantidade: Number(newQuantity) };
         setLastAddedItem(updatedItem);
         
         const qrCodesData = generateQRCodeData(updatedItem, 'ES', quantityDifference);
@@ -176,6 +171,12 @@ export function useEstoqueSecoData() {
           setShowQRGenerator(true);
         }, 100);
       }
+
+      return {
+        item: currentItem,
+        quantityDifference,
+        newQuantity: Number(newQuantity)
+      };
     } catch (error) {
       console.error('Error updating quantity:', error);
       toast({
@@ -183,6 +184,7 @@ export function useEstoqueSecoData() {
         description: "Não foi possível atualizar a quantidade.",
         variant: "destructive",
       });
+      throw error;
     }
   };
 
@@ -199,22 +201,13 @@ export function useEstoqueSecoData() {
       if (error) throw error;
 
       setItems(prev => prev.filter(item => item.id !== id));
-      
-      // Registrar no histórico
-      await addHistoricoItem({
-        item_nome: currentItem.nome,
-        quantidade: currentItem.quantidade,
-        unidade: currentItem.unidade,
-        categoria: currentItem.categoria,
-        tipo: 'saida',
-        observacoes: 'Item removido do estoque',
-        unidade_item: currentItem.unidade_item || 'juazeiro_norte'
-      });
 
       toast({
         title: "Item removido",
         description: "Item foi removido do estoque.",
       });
+
+      return currentItem;
     } catch (error) {
       console.error('Error deleting item:', error);
       toast({
@@ -222,6 +215,7 @@ export function useEstoqueSecoData() {
         description: "Não foi possível remover o item.",
         variant: "destructive",
       });
+      throw error;
     }
   };
 

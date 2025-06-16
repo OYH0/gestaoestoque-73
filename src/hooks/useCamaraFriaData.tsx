@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { useQRCodeGenerator } from '@/hooks/useQRCodeGenerator';
-import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
 
 export interface CamaraFriaItem {
   id: string;
@@ -32,7 +31,6 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
   const [lastAddedItem, setLastAddedItem] = useState<CamaraFriaItem | null>(null);
   const { user } = useAuth();
   const { generateQRCodeData } = useQRCodeGenerator();
-  const { addHistoricoItem } = useCamaraFriaHistorico();
   const mountedRef = useRef(true);
   const loggedRef = useRef(false);
 
@@ -130,13 +128,26 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
     if (!user) return;
 
     try {
+      console.log('=== ADICIONANDO ITEM ===');
+      console.log('Item recebido:', newItem);
+
       const itemToInsert = {
-        ...newItem,
+        nome: newItem.nome,
+        quantidade: Number(newItem.quantidade), // Garantir que é número
+        unidade: newItem.unidade,
+        categoria: newItem.categoria,
+        minimo: newItem.minimo || 5,
+        data_entrada: newItem.data_entrada,
+        data_validade: newItem.data_validade,
+        temperatura_ideal: newItem.temperatura_ideal,
+        fornecedor: newItem.fornecedor,
+        observacoes: newItem.observacoes,
+        preco_unitario: newItem.preco_unitario,
         user_id: user.id,
-        unidade: newItem.unidade_item || 'juazeiro_norte'
+        unidade: newItem.unidade_item || 'juazeiro_norte' // Usar unidade_item como unidade no banco
       };
-      
-      delete (itemToInsert as any).unidade_item;
+
+      console.log('Item para inserir no banco:', itemToInsert);
 
       const { data, error } = await supabase
         .from('camara_fria_items')
@@ -146,31 +157,20 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
 
       if (error) throw error;
       
+      console.log('Item inserido no banco:', data);
+
       const mappedData = {
         ...data,
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
         minimo: data.minimo || 5,
-        peso_kg: undefined, // Not available in database
-        temperatura: undefined, // Not available in database
+        peso_kg: undefined,
+        temperatura: undefined,
         temperatura_ideal: data.temperatura_ideal || undefined,
         preco_unitario: data.preco_unitario || undefined
       };
       
       setItems(prev => [...prev, mappedData]);
       setLastAddedItem(mappedData);
-      
-      // Registrar no histórico
-      if (newItem.quantidade > 0) {
-        await addHistoricoItem({
-          item_nome: newItem.nome,
-          quantidade: newItem.quantidade,
-          unidade: newItem.unidade,
-          categoria: newItem.categoria,
-          tipo: 'entrada',
-          observacoes: 'Item adicionado ao estoque',
-          unidade_item: newItem.unidade_item || 'juazeiro_norte'
-        });
-      }
       
       // Gerar QR codes para o item apenas se quantidade > 0
       if (newItem.quantidade > 0) {
@@ -188,6 +188,9 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
           ? `${newItem.nome} foi adicionado ao estoque! QR codes serão gerados.`
           : `${newItem.nome} foi adicionado ao estoque!`,
       });
+
+      // Retornar os dados para que o componente possa registrar no histórico
+      return mappedData;
     } catch (error) {
       console.error('Error adding item:', error);
       toast({
@@ -195,6 +198,7 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         description: "Não foi possível adicionar o item.",
         variant: "destructive",
       });
+      throw error;
     }
   };
 
@@ -203,34 +207,25 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
       const currentItem = items.find(item => item.id === id);
       if (!currentItem) return;
 
-      const quantityDifference = newQuantity - currentItem.quantidade;
+      console.log('=== ATUALIZANDO QUANTIDADE ===');
+      console.log('Quantidade atual:', currentItem.quantidade);
+      console.log('Nova quantidade:', newQuantity);
 
       const { error } = await supabase
         .from('camara_fria_items')
-        .update({ quantidade: newQuantity })
+        .update({ quantidade: Number(newQuantity) })
         .eq('id', id);
 
       if (error) throw error;
 
       setItems(prev => prev.map(item => 
-        item.id === id ? { ...item, quantidade: newQuantity } : item
+        item.id === id ? { ...item, quantidade: Number(newQuantity) } : item
       ));
 
-      // Registrar no histórico
-      if (quantityDifference !== 0) {
-        await addHistoricoItem({
-          item_nome: currentItem.nome,
-          quantidade: Math.abs(quantityDifference),
-          unidade: currentItem.unidade,
-          categoria: currentItem.categoria,
-          tipo: quantityDifference > 0 ? 'entrada' : 'saida',
-          observacoes: quantityDifference > 0 ? 'Quantidade aumentada' : 'Quantidade reduzida',
-          unidade_item: currentItem.unidade_item || 'juazeiro_norte'
-        });
-      }
+      const quantityDifference = Number(newQuantity) - currentItem.quantidade;
 
       if (quantityDifference > 0) {
-        const updatedItem = { ...currentItem, quantidade: newQuantity };
+        const updatedItem = { ...currentItem, quantidade: Number(newQuantity) };
         setLastAddedItem(updatedItem);
         
         const qrCodesData = generateQRCodeData(updatedItem, 'CF', quantityDifference);
@@ -240,6 +235,13 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
           setShowQRGenerator(true);
         }, 100);
       }
+
+      // Retornar dados para o histórico
+      return {
+        item: currentItem,
+        quantityDifference,
+        newQuantity: Number(newQuantity)
+      };
     } catch (error) {
       console.error('Error updating quantity:', error);
       toast({
@@ -247,6 +249,7 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         description: "Não foi possível atualizar a quantidade.",
         variant: "destructive",
       });
+      throw error;
     }
   };
 
@@ -263,22 +266,14 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
       if (error) throw error;
 
       setItems(prev => prev.filter(item => item.id !== id));
-      
-      // Registrar no histórico
-      await addHistoricoItem({
-        item_nome: currentItem.nome,
-        quantidade: currentItem.quantidade,
-        unidade: currentItem.unidade,
-        categoria: currentItem.categoria,
-        tipo: 'saida',
-        observacoes: 'Item removido do estoque',
-        unidade_item: currentItem.unidade_item || 'juazeiro_norte'
-      });
 
       toast({
         title: "Item removido",
         description: "Item foi removido do estoque.",
       });
+
+      // Retornar item removido para o histórico
+      return currentItem;
     } catch (error) {
       console.error('Error deleting item:', error);
       toast({
@@ -286,6 +281,7 @@ export function useCamaraFriaData(selectedUnidade?: 'juazeiro_norte' | 'fortalez
         description: "Não foi possível remover o item.",
         variant: "destructive",
       });
+      throw error;
     }
   };
 

@@ -99,34 +99,21 @@ export function useSwipeNavigation() {
       isScrolling.current = false;
     };
 
-    // Pequeno delay para garantir que o DOM esteja pronto
-    const setupEventListeners = () => {
-      const mainElement = document.querySelector('main');
-      if (mainElement) {
-        mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
-        mainElement.addEventListener('touchmove', handleTouchMove, { passive: true });
-        mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
-        
-        return () => {
-          mainElement.removeEventListener('touchstart', handleTouchStart);
-          mainElement.removeEventListener('touchmove', handleTouchMove);
-          mainElement.removeEventListener('touchend', handleTouchEnd);
-        };
-      }
-      return () => {};
-    };
+    // Configurar event listeners uma única vez
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+      mainElement.addEventListener('touchmove', handleTouchMove, { passive: true });
+      mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
+      
+      return () => {
+        mainElement.removeEventListener('touchstart', handleTouchStart);
+        mainElement.removeEventListener('touchmove', handleTouchMove);
+        mainElement.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
 
-    // Configurar event listeners imediatamente e também após um pequeno delay
-    const cleanup1 = setupEventListeners();
-    const timeoutId = setTimeout(() => {
-      cleanup1();
-      setupEventListeners();
-    }, 100);
-
-    return () => {
-      cleanup1();
-      clearTimeout(timeoutId);
-    };
+    return () => {};
   }, [location.pathname, navigate, isAnimating]);
 
   return {

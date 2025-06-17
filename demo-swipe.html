@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Navegação por Deslizamento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: hsl(44, 35%, 95%); /* bg-churrasco-cream */
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: hsl(44, 35%, 95%); /* bg-churrasco-cream */
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            text-align: center;
+            color: hsl(25, 25%, 15%); /* foreground color */
+            border-bottom: 1px solid hsl(25, 45%, 25%, 0.2); /* churrasco-brown with opacity */
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: hsl(25, 25%, 15%); /* foreground color */
+            text-align: center;
+            padding: 2rem;
+            user-select: none;
+            touch-action: pan-y;
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        .page h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            color: hsl(25, 45%, 25%); /* churrasco-brown */
+        }
+
+        .page p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            line-height: 1.6;
+            opacity: 0.8;
+            color: hsl(25, 25%, 15%); /* foreground color */
+        }
+
+        .navigation-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: hsl(44, 35%, 95%); /* bg-churrasco-cream */
+            border-top: 1px solid hsl(25, 45%, 25%, 0.2); /* churrasco-brown with opacity */
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: hsl(25, 45%, 25%, 0.4); /* churrasco-brown with opacity */
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot:hover {
+            background: hsl(25, 45%, 25%, 0.6); /* churrasco-brown with more opacity */
+            transform: scale(1.25);
+        }
+
+        .nav-dot.active {
+            background: hsl(14, 85%, 45%); /* churrasco-red */
+            transform: scale(1.25);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .swipe-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: fadeInOut 4s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            20%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .icon {
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .page h1 {
+                font-size: 2rem;
+            }
+            
+            .page p {
+                font-size: 1rem;
+            }
+
+            .navigation-indicator {
+                border-top: none;
+                border-bottom: 1px solid hsl(25, 45%, 25%, 0.2);
+                order: -1; /* Move to top on mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="header">
+            <h2>Sistema de Gestão de Estoque</h2>
+            <p>Demonstração da Navegação por Deslizamento</p>
+        </div>
+
+        <div class="content" id="content">
+            <div class="page active" data-page="0">
+                <h1>📊 Dashboard</h1>
+                <p>Visão geral do sistema com métricas importantes, gráficos de desempenho e resumo do estoque. Aqui você encontra informações consolidadas de todas as áreas.</p>
+            </div>
+
+            <div class="page" data-page="1">
+                <h1>🧊 Câmara Fria</h1>
+                <p>Controle de produtos que necessitam refrigeração extrema. Monitoramento de temperatura, alertas de variação e gestão de itens congelados.</p>
+            </div>
+
+            <div class="page" data-page="2">
+                <h1>❄️ Câmara Refrigerada</h1>
+                <p>Gestão de produtos refrigerados com controle de temperatura moderada. Ideal para laticínios, carnes frescas e outros perecíveis.</p>
+            </div>
+
+            <div class="page" data-page="3">
+                <h1>📦 Estoque Seco</h1>
+                <p>Controle de produtos não perecíveis armazenados em temperatura ambiente. Grãos, enlatados, produtos de limpeza e outros itens secos.</p>
+            </div>
+
+            <div class="page" data-page="4">
+                <h1>🥤 Descartáveis</h1>
+                <p>Gestão de materiais descartáveis como copos, pratos, talheres, guardanapos e embalagens. Controle de consumo e reposição.</p>
+            </div>
+
+            <div class="page" data-page="5">
+                <h1>⚙️ Configurações</h1>
+                <p>Configurações do sistema, gerenciamento de usuários, permissões, alertas e personalização da interface. Administração geral do sistema.</p>
+            </div>
+        </div>
+
+        <div class="navigation-indicator">
+            <div class="nav-dot active" data-index="0"></div>
+            <div class="nav-dot" data-index="1"></div>
+            <div class="nav-dot" data-index="2"></div>
+            <div class="nav-dot" data-index="3"></div>
+            <div class="nav-dot" data-index="4"></div>
+            <div class="nav-dot" data-index="5"></div>
+        </div>
+
+        <div class="swipe-hint" id="swipeHint">
+            <span class="icon">👈</span>
+            <span>Deslize para navegar</span>
+            <span class="icon">👉</span>
+        </div>
+    </div>
+
+    <script>
+        class SwipeNavigation {
+            constructor() {
+                this.currentPage = 0;
+                this.totalPages = 6;
+                this.pages = document.querySelectorAll('.page');
+                this.dots = document.querySelectorAll('.nav-dot');
+                this.content = document.getElementById('content');
+                this.container = document.getElementById('container');
+                
+                this.startX = 0;
+                this.startY = 0;
+                this.endX = 0;
+                this.endY = 0;
+                this.minSwipeDistance = 50;
+                
+                this.init();
+            }
+
+            init() {
+                this.addEventListeners();
+                this.hideSwipeHint();
+            }
+
+            addEventListeners() {
+                // Touch events
+                this.content.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: true });
+                this.content.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: true });
+                this.content.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: true });
+
+                // Mouse events for desktop
+                this.content.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.content.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.content.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+                this.content.addEventListener('mouseleave', (e) => this.handleMouseUp(e));
+
+                // Navigation dots
+                this.dots.forEach((dot, index) => {
+                    dot.addEventListener('click', () => this.goToPage(index));
+                });
+
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') this.previousPage();
+                    if (e.key === 'ArrowRight') this.nextPage();
+                });
+            }
+
+            handleTouchStart(e) {
+                this.startX = e.touches[0].clientX;
+                this.startY = e.touches[0].clientY;
+            }
+
+            handleTouchMove(e) {
+                if (!this.startX || !this.startY) return;
+                
+                this.endX = e.touches[0].clientX;
+                this.endY = e.touches[0].clientY;
+            }
+
+            handleTouchEnd(e) {
+                if (!this.startX || !this.endX) return;
+                
+                this.processSwipe();
+                this.resetSwipe();
+            }
+
+            handleMouseDown(e) {
+                this.startX = e.clientX;
+                this.startY = e.clientY;
+                this.content.style.cursor = 'grabbing';
+            }
+
+            handleMouseMove(e) {
+                if (!this.startX) return;
+                
+                this.endX = e.clientX;
+                this.endY = e.clientY;
+            }
+
+            handleMouseUp(e) {
+                if (!this.startX || !this.endX) {
+                    this.resetSwipe();
+                    return;
+                }
+                
+                this.processSwipe();
+                this.resetSwipe();
+                this.content.style.cursor = 'grab';
+            }
+
+            processSwipe() {
+                const deltaX = this.endX - this.startX;
+                const deltaY = Math.abs(this.endY - this.startY);
+                
+                // Verificar se é um swipe horizontal válido
+                if (Math.abs(deltaX) > this.minSwipeDistance && deltaY < 100) {
+                    if (deltaX > 0) {
+                        this.previousPage();
+                    } else {
+                        this.nextPage();
+                    }
+                }
+            }
+
+            resetSwipe() {
+                this.startX = 0;
+                this.startY = 0;
+                this.endX = 0;
+                this.endY = 0;
+            }
+
+            nextPage() {
+                if (this.currentPage < this.totalPages - 1) {
+                    this.goToPage(this.currentPage + 1);
+                }
+            }
+
+            previousPage() {
+                if (this.currentPage > 0) {
+                    this.goToPage(this.currentPage - 1);
+                }
+            }
+
+            goToPage(pageIndex) {
+                if (pageIndex < 0 || pageIndex >= this.totalPages) return;
+                
+                // Remover classe active da página atual
+                this.pages[this.currentPage].classList.remove('active');
+                this.dots[this.currentPage].classList.remove('active');
+                
+                // Adicionar classe active na nova página
+                this.currentPage = pageIndex;
+                this.pages[this.currentPage].classList.add('active');
+                this.dots[this.currentPage].classList.add('active');
+                
+                // Adicionar efeito visual
+                this.addTransitionEffect();
+            }
+
+            addTransitionEffect() {
+                this.content.style.transform = 'scale(0.95)';
+                this.content.style.opacity = '0.7';
+                
+                setTimeout(() => {
+                    this.content.style.transform = 'scale(1)';
+                    this.content.style.opacity = '1';
+                }, 150);
+            }
+
+            hideSwipeHint() {
+                setTimeout(() => {
+                    const hint = document.getElementById('swipeHint');
+                    if (hint) {
+                        hint.style.display = 'none';
+                    }
+                }, 4000);
+            }
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            new SwipeNavigation();
+        });
+    </script>
+</body>
+</html>
+

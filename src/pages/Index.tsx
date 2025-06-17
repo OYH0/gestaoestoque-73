@@ -21,15 +21,24 @@ const Index = () => {
   const { isAnimating, swipeDirection } = useSwipeNavigation();
 
   const getAnimationClass = () => {
-    if (!isAnimating) return 'animate-fade-in';
+    if (!isAnimating && !swipeDirection) return 'animate-fade-in';
     
-    if (swipeDirection === 'left') {
-      return 'animate-slide-out-left';
-    } else if (swipeDirection === 'right') {
-      return 'animate-slide-out-right';
+    if (isAnimating) {
+      if (swipeDirection === 'left') {
+        return 'animate-slide-out-left';
+      } else if (swipeDirection === 'right') {
+        return 'animate-slide-out-right';
+      }
+    } else if (swipeDirection) {
+      // Animação de entrada após a navegação
+      if (swipeDirection === 'left') {
+        return 'animate-slide-in-left';
+      } else if (swipeDirection === 'right') {
+        return 'animate-slide-in-right';
+      }
     }
     
-    return '';
+    return 'animate-fade-in';
   };
 
   return (
@@ -41,8 +50,8 @@ const Index = () => {
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0 h-screen relative z-10">
             <Header />
-            <main className="flex-1 p-4 md:p-6 relative overflow-auto">
-              <div className={`relative z-10 max-w-full transition-all duration-300 ${getAnimationClass()}`}>
+            <main className="flex-1 p-4 md:p-6 relative overflow-hidden">
+              <div className={`relative z-10 max-w-full transition-all duration-400 ${getAnimationClass()}`}>
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/camara-fria" element={<CamaraFria />} />

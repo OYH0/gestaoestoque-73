@@ -22,7 +22,6 @@ export function useSwipeNavigation() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const listenersAttached = useRef<boolean>(false);
-  const cleanupRef = useRef<(() => void) | null>(null);
 
   const getCurrentRouteIndex = () => {
     const index = routes.indexOf(location.pathname);
@@ -50,7 +49,7 @@ export function useSwipeNavigation() {
       setSwipeDirection('right');
     }
     
-    console.log('New index calculated:', newIndex, 'New route:', routes[newIndex]);
+    console.log('Navigating from index', currentIndex, 'to index', newIndex, 'Route:', routes[newIndex]);
     
     setIsAnimating(true);
     
@@ -63,35 +62,41 @@ export function useSwipeNavigation() {
     }, 150);
   };
 
-  // Funções de controle de touch separadas para evitar problemas de referência
-  const handleTouchStart = useRef((e: TouchEvent) => {
+  const handleTouchStart = (e: TouchEvent) => {
     if (isAnimating) return;
     console.log('Touch start detected');
     touchStartX.current = e.changedTouches[0].screenX;
     touchStartY.current = e.changedTouches[0].screenY;
     touchEndX.current = touchStartX.current;
     isScrolling.current = false;
-  });
+  };
 
-  const handleTouchMove = useRef((e: TouchEvent) => {
+  const handleTouchMove = (e: TouchEvent) => {
     if (isAnimating) return;
     touchEndX.current = e.changedTouches[0].screenX;
     
     const deltaY = Math.abs(e.changedTouches[0].screenY - touchStartY.current);
     const deltaX = Math.abs(touchEndX.current - touchStartX.current);
     
-    if (deltaY > deltaX) {
+    if (deltaY > deltaX && deltaY > 10) {
       isScrolling.current = true;
     }
-  });
+  };
 
-  const handleTouchEnd = useRef(() => {
+  const handleTouchEnd = () => {
     if (isScrolling.current || isAnimating) return;
     
     const swipeDistance = touchStartX.current - touchEndX.current;
     const minSwipeDistance = 50;
     
-    console.log('Touch end:', { swipeDistance, minSwipeDistance, touchStartX: touchStartX.current, touchEndX: touchEndX.current });
+    console.log('Touch end:', { 
+      swipeDistance, 
+      minSwipeDistance, 
+      touchStartX: touchStartX.current, 
+      touchEndX: touchEndX.current,
+      currentRoute: location.pathname,
+      currentIndex: getCurrentRouteIndex()
+    });
     
     if (Math.abs(swipeDistance) > minSwipeDistance) {
       if (swipeDistance > 0) {
@@ -108,51 +113,52 @@ export function useSwipeNavigation() {
     touchEndX.current = 0;
     touchStartY.current = 0;
     isScrolling.current = false;
-  });
+  };
 
   useEffect(() => {
-    // Limpar listeners existentes se houver
-    if (cleanupRef.current) {
-      cleanupRef.current();
-      cleanupRef.current = null;
-    }
-
     const setupEventListeners = () => {
-      setTimeout(() => {
+      // Aguardar o DOM estar pronto
+      const timer = setTimeout(() => {
         const mainElement = document.querySelector('main');
         console.log('Setting up event listeners, main element found:', !!mainElement);
         
         if (mainElement && !listenersAttached.current) {
-          console.log('Attaching event listeners');
+          console.log('Attaching event listeners for route:', location.pathname);
           
-          mainElement.addEventListener('touchstart', handleTouchStart.current, { passive: true });
-          mainElement.addEventListener('touchmove', handleTouchMove.current, { passive: true });
-          mainElement.addEventListener('touchend', handleTouchEnd.current, { passive: true });
+          // Remover listeners existentes para evitar duplicação
+          mainElement.removeEventListener('touchstart', handleTouchStart);
+          mainElement.removeEventListener('touchmove', handleTouchMove);
+          mainElement.removeEventListener('touchend', handleTouchEnd);
+          
+          // Adicionar novos listeners
+          mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+          mainElement.addEventListener('touchmove', handleTouchMove, { passive: true });
+          mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
           
           listenersAttached.current = true;
-          
-          // Retornar função de cleanup
-          cleanupRef.current = () => {
-            console.log('Cleaning up event listeners');
-            if (mainElement) {
-              mainElement.removeEventListener('touchstart', handleTouchStart.current);
-              mainElement.removeEventListener('touchmove', handleTouchMove.current);
-              mainElement.removeEventListener('touchend', handleTouchEnd.current);
-            }
-            listenersAttached.current = false;
-          };
         }
       }, 100);
+      
+      return () => {
+        clearTimeout(timer);
+      };
     };
 
-    setupEventListeners();
+    const cleanup = setupEventListeners();
     
     return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
+      cleanup();
+      // Cleanup listeners ao desmontar
+      const mainElement = document.querySelector('main');
+      if (mainElement && listenersAttached.current) {
+        console.log('Cleaning up event listeners');
+        mainElement.removeEventListener('touchstart', handleTouchStart);
+        mainElement.removeEventListener('touchmove', handleTouchMove);
+        mainElement.removeEventListener('touchend', handleTouchEnd);
+        listenersAttached.current = false;
       }
     };
-  }, [location.pathname]);
+  }, [location.pathname, isAnimating]);
 
   return {
     currentRoute: location.pathname,

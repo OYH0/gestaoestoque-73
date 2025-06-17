@@ -23,24 +23,32 @@ export function useSwipeNavigation() {
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
   const getCurrentRouteIndex = () => {
-    return routes.indexOf(location.pathname);
+    const index = routes.indexOf(location.pathname);
+    console.log('Current route:', location.pathname, 'Index:', index);
+    return index;
   };
 
   const navigateToRoute = (direction: 'next' | 'prev') => {
     const currentIndex = getCurrentRouteIndex();
     
-    if (currentIndex === -1 || isAnimating) return;
+    console.log('Navigate called:', { direction, currentIndex, currentRoute: location.pathname, isAnimating });
+    
+    if (currentIndex === -1 || isAnimating) {
+      console.log('Navigation blocked:', { currentIndex, isAnimating });
+      return;
+    }
     
     let newIndex;
     if (direction === 'next') {
-      newIndex = currentIndex + 1;
-      if (newIndex >= routes.length) newIndex = 0; // Volta para o início
+      newIndex = (currentIndex + 1) % routes.length; // Navegação circular para frente
       setSwipeDirection('left');
     } else {
       newIndex = currentIndex - 1;
-      if (newIndex < 0) newIndex = routes.length - 1; // Vai para o final
+      if (newIndex < 0) newIndex = routes.length - 1; // Vai para o final se estiver no início
       setSwipeDirection('right');
     }
+    
+    console.log('New index calculated:', newIndex, 'New route:', routes[newIndex]);
     
     setIsAnimating(true);
     
@@ -82,12 +90,16 @@ export function useSwipeNavigation() {
       const swipeDistance = touchStartX.current - touchEndX.current;
       const minSwipeDistance = 50; // Distância mínima para considerar um swipe
       
+      console.log('Touch end:', { swipeDistance, minSwipeDistance, touchStartX: touchStartX.current, touchEndX: touchEndX.current });
+      
       if (Math.abs(swipeDistance) > minSwipeDistance) {
         if (swipeDistance > 0) {
           // Swipe para a esquerda = próxima aba
+          console.log('Swipe left detected - going to next');
           navigateToRoute('next');
         } else {
           // Swipe para a direita = aba anterior
+          console.log('Swipe right detected - going to prev');
           navigateToRoute('prev');
         }
       }

@@ -17,6 +17,7 @@ export function useSwipeNavigation() {
   const location = useLocation();
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
   const isScrolling = useRef<boolean>(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -57,6 +58,7 @@ export function useSwipeNavigation() {
     const handleTouchStart = (e: TouchEvent) => {
       if (isAnimating) return;
       touchStartX.current = e.changedTouches[0].screenX;
+      touchStartY.current = e.changedTouches[0].screenY;
       touchEndX.current = touchStartX.current;
       isScrolling.current = false;
     };
@@ -66,7 +68,7 @@ export function useSwipeNavigation() {
       touchEndX.current = e.changedTouches[0].screenX;
       
       // Detectar se é scroll vertical (para não interferir com scroll normal)
-      const deltaY = Math.abs(e.changedTouches[0].screenY - e.changedTouches[0].screenY);
+      const deltaY = Math.abs(e.changedTouches[0].screenY - touchStartY.current);
       const deltaX = Math.abs(touchEndX.current - touchStartX.current);
       
       if (deltaY > deltaX) {
@@ -89,22 +91,41 @@ export function useSwipeNavigation() {
           navigateToRoute('prev');
         }
       }
+      
+      // Reset das variáveis de controle
+      touchStartX.current = 0;
+      touchEndX.current = 0;
+      touchStartY.current = 0;
+      isScrolling.current = false;
     };
 
-    // Adicionar eventos de touch apenas no elemento principal
-    const mainElement = document.querySelector('main');
-    if (mainElement) {
-      mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
-      mainElement.addEventListener('touchmove', handleTouchMove, { passive: true });
-      mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
-    }
+    // Pequeno delay para garantir que o DOM esteja pronto
+    const setupEventListeners = () => {
+      const mainElement = document.querySelector('main');
+      if (mainElement) {
+        mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+        mainElement.addEventListener('touchmove', handleTouchMove, { passive: true });
+        mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
+        
+        return () => {
+          mainElement.removeEventListener('touchstart', handleTouchStart);
+          mainElement.removeEventListener('touchmove', handleTouchMove);
+          mainElement.removeEventListener('touchend', handleTouchEnd);
+        };
+      }
+      return () => {};
+    };
+
+    // Configurar event listeners imediatamente e também após um pequeno delay
+    const cleanup1 = setupEventListeners();
+    const timeoutId = setTimeout(() => {
+      cleanup1();
+      setupEventListeners();
+    }, 100);
 
     return () => {
-      if (mainElement) {
-        mainElement.removeEventListener('touchstart', handleTouchStart);
-        mainElement.removeEventListener('touchmove', handleTouchMove);
-        mainElement.removeEventListener('touchend', handleTouchEnd);
-      }
+      cleanup1();
+      clearTimeout(timeoutId);
     };
   }, [location.pathname, navigate, isAnimating]);
 

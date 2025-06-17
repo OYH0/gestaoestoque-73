@@ -182,4 +182,50 @@
   .bg-churrasco-brown {
     background-color: hsl(var(--churrasco-brown));
   }
+
+  /* Swipe navigation animations */
+  .animate-slide-out-left {
+    animation: slideOutLeft 0.3s ease-in-out forwards;
+  }
+
+  .animate-slide-out-right {
+    animation: slideOutRight 0.3s ease-in-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeInSlide 0.3s ease-out forwards;
+  }
+
+  @keyframes slideOutLeft {
+    0% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(-50px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes slideOutRight {
+    0% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(50px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes fadeInSlide {
+    0% {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
 }

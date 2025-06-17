@@ -18,7 +18,19 @@ const Index = () => {
   const isMobile = useIsMobile();
   
   // Inicializar o hook de navegação por swipe
-  useSwipeNavigation();
+  const { isAnimating, swipeDirection } = useSwipeNavigation();
+
+  const getAnimationClass = () => {
+    if (!isAnimating) return 'animate-fade-in';
+    
+    if (swipeDirection === 'left') {
+      return 'animate-slide-out-left';
+    } else if (swipeDirection === 'right') {
+      return 'animate-slide-out-right';
+    }
+    
+    return '';
+  };
 
   return (
     <ProtectedRoute>
@@ -30,7 +42,7 @@ const Index = () => {
           <div className="flex-1 flex flex-col min-w-0 h-screen relative z-10">
             <Header />
             <main className="flex-1 p-4 md:p-6 relative overflow-auto">
-              <div className="relative z-10 max-w-full">
+              <div className={`relative z-10 max-w-full transition-all duration-300 ${getAnimationClass()}`}>
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/camara-fria" element={<CamaraFria />} />

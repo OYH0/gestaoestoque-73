@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 // Ordem das rotas para navegação sequencial
@@ -18,6 +18,8 @@ export function useSwipeNavigation() {
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
   const isScrolling = useRef<boolean>(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
   const getCurrentRouteIndex = () => {
     return routes.indexOf(location.pathname);
@@ -26,28 +28,41 @@ export function useSwipeNavigation() {
   const navigateToRoute = (direction: 'next' | 'prev') => {
     const currentIndex = getCurrentRouteIndex();
     
-    if (currentIndex === -1) return;
+    if (currentIndex === -1 || isAnimating) return;
     
     let newIndex;
     if (direction === 'next') {
       newIndex = currentIndex + 1;
       if (newIndex >= routes.length) newIndex = 0; // Volta para o início
+      setSwipeDirection('left');
     } else {
       newIndex = currentIndex - 1;
       if (newIndex < 0) newIndex = routes.length - 1; // Vai para o final
+      setSwipeDirection('right');
     }
     
-    navigate(routes[newIndex]);
+    setIsAnimating(true);
+    
+    // Pequeno delay para permitir a animação antes da navegação
+    setTimeout(() => {
+      navigate(routes[newIndex]);
+      setTimeout(() => {
+        setIsAnimating(false);
+        setSwipeDirection(null);
+      }, 300);
+    }, 150);
   };
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
+      if (isAnimating) return;
       touchStartX.current = e.changedTouches[0].screenX;
       touchEndX.current = touchStartX.current;
       isScrolling.current = false;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (isAnimating) return;
       touchEndX.current = e.changedTouches[0].screenX;
       
       // Detectar se é scroll vertical (para não interferir com scroll normal)
@@ -60,7 +75,7 @@ export function useSwipeNavigation() {
     };
 
     const handleTouchEnd = () => {
-      if (isScrolling.current) return;
+      if (isScrolling.current || isAnimating) return;
       
       const swipeDistance = touchStartX.current - touchEndX.current;
       const minSwipeDistance = 50; // Distância mínima para considerar um swipe
@@ -91,13 +106,15 @@ export function useSwipeNavigation() {
         mainElement.removeEventListener('touchend', handleTouchEnd);
       }
     };
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate, isAnimating]);
 
   return {
     currentRoute: location.pathname,
     currentIndex: getCurrentRouteIndex(),
     totalRoutes: routes.length,
     navigateNext: () => navigateToRoute('next'),
-    navigatePrev: () => navigateToRoute('prev')
+    navigatePrev: () => navigateToRoute('prev'),
+    isAnimating,
+    swipeDirection
   };
 }

@@ -16,17 +16,16 @@ export function useSwipeNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
   const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
   const touchStartY = useRef<number>(0);
-  const isScrolling = useRef<boolean>(false);
+  const touchEndX = useRef<number>(0);
+  const touchEndY = useRef<number>(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
-  const listenersAttached = useRef<boolean>(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   const getCurrentRouteIndex = () => {
     const index = routes.indexOf(location.pathname);
     console.log('Current route:', location.pathname, 'Index:', index);
-    // Se a rota não for encontrada, retorna 0 (dashboard) como fallback
     return index === -1 ? 0 : index;
   };
 
@@ -41,11 +40,9 @@ export function useSwipeNavigation() {
     
     let newIndex;
     if (direction === 'next') {
-      // Navegar para a próxima rota (deslize da direita para esquerda)
       newIndex = (currentIndex + 1) % routes.length;
       setSwipeDirection('left');
     } else {
-      // Navegar para a rota anterior (deslize da esquerda para direita)
       newIndex = currentIndex - 1;
       if (newIndex < 0) {
         newIndex = routes.length - 1;
@@ -56,11 +53,8 @@ export function useSwipeNavigation() {
     console.log('Navigating from index', currentIndex, 'to index', newIndex, 'Route:', routes[newIndex]);
     
     setIsAnimating(true);
-    
-    // Navegar imediatamente
     navigate(routes[newIndex]);
     
-    // Reset do estado após a animação
     setTimeout(() => {
       setIsAnimating(false);
       setSwipeDirection(null);
@@ -69,46 +63,64 @@ export function useSwipeNavigation() {
 
   const handleTouchStart = (e: TouchEvent) => {
     if (isAnimating) return;
-    console.log('Touch start detected');
-    touchStartX.current = e.changedTouches[0].screenX;
-    touchStartY.current = e.changedTouches[0].screenY;
-    touchEndX.current = touchStartX.current;
-    isScrolling.current = false;
+    
+    const touch = e.touches[0];
+    touchStartX.current = touch.clientX;
+    touchStartY.current = touch.clientY;
+    touchEndX.current = touch.clientX;
+    touchEndY.current = touch.clientY;
+    
+    console.log('Touch start:', { x: touch.clientX, y: touch.clientY });
   };
 
   const handleTouchMove = (e: TouchEvent) => {
     if (isAnimating) return;
-    touchEndX.current = e.changedTouches[0].screenX;
     
-    const deltaY = Math.abs(e.changedTouches[0].screenY - touchStartY.current);
-    const deltaX = Math.abs(touchEndX.current - touchStartX.current);
-    
-    // Se o movimento vertical for maior que o horizontal, é scroll
-    if (deltaY > deltaX && deltaY > 10) {
-      isScrolling.current = true;
-    }
+    const touch = e.touches[0];
+    touchEndX.current = touch.clientX;
+    touchEndY.current = touch.clientY;
   };
 
-  const handleTouchEnd = () => {
-    if (isScrolling.current || isAnimating) {
-      console.log('Touch end blocked:', { isScrolling: isScrolling.current, isAnimating });
-      return;
-    }
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (isAnimating) return;
     
-    const swipeDistance = touchStartX.current - touchEndX.current;
-    const minSwipeDistance = 50;
+    const deltaX = touchStartX.current - touchEndX.current;
+    const deltaY = touchStartY.current - touchEndY.current;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
     
     console.log('Touch end:', { 
-      swipeDistance, 
-      minSwipeDistance, 
-      touchStartX: touchStartX.current, 
-      touchEndX: touchEndX.current,
-      currentRoute: location.pathname,
-      currentIndex: getCurrentRouteIndex()
+      deltaX, 
+      deltaY, 
+      absDeltaX, 
+      absDeltaY,
+      startX: touchStartX.current,
+      startY: touchStartY.current,
+      endX: touchEndX.current,
+      endY: touchEndY.current
     });
     
-    if (Math.abs(swipeDistance) > minSwipeDistance) {
-      if (swipeDistance > 0) {
+    // Constantes para detecção de swipe
+    const minSwipeDistance = 50;
+    const maxVerticalMovement = 100;
+    
+    // Verificar se é um movimento horizontal significativo
+    const isHorizontalSwipe = absDeltaX > minSwipeDistance && absDeltaX > absDeltaY;
+    const isVerticalMovement = absDeltaY > maxVerticalMovement;
+    
+    console.log('Swipe analysis:', {
+      isHorizontalSwipe,
+      isVerticalMovement,
+      minSwipeDistance,
+      maxVerticalMovement
+    });
+    
+    // Só processar navegação se for claramente um swipe horizontal
+    // e não houver movimento vertical excessivo
+    if (isHorizontalSwipe && !isVerticalMovement) {
+      console.log('Valid horizontal swipe detected');
+      
+      if (deltaX > 0) {
         // Swipe da direita para esquerda = próxima página
         console.log('Swipe left detected - going to next');
         navigateToRoute('next');
@@ -117,51 +129,55 @@ export function useSwipeNavigation() {
         console.log('Swipe right detected - going to prev');
         navigateToRoute('prev');
       }
+    } else {
+      console.log('Not a valid swipe - allowing normal scroll behavior');
     }
     
     // Reset dos valores
     touchStartX.current = 0;
-    touchEndX.current = 0;
     touchStartY.current = 0;
-    isScrolling.current = false;
+    touchEndX.current = 0;
+    touchEndY.current = 0;
   };
 
   useEffect(() => {
-    // Cleanup de listeners anteriores
-    const cleanup = () => {
-      const mainElement = document.querySelector('main');
-      if (mainElement && listenersAttached.current) {
-        console.log('Removing existing event listeners');
-        mainElement.removeEventListener('touchstart', handleTouchStart);
-        mainElement.removeEventListener('touchmove', handleTouchMove);
-        mainElement.removeEventListener('touchend', handleTouchEnd);
-        listenersAttached.current = false;
-      }
-    };
+    // Limpar listeners anteriores
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
 
-    // Aguardar o DOM estar pronto e adicionar listeners
+    // Aguardar o DOM estar pronto
     const timer = setTimeout(() => {
-      cleanup(); // Remove listeners antigos primeiro
-      
       const mainElement = document.querySelector('main');
-      console.log('Setting up event listeners, main element found:', !!mainElement);
+      console.log('Setting up swipe listeners, main element found:', !!mainElement);
       
       if (mainElement) {
-        console.log('Attaching event listeners for route:', location.pathname);
+        console.log('Attaching swipe listeners for route:', location.pathname);
         
+        // Usar passive: true para não interferir com scroll nativo
         mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
         mainElement.addEventListener('touchmove', handleTouchMove, { passive: true });
         mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
         
-        listenersAttached.current = true;
+        // Função de cleanup
+        cleanupRef.current = () => {
+          console.log('Cleaning up swipe listeners');
+          mainElement.removeEventListener('touchstart', handleTouchStart);
+          mainElement.removeEventListener('touchmove', handleTouchMove);
+          mainElement.removeEventListener('touchend', handleTouchEnd);
+        };
       }
     }, 100);
     
     return () => {
       clearTimeout(timer);
-      cleanup();
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
     };
-  }, [location.pathname]);
+  }, [location.pathname, isAnimating]);
 
   return {
     currentRoute: location.pathname,

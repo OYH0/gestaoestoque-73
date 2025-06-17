@@ -16,9 +16,7 @@ export function useSwipeNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
   const touchStartX = useRef<number>(0);
-  const touchStartY = useRef<number>(0);
   const touchEndX = useRef<number>(0);
-  const touchEndY = useRef<number>(0);
   const isScrolling = useRef<boolean>(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -59,22 +57,19 @@ export function useSwipeNavigation() {
     const handleTouchStart = (e: TouchEvent) => {
       if (isAnimating) return;
       touchStartX.current = e.changedTouches[0].screenX;
-      touchStartY.current = e.changedTouches[0].screenY;
       touchEndX.current = touchStartX.current;
-      touchEndY.current = touchStartY.current;
       isScrolling.current = false;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       if (isAnimating) return;
       touchEndX.current = e.changedTouches[0].screenX;
-      touchEndY.current = e.changedTouches[0].screenY;
       
       // Detectar se é scroll vertical (para não interferir com scroll normal)
-      const deltaY = Math.abs(touchEndY.current - touchStartY.current);
+      const deltaY = Math.abs(e.changedTouches[0].screenY - e.changedTouches[0].screenY);
       const deltaX = Math.abs(touchEndX.current - touchStartX.current);
       
-      if (deltaY > deltaX && deltaY > 10) {
+      if (deltaY > deltaX) {
         isScrolling.current = true;
       }
     };
@@ -94,13 +89,6 @@ export function useSwipeNavigation() {
           navigateToRoute('prev');
         }
       }
-      
-      // Reset das variáveis
-      touchStartX.current = 0;
-      touchStartY.current = 0;
-      touchEndX.current = 0;
-      touchEndY.current = 0;
-      isScrolling.current = false;
     };
 
     // Adicionar eventos de touch apenas no elemento principal

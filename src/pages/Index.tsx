@@ -12,34 +12,9 @@ import Descartaveis from '@/components/Descartaveis';
 import { UserManagement } from '@/components/UserManagement';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 
 const Index = () => {
   const isMobile = useIsMobile();
-  
-  // Inicializar o hook de navegação por swipe
-  const { isAnimating, swipeDirection } = useSwipeNavigation();
-
-  const getAnimationClass = () => {
-    if (!isAnimating && !swipeDirection) return 'animate-fade-in';
-    
-    if (isAnimating) {
-      if (swipeDirection === 'left') {
-        return 'animate-slide-out-left';
-      } else if (swipeDirection === 'right') {
-        return 'animate-slide-out-right';
-      }
-    } else if (swipeDirection) {
-      // Animação de entrada após a navegação
-      if (swipeDirection === 'left') {
-        return 'animate-slide-in-left';
-      } else if (swipeDirection === 'right') {
-        return 'animate-slide-in-right';
-      }
-    }
-    
-    return 'animate-fade-in';
-  };
 
   return (
     <ProtectedRoute>
@@ -50,8 +25,8 @@ const Index = () => {
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0 h-screen relative z-10">
             <Header />
-            <main className="flex-1 p-4 md:p-6 relative overflow-hidden">
-              <div className={`relative z-10 max-w-full transition-all duration-400 ${getAnimationClass()}`}>
+            <main className="flex-1 p-4 md:p-6 relative overflow-auto">
+              <div className="relative z-10 max-w-full">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/camara-fria" element={<CamaraFria />} />

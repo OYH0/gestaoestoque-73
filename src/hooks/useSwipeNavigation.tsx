@@ -22,6 +22,7 @@ export function useSwipeNavigation() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const listenersAttached = useRef<boolean>(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   const getCurrentRouteIndex = () => {
     const index = routes.indexOf(location.pathname);
@@ -110,8 +111,13 @@ export function useSwipeNavigation() {
   });
 
   useEffect(() => {
+    // Limpar listeners existentes se houver
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
+
     const setupEventListeners = () => {
-      // Aguardar um pouco para garantir que o DOM esteja pronto
       setTimeout(() => {
         const mainElement = document.querySelector('main');
         console.log('Setting up event listeners, main element found:', !!mainElement);
@@ -125,33 +131,28 @@ export function useSwipeNavigation() {
           
           listenersAttached.current = true;
           
-          return () => {
+          // Retornar função de cleanup
+          cleanupRef.current = () => {
             console.log('Cleaning up event listeners');
-            mainElement.removeEventListener('touchstart', handleTouchStart.current);
-            mainElement.removeEventListener('touchmove', handleTouchMove.current);
-            mainElement.removeEventListener('touchend', handleTouchEnd.current);
+            if (mainElement) {
+              mainElement.removeEventListener('touchstart', handleTouchStart.current);
+              mainElement.removeEventListener('touchmove', handleTouchMove.current);
+              mainElement.removeEventListener('touchend', handleTouchEnd.current);
+            }
             listenersAttached.current = false;
           };
         }
       }, 100);
     };
 
-    // Limpar listeners existentes se houver
-    const mainElement = document.querySelector('main');
-    if (mainElement && listenersAttached.current) {
-      console.log('Cleaning existing listeners before setup');
-      mainElement.removeEventListener('touchstart', handleTouchStart.current);
-      mainElement.removeEventListener('touchmove', handleTouchMove.current);
-      mainElement.removeEventListener('touchend', handleTouchEnd.current);
-      listenersAttached.current = false;
-    }
-
-    const cleanup = setupEventListeners();
+    setupEventListeners();
     
     return () => {
-      if (cleanup) cleanup();
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
     };
-  }, [location.pathname]); // Reconfigurar quando a rota mudar
+  }, [location.pathname]);
 
   return {
     currentRoute: location.pathname,

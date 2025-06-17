@@ -26,26 +26,30 @@ export function useSwipeNavigation() {
   const getCurrentRouteIndex = () => {
     const index = routes.indexOf(location.pathname);
     console.log('Current route:', location.pathname, 'Index:', index);
-    return index;
+    // Se a rota não for encontrada, retorna 0 (dashboard) como fallback
+    return index === -1 ? 0 : index;
   };
 
   const navigateToRoute = (direction: 'next' | 'prev') => {
-    const currentIndex = getCurrentRouteIndex();
-    
-    console.log('Navigate called:', { direction, currentIndex, currentRoute: location.pathname, isAnimating });
-    
-    if (currentIndex === -1 || isAnimating) {
-      console.log('Navigation blocked:', { currentIndex, isAnimating });
+    if (isAnimating) {
+      console.log('Navigation blocked: animating');
       return;
     }
     
+    const currentIndex = getCurrentRouteIndex();
+    console.log('Navigate called:', { direction, currentIndex, currentRoute: location.pathname });
+    
     let newIndex;
     if (direction === 'next') {
+      // Navegar para a próxima rota (deslize da direita para esquerda)
       newIndex = (currentIndex + 1) % routes.length;
       setSwipeDirection('left');
     } else {
+      // Navegar para a rota anterior (deslize da esquerda para direita)
       newIndex = currentIndex - 1;
-      if (newIndex < 0) newIndex = routes.length - 1;
+      if (newIndex < 0) {
+        newIndex = routes.length - 1;
+      }
       setSwipeDirection('right');
     }
     
@@ -53,13 +57,14 @@ export function useSwipeNavigation() {
     
     setIsAnimating(true);
     
+    // Navegar imediatamente
+    navigate(routes[newIndex]);
+    
+    // Reset do estado após a animação
     setTimeout(() => {
-      navigate(routes[newIndex]);
-      setTimeout(() => {
-        setIsAnimating(false);
-        setSwipeDirection(null);
-      }, 300);
-    }, 150);
+      setIsAnimating(false);
+      setSwipeDirection(null);
+    }, 300);
   };
 
   const handleTouchStart = (e: TouchEvent) => {
@@ -78,13 +83,17 @@ export function useSwipeNavigation() {
     const deltaY = Math.abs(e.changedTouches[0].screenY - touchStartY.current);
     const deltaX = Math.abs(touchEndX.current - touchStartX.current);
     
+    // Se o movimento vertical for maior que o horizontal, é scroll
     if (deltaY > deltaX && deltaY > 10) {
       isScrolling.current = true;
     }
   };
 
   const handleTouchEnd = () => {
-    if (isScrolling.current || isAnimating) return;
+    if (isScrolling.current || isAnimating) {
+      console.log('Touch end blocked:', { isScrolling: isScrolling.current, isAnimating });
+      return;
+    }
     
     const swipeDistance = touchStartX.current - touchEndX.current;
     const minSwipeDistance = 50;
@@ -100,15 +109,17 @@ export function useSwipeNavigation() {
     
     if (Math.abs(swipeDistance) > minSwipeDistance) {
       if (swipeDistance > 0) {
+        // Swipe da direita para esquerda = próxima página
         console.log('Swipe left detected - going to next');
         navigateToRoute('next');
       } else {
+        // Swipe da esquerda para direita = página anterior
         console.log('Swipe right detected - going to prev');
         navigateToRoute('prev');
       }
     }
     
-    // Reset
+    // Reset dos valores
     touchStartX.current = 0;
     touchEndX.current = 0;
     touchStartY.current = 0;
@@ -116,49 +127,41 @@ export function useSwipeNavigation() {
   };
 
   useEffect(() => {
-    const setupEventListeners = () => {
-      // Aguardar o DOM estar pronto
-      const timer = setTimeout(() => {
-        const mainElement = document.querySelector('main');
-        console.log('Setting up event listeners, main element found:', !!mainElement);
-        
-        if (mainElement && !listenersAttached.current) {
-          console.log('Attaching event listeners for route:', location.pathname);
-          
-          // Remover listeners existentes para evitar duplicação
-          mainElement.removeEventListener('touchstart', handleTouchStart);
-          mainElement.removeEventListener('touchmove', handleTouchMove);
-          mainElement.removeEventListener('touchend', handleTouchEnd);
-          
-          // Adicionar novos listeners
-          mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
-          mainElement.addEventListener('touchmove', handleTouchMove, { passive: true });
-          mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
-          
-          listenersAttached.current = true;
-        }
-      }, 100);
-      
-      return () => {
-        clearTimeout(timer);
-      };
-    };
-
-    const cleanup = setupEventListeners();
-    
-    return () => {
-      cleanup();
-      // Cleanup listeners ao desmontar
+    // Cleanup de listeners anteriores
+    const cleanup = () => {
       const mainElement = document.querySelector('main');
       if (mainElement && listenersAttached.current) {
-        console.log('Cleaning up event listeners');
+        console.log('Removing existing event listeners');
         mainElement.removeEventListener('touchstart', handleTouchStart);
         mainElement.removeEventListener('touchmove', handleTouchMove);
         mainElement.removeEventListener('touchend', handleTouchEnd);
         listenersAttached.current = false;
       }
     };
-  }, [location.pathname, isAnimating]);
+
+    // Aguardar o DOM estar pronto e adicionar listeners
+    const timer = setTimeout(() => {
+      cleanup(); // Remove listeners antigos primeiro
+      
+      const mainElement = document.querySelector('main');
+      console.log('Setting up event listeners, main element found:', !!mainElement);
+      
+      if (mainElement) {
+        console.log('Attaching event listeners for route:', location.pathname);
+        
+        mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+        mainElement.addEventListener('touchmove', handleTouchMove, { passive: true });
+        mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
+        
+        listenersAttached.current = true;
+      }
+    }, 100);
+    
+    return () => {
+      clearTimeout(timer);
+      cleanup();
+    };
+  }, [location.pathname]);
 
   return {
     currentRoute: location.pathname,

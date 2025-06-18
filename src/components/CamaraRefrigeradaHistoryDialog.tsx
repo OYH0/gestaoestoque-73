@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, FileText } from 'lucide-react';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { CamaraRefrigeradaHistoricoItem } from '@/hooks/useCamaraRefrigeradaHistorico';
+import { HistoricoReportDialog } from '@/components/historico/HistoricoReportDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CamaraRefrigeradaHistoryDialogProps {
   historico: CamaraRefrigeradaHistoricoItem[];
@@ -10,6 +14,9 @@ interface CamaraRefrigeradaHistoryDialogProps {
 }
 
 export function CamaraRefrigeradaHistoryDialog({ historico, loading = false }: CamaraRefrigeradaHistoryDialogProps) {
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR') + ' às ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -28,61 +35,85 @@ export function CamaraRefrigeradaHistoryDialog({ historico, loading = false }: C
   };
 
   return (
-    <DialogContent className="max-w-2xl bg-white">
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2 text-lg text-gray-900">
-          <Calendar className="w-4 h-4" />
-          Histórico de Movimentações
-        </DialogTitle>
-        <DialogDescription className="text-gray-600">
-          Registro de retiradas e retornos ao freezer
-        </DialogDescription>
-      </DialogHeader>
-      
-      <div className="max-h-96 overflow-y-auto space-y-2">
-        {loading ? (
-          <div className="text-center py-4">
-            <p className="text-gray-500 text-sm">Carregando histórico...</p>
+    <>
+      <DialogContent className="max-w-2xl bg-white">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="flex items-center gap-2 text-lg text-gray-900">
+                <Calendar className="w-4 h-4" />
+                Histórico de Movimentações
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                Registro de retiradas e retornos ao freezer
+              </DialogDescription>
+            </div>
+            <Button
+              variant="outline"
+              size={isMobile ? "sm" : "default"}
+              onClick={() => setReportDialogOpen(true)}
+              className={`flex items-center gap-2 ${isMobile ? 'text-xs px-2 py-1' : ''}`}
+            >
+              <FileText className="w-4 h-4" />
+              {isMobile ? 'PDF' : 'Gerar Relatório'}
+            </Button>
           </div>
-        ) : historico.length === 0 ? (
-          <div className="text-center py-8">
-            <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-            <p className="text-gray-500 text-sm">Nenhuma movimentação registrada</p>
-          </div>
-        ) : (
-          historico.map((item) => (
-            <div key={item.id} className="bg-gray-50 rounded p-3 text-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{item.item_nome}</span>
-                  <Badge 
-                    variant={item.tipo === 'volta_freezer' ? 'default' : 'destructive'}
-                    className="text-xs px-2 py-0"
-                  >
-                    {item.tipo === 'volta_freezer' ? 'Retorno ao Freezer' : 'Retirada'}
-                  </Badge>
+        </DialogHeader>
+        
+        <div className="max-h-96 overflow-y-auto space-y-2">
+          {loading ? (
+            <div className="text-center py-4">
+              <p className="text-gray-500 text-sm">Carregando histórico...</p>
+            </div>
+          ) : historico.length === 0 ? (
+            <div className="text-center py-8">
+              <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+              <p className="text-gray-500 text-sm">Nenhuma movimentação registrada</p>
+            </div>
+          ) : (
+            historico.map((item) => (
+              <div key={item.id} className="bg-gray-50 rounded p-3 text-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-900">{item.item_nome}</span>
+                    <Badge 
+                      variant={item.tipo === 'volta_freezer' ? 'default' : 'destructive'}
+                      className="text-xs px-2 py-0"
+                    >
+                      {item.tipo === 'volta_freezer' ? 'Retorno ao Freezer' : 'Retirada'}
+                    </Badge>
+                  </div>
+                  <span className="text-xs text-gray-500">{formatDate(item.data_operacao)}</span>
                 </div>
-                <span className="text-xs text-gray-500">{formatDate(item.data_operacao)}</span>
-              </div>
-              
-              <div className="flex items-center gap-4 text-xs text-gray-600">
-                <span>Quantidade: {item.quantidade} {getUnidadeDisplay(item)}</span>
-                <span>Categoria: {item.categoria}</span>
-                {item.unidade_item && (
-                  <span>Unidade: {getUnidadeLabel(item.unidade_item)}</span>
+                
+                <div className="flex items-center gap-4 text-xs text-gray-600">
+                  <span>Quantidade: {item.quantidade} {getUnidadeDisplay(item)}</span>
+                  <span>Categoria: {item.categoria}</span>
+                  {item.unidade_item && (
+                    <span>Unidade: {getUnidadeLabel(item.unidade_item)}</span>
+                  )}
+                </div>
+                
+                {item.observacoes && (
+                  <div className="mt-1 text-xs text-gray-500">
+                    {item.observacoes}
+                  </div>
                 )}
               </div>
-              
-              {item.observacoes && (
-                <div className="mt-1 text-xs text-gray-500">
-                  {item.observacoes}
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-    </DialogContent>
+            ))
+          )}
+        </div>
+      </DialogContent>
+
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <HistoricoReportDialog
+            historico={historico}
+            tipoEstoque="camara_refrigerada"
+            onClose={() => setReportDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
-

@@ -7,6 +7,7 @@ import { Calendar, FileText } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { CamaraFriaHistoricoItem } from '@/hooks/useCamaraFriaHistorico';
 import { HistoricoReportDialog } from '@/components/historico/HistoricoReportDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CamaraFriaHistoryDialogProps {
   historico: CamaraFriaHistoricoItem[];
@@ -16,6 +17,7 @@ interface CamaraFriaHistoryDialogProps {
 
 export function CamaraFriaHistoryDialog({ historico, loading = false, selectedUnidade }: CamaraFriaHistoryDialogProps) {
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -50,12 +52,12 @@ export function CamaraFriaHistoryDialog({ historico, loading = false, selectedUn
             </div>
             <Button
               variant="outline"
-              size="sm"
+              size={isMobile ? "sm" : "default"}
               onClick={() => setReportDialogOpen(true)}
-              className="flex items-center gap-2"
+              className={`flex items-center gap-2 ${isMobile ? 'text-xs px-2 py-1' : ''}`}
             >
               <FileText className="w-4 h-4" />
-              Gerar Relatório
+              {isMobile ? 'PDF' : 'Gerar Relatório'}
             </Button>
           </div>
         </DialogHeader>

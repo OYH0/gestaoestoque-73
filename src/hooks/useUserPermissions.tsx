@@ -30,11 +30,11 @@ export function useUserPermissions() {
     }
 
     try {
+      // Use array response instead of .single() to avoid 406 errors
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
-        .single();
+        .eq('id', user.id);
 
       if (error) {
         console.error('Error fetching user profile:', error);
@@ -42,11 +42,20 @@ export function useUserPermissions() {
         setIsAdmin(false);
         setIsGerente(false);
         setCanModify(false);
+      } else if (data && data.length > 0) {
+        // Take the first result if multiple exist
+        const profile = data[0];
+        setUserProfile(profile);
+        setIsAdmin(profile.user_type === 'admin');
+        setIsGerente(profile.user_type === 'gerente');
+        setCanModify(profile.user_type === 'admin' || profile.user_type === 'gerente');
       } else {
-        setUserProfile(data);
-        setIsAdmin(data.user_type === 'admin');
-        setIsGerente(data.user_type === 'gerente');
-        setCanModify(data.user_type === 'admin' || data.user_type === 'gerente');
+        // No profile found - could be a new user
+        console.warn('No user profile found for user:', user.id);
+        setUserProfile(null);
+        setIsAdmin(false);
+        setIsGerente(false);
+        setCanModify(false);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -85,8 +94,13 @@ export function useUserPermissions() {
   };
 
   useEffect(() => {
-    fetchUserProfile();
-  }, [user]);
+    // Debounce the fetch to prevent multiple rapid calls
+    const timeoutId = setTimeout(() => {
+      fetchUserProfile();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [user?.id]); // Only depend on user.id to prevent excessive re-renders
 
   return {
     userProfile,

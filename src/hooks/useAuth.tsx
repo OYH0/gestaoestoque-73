@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let refreshTimeout: NodeJS.Timeout | null = null;
 
     // Get initial session
     const getInitialSession = async () => {
@@ -62,12 +63,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getInitialSession();
 
-    // Auth state listener - only set up after initial load
+    // Auth state listener - throttled to prevent excessive requests
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted || !initialized) return;
         
         console.log('Auth event:', event);
+        
+        // Clear any pending refresh timeout
+        if (refreshTimeout) {
+          clearTimeout(refreshTimeout);
+          refreshTimeout = null;
+        }
         
         // Handle critical auth events only
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
@@ -75,15 +82,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session?.user ?? null);
         }
         
-        // Ignore TOKEN_REFRESHED events to prevent loops
+        // Throttle TOKEN_REFRESHED events to prevent loops
         if (event === 'TOKEN_REFRESHED') {
           console.log('Token refreshed silently');
+          // Only update session if it's different
+          if (session && session.access_token !== session?.access_token) {
+            refreshTimeout = setTimeout(() => {
+              if (mounted) {
+                setSession(session);
+                setUser(session?.user ?? null);
+              }
+            }, 1000); // 1 second throttle
+          }
         }
       }
     );
 
     return () => {
       mounted = false;
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout);
+      }
       subscription.unsubscribe();
     };
   }, [initialized]);

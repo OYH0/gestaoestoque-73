@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
@@ -76,7 +77,6 @@ export const useSwipeNavigation = (config: SwipeNavigationConfig) => {
     preventScrollOnSwipe,
     trackMouse,
     swipeDuration: 500,
-    preventDefaultTouchmoveEvent: false,
     trackTouch: true,
   });
 
@@ -120,4 +120,3 @@ export const useSwipeNavigation = (config: SwipeNavigationConfig) => {
     isNavigating,
   };
 };
-

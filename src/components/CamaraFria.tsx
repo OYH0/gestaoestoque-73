@@ -545,22 +545,24 @@ export default function CamaraFria() {
       <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
         <CamaraFriaHistoryDialog
           historico={historico}
-          selectedUnidade={selectedUnidade}
+          loading={loading}
         />
       </Dialog>
 
       {showScanner && (
         <QRScanner
-          onSuccess={(data) => {
+          onSuccess={() => {
             setShowScanner(false);
           }}
           onClose={() => setShowScanner(false)}
         />
       )}
 
-      {showQRGenerator && lastAddedItem && (
+      {showQRGenerator && lastAddedItem && qrCodes && (
         <QRCodeGenerator
-          data={lastAddedItem}
+          qrCodes={qrCodes}
+          itemName={lastAddedItem.nome}
+          stockType="Câmara Fria"
           onClose={() => setShowQRGenerator(false)}
         />
       )}
@@ -571,7 +573,6 @@ export default function CamaraFria() {
           onOpenChange={setShowTransferDialog}
           items={filteredItems}
           onTransfer={handleTransferItems}
-          onClose={() => setShowTransferDialog(false)}
           currentUnidade={selectedUnidade}
         />
       )}

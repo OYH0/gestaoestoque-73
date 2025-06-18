@@ -1,6 +1,7 @@
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 
 export interface SwipeNavigationConfig {
   routes: string[];
@@ -75,7 +76,6 @@ export const useSwipeNavigation = (config: SwipeNavigationConfig) => {
     preventScrollOnSwipe,
     trackMouse,
     swipeDuration: 500,
-    preventDefaultTouchmoveEvent: false,
     trackTouch: true,
   });
 
@@ -93,7 +93,7 @@ export const useSwipeNavigation = (config: SwipeNavigationConfig) => {
   }, [handleSwipe, isNavigating]);
 
   // Adicionar listener de teclado
-  React.useEffect(() => {
+  useEffect(() => {
     if (enableSwipe) {
       window.addEventListener('keydown', handleKeyNavigation);
       return () => window.removeEventListener('keydown', handleKeyNavigation);
@@ -101,7 +101,7 @@ export const useSwipeNavigation = (config: SwipeNavigationConfig) => {
   }, [enableSwipe, handleKeyNavigation]);
 
   // Cleanup timeout on unmount
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       if (navigationTimeoutRef.current) {
         clearTimeout(navigationTimeoutRef.current);
@@ -119,4 +119,3 @@ export const useSwipeNavigation = (config: SwipeNavigationConfig) => {
     isNavigating,
   };
 };
-

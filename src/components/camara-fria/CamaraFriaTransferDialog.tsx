@@ -13,6 +13,7 @@ interface CamaraFriaTransferDialogProps {
   items: CamaraFriaItem[];
   onTransfer: (itemIds: string[], targetUnidade: 'juazeiro_norte' | 'fortaleza') => void;
   currentUnidade: 'juazeiro_norte' | 'fortaleza' | 'todas';
+  onClose?: () => void;
 }
 
 export function CamaraFriaTransferDialog({
@@ -20,7 +21,8 @@ export function CamaraFriaTransferDialog({
   onOpenChange,
   items,
   onTransfer,
-  currentUnidade
+  currentUnidade,
+  onClose
 }: CamaraFriaTransferDialogProps) {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [targetUnidade, setTargetUnidade] = useState<'juazeiro_norte' | 'fortaleza'>('juazeiro_norte');
@@ -54,6 +56,7 @@ export function CamaraFriaTransferDialog({
       onTransfer(Array.from(selectedItems), targetUnidade);
       setSelectedItems(new Set());
       onOpenChange(false);
+      if (onClose) onClose();
     }
   };
 

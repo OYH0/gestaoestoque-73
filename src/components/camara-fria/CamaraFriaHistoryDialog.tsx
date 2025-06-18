@@ -1,21 +1,17 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Calendar, FileText } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { CamaraFriaHistoricoItem } from '@/hooks/useCamaraFriaHistorico';
-import { HistoricoReportDialog } from '@/components/historico/HistoricoReportDialog';
 
 interface CamaraFriaHistoryDialogProps {
   historico: CamaraFriaHistoricoItem[];
   loading?: boolean;
+  selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas';
 }
 
-export function CamaraFriaHistoryDialog({ historico, loading = false }: CamaraFriaHistoryDialogProps) {
-  const [showReportDialog, setShowReportDialog] = useState(false);
-
+export function CamaraFriaHistoryDialog({ historico, loading = false, selectedUnidade }: CamaraFriaHistoryDialogProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR') + ' às ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -34,27 +30,14 @@ export function CamaraFriaHistoryDialog({ historico, loading = false }: CamaraFr
   };
 
   return (
-    <DialogContent className="max-w-2xl">
+    <DialogContent className="max-w-2xl bg-white">
       <DialogHeader>
-        <DialogTitle className="flex items-center gap-2 text-lg">
+        <DialogTitle className="flex items-center gap-2 text-lg text-gray-900">
           <Calendar className="w-4 h-4" />
-          Histórico de Movimentações
+          Histórico de Movimentações - Câmara Fria
         </DialogTitle>
-        <DialogDescription className="flex items-center justify-between">
-          <span>Registro de entradas e saídas de carnes</span>
-          <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-xs">
-                <FileText className="w-3 h-3 mr-1" />
-                Gerar Relatório
-              </Button>
-            </DialogTrigger>
-            <HistoricoReportDialog
-              historico={historico}
-              tipoEstoque="camara_fria"
-              onClose={() => setShowReportDialog(false)}
-            />
-          </Dialog>
+        <DialogDescription className="text-gray-600">
+          Registro de entradas e saídas do freezer
         </DialogDescription>
       </DialogHeader>
       
@@ -70,7 +53,7 @@ export function CamaraFriaHistoryDialog({ historico, loading = false }: CamaraFr
           </div>
         ) : (
           historico.map((item) => (
-            <div key={item.id} className="bg-gray-50 rounded p-3 text-sm">
+            <div key={item.id} className="bg-gray-50 rounded p-3 text-sm border border-gray-100">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-gray-900">{item.item_nome}</span>

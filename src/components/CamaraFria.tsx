@@ -551,7 +551,7 @@ export default function CamaraFria() {
 
       {showScanner && (
         <QRScanner
-          onScanSuccess={(data) => {
+          onSuccess={(data) => {
             setShowScanner(false);
           }}
           onClose={() => setShowScanner(false)}
@@ -560,13 +560,15 @@ export default function CamaraFria() {
 
       {showQRGenerator && lastAddedItem && (
         <QRCodeGenerator
-          item={lastAddedItem}
+          data={lastAddedItem}
           onClose={() => setShowQRGenerator(false)}
         />
       )}
 
       {showTransferDialog && (
         <CamaraFriaTransferDialog
+          open={showTransferDialog}
+          onOpenChange={setShowTransferDialog}
           items={filteredItems}
           onTransfer={handleTransferItems}
           onClose={() => setShowTransferDialog(false)}
@@ -576,4 +578,3 @@ export default function CamaraFria() {
     </div>
   );
 }
-

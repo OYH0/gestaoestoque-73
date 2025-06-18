@@ -546,30 +546,29 @@ export default function CamaraFria() {
 
       {showScanner && (
         <QRScanner
-          onScanSuccess={(data) => {
-            console.log('QR Code scanned:', data);
-            setShowScanner(false);
-          }}
+          onSuccess={() => setShowScanner(false)}
           onClose={() => setShowScanner(false)}
         />
       )}
 
-      {showQRGenerator && lastAddedItem && (
+      {showQRGenerator && lastAddedItem && qrCodes && (
         <QRCodeGenerator
-          item={lastAddedItem}
+          qrCodes={qrCodes}
+          itemName={lastAddedItem.nome}
+          stockType="Câmara Fria"
           onClose={() => setShowQRGenerator(false)}
         />
       )}
 
       {showTransferDialog && (
         <CamaraFriaTransferDialog
+          open={showTransferDialog}
+          onOpenChange={setShowTransferDialog}
           items={filteredItems}
           onTransfer={handleTransferItems}
-          onClose={() => setShowTransferDialog(false)}
           currentUnidade={selectedUnidade}
         />
       )}
     </div>
   );
 }
-

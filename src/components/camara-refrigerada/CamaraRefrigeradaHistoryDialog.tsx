@@ -7,6 +7,7 @@ import { Calendar, FileText } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { CamaraRefrigeradaHistoricoItem } from '@/hooks/useCamaraRefrigeradaHistorico';
 import { HistoricoReportDialog } from '@/components/historico/HistoricoReportDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CamaraRefrigeradaHistoryDialogProps {
   historico: CamaraRefrigeradaHistoricoItem[];
@@ -15,6 +16,7 @@ interface CamaraRefrigeradaHistoryDialogProps {
 
 export function CamaraRefrigeradaHistoryDialog({ historico, loading = false }: CamaraRefrigeradaHistoryDialogProps) {
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -37,8 +39,8 @@ export function CamaraRefrigeradaHistoryDialog({ historico, loading = false }: C
     <>
       <DialogContent className="max-w-2xl bg-white">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className={`flex items-center ${isMobile ? 'flex-col gap-2' : 'justify-between'}`}>
+            <div className={isMobile ? 'text-center' : ''}>
               <DialogTitle className="flex items-center gap-2 text-lg text-gray-900">
                 <Calendar className="w-4 h-4" />
                 Histórico de Movimentações
@@ -47,16 +49,31 @@ export function CamaraRefrigeradaHistoryDialog({ historico, loading = false }: C
                 Registro de retiradas e retornos ao freezer
               </DialogDescription>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setReportDialogOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <FileText className="w-4 h-4" />
-              Gerar Relatório
-            </Button>
+            {!isMobile && (
+              <Button
+                variant="outline"
+                size="default"
+                onClick={() => setReportDialogOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Gerar Relatório
+              </Button>
+            )}
           </div>
+          {isMobile && (
+            <div className="flex justify-center mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReportDialogOpen(true)}
+                className="flex items-center gap-2 text-xs px-2 py-1"
+              >
+                <FileText className="w-4 h-4" />
+                PDF
+              </Button>
+            </div>
+          )}
         </DialogHeader>
         
         <div className="max-h-96 overflow-y-auto space-y-2">

@@ -32,8 +32,8 @@ export function DescartaveisHistoryDialog({ historico, loading = false }: Descar
     <>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className={`flex items-center ${isMobile ? 'flex-col gap-2' : 'justify-between'}`}>
+            <div className={isMobile ? 'text-center' : ''}>
               <DialogTitle className="flex items-center gap-2 text-lg">
                 <Calendar className="w-4 h-4" />
                 Histórico de Movimentações
@@ -42,16 +42,31 @@ export function DescartaveisHistoryDialog({ historico, loading = false }: Descar
                 Registro de entradas e saídas de descartáveis
               </DialogDescription>
             </div>
-            <Button
-              variant="outline"
-              size={isMobile ? "sm" : "default"}
-              onClick={() => setReportDialogOpen(true)}
-              className={`flex items-center gap-2 ${isMobile ? 'text-xs px-2 py-1' : ''}`}
-            >
-              <FileText className="w-4 h-4" />
-              {isMobile ? 'PDF' : 'Gerar Relatório'}
-            </Button>
+            {!isMobile && (
+              <Button
+                variant="outline"
+                size="default"
+                onClick={() => setReportDialogOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Gerar Relatório
+              </Button>
+            )}
           </div>
+          {isMobile && (
+            <div className="flex justify-center mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReportDialogOpen(true)}
+                className="flex items-center gap-2 text-xs px-2 py-1"
+              >
+                <FileText className="w-4 h-4" />
+                PDF
+              </Button>
+            </div>
+          )}
         </DialogHeader>
         <div className="max-h-96 overflow-y-auto space-y-2">
           {loading ? (

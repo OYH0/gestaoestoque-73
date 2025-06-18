@@ -1,222 +1,56 @@
-/* Animações de transição de páginas */
 
-/* Configurações globais para animações suaves */
-* {
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  -webkit-perspective: 1000px;
-  perspective: 1000px;
-}
-
-/* Container principal com overflow controlado */
-.page-transition-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-/* Animações CSS para fallback */
-@keyframes slideInFromRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideInFromLeft {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideOutToLeft {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-}
-
-@keyframes slideOutToRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes fadeOutScale {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.05);
-  }
-}
-
-/* Classes utilitárias para animações */
-.animate-slide-in-right {
-  animation: slideInFromRight 0.3s ease-out forwards;
-}
-
-.animate-slide-in-left {
-  animation: slideInFromLeft 0.3s ease-out forwards;
-}
-
-.animate-slide-out-left {
-  animation: slideOutToLeft 0.3s ease-out forwards;
-}
-
-.animate-slide-out-right {
-  animation: slideOutToRight 0.3s ease-out forwards;
-}
-
-.animate-fade-in-scale {
-  animation: fadeInScale 0.3s ease-out forwards;
-}
-
-.animate-fade-out-scale {
-  animation: fadeOutScale 0.3s ease-out forwards;
-}
-
-/* Otimizações de performance */
 .page-transition-optimized {
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+  /* Animações de transição de página */
 }
 
-/* Animações específicas para mobile */
+/* Garantir que os dialogs tenham z-index alto suficiente */
+[data-radix-dialog-overlay] {
+  z-index: 100 !important;
+}
+
+[data-radix-dialog-content] {
+  z-index: 101 !important;
+}
+
+/* Garantir que drawers também tenham z-index adequado */
+[data-vaul-drawer-wrapper] {
+  z-index: 100 !important;
+}
+
+[data-vaul-overlay] {
+  z-index: 100 !important;
+}
+
+[data-vaul-drawer] {
+  z-index: 101 !important;
+}
+
+/* Garantir que os dialogs sejam visíveis */
+.dialog-content {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 101 !important;
+  background: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}
+
+.dialog-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100 !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Animações para mobile */
 @media (max-width: 768px) {
-  .page-transition-container {
-    touch-action: pan-y;
-  }
-  
-  /* Animações mais rápidas em mobile */
-  .animate-slide-in-right,
-  .animate-slide-in-left,
-  .animate-slide-out-left,
-  .animate-slide-out-right {
-    animation-duration: 0.25s;
+  .dialog-content {
+    width: calc(100vw - 2rem) !important;
+    max-width: calc(100vw - 2rem) !important;
+    margin: 1rem !important;
   }
 }
-
-/* Animações específicas para desktop */
-@media (min-width: 769px) {
-  /* Animações mais suaves em desktop */
-  .animate-fade-in-scale,
-  .animate-fade-out-scale {
-    animation-duration: 0.4s;
-    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-}
-
-/* Prevenção de scroll durante animações */
-.prevent-scroll {
-  overflow: hidden;
-  height: 100vh;
-}
-
-/* Indicador de carregamento durante transições */
-.transition-loading {
-  position: relative;
-}
-
-.transition-loading::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
-  animation: loading-bar 1s ease-in-out infinite;
-  z-index: 1000;
-}
-
-@keyframes loading-bar {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-/* Animações para elementos internos da página */
-.page-content-enter {
-  animation: contentFadeIn 0.4s ease-out 0.1s both;
-}
-
-@keyframes contentFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Animações para cards e elementos */
-.card-animate {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card-animate:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-/* Animações para botões durante navegação */
-.nav-button-active {
-  transform: scale(1.05);
-  transition: transform 0.2s ease;
-}
-
-/* Redução de movimento para usuários que preferem */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  
-  .page-transition-container {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-

@@ -59,7 +59,7 @@ export default function CamaraFria() {
   const [editingItems, setEditingItems] = useState<Record<string, number>>({});
   const [thawingItems, setThawingItems] = useState<Record<string, number>>({});
 
-  // Filter items by selected unit - REMOVIDO LOGS EXCESSIVOS
+  // Filter items by selected unit
   const itemsByUnidade = items.filter(item => {
     if (selectedUnidade === 'todas') return true;
     return item.unidade_item === selectedUnidade;
@@ -552,6 +552,7 @@ export default function CamaraFria() {
       {showScanner && (
         <QRScanner
           onScanSuccess={(data) => {
+            console.log('QR Code scanned:', data);
             setShowScanner(false);
           }}
           onClose={() => setShowScanner(false)}

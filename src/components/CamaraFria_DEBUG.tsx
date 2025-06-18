@@ -59,11 +59,17 @@ export default function CamaraFria() {
   const [editingItems, setEditingItems] = useState<Record<string, number>>({});
   const [thawingItems, setThawingItems] = useState<Record<string, number>>({});
 
-  // Filter items by selected unit - REMOVIDO LOGS EXCESSIVOS
+  // Filter items by selected unit - CORRIGIDO
   const itemsByUnidade = items.filter(item => {
     if (selectedUnidade === 'todas') return true;
+    // Usar item.unidade_item que é mapeado do campo 'unidade' do banco
     return item.unidade_item === selectedUnidade;
   });
+
+  console.log('=== FILTRO DE UNIDADE ===');
+  console.log('Unidade selecionada:', selectedUnidade);
+  console.log('Total de itens no estado:', items.length);
+  console.log('Itens após filtro:', itemsByUnidade.length);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
@@ -74,8 +80,13 @@ export default function CamaraFria() {
   const isMobile = useIsMobile();
   
   const handleAddNewItem = async () => {
+    console.log('=== INÍCIO DA FUNÇÃO handleAddNewItem ===');
+    console.log('canModify:', canModify);
+    console.log('newItem:', newItem);
+    
     // Verificação de permissão com feedback
     if (!canModify) {
+      console.error('Acesso negado: apenas administradores e gerentes podem adicionar itens');
       toast({
         title: "Acesso negado",
         description: "Apenas administradores e gerentes podem adicionar itens.",
@@ -86,6 +97,7 @@ export default function CamaraFria() {
     
     // Verificação de validação com feedback
     if (!newItem.nome.trim()) {
+      console.error('Nome não preenchido');
       toast({
         title: "Nome obrigatório",
         description: "Por favor, digite o nome da carne.",
@@ -95,6 +107,7 @@ export default function CamaraFria() {
     }
     
     if (!newItem.categoria) {
+      console.error('Categoria não selecionada');
       toast({
         title: "Categoria obrigatória",
         description: "Por favor, selecione uma categoria.",
@@ -111,6 +124,9 @@ export default function CamaraFria() {
       unidade_item: unidadeParaItem
     };
 
+    console.log('=== ADICIONANDO NOVO ITEM ===');
+    console.log('Item com unidade:', itemWithUnidade);
+
     try {
       toast({
         title: "Adicionando item...",
@@ -118,9 +134,11 @@ export default function CamaraFria() {
       });
       
       const addedItem = await addItem(itemWithUnidade);
+      console.log('Item adicionado com sucesso:', addedItem);
       
       // Registrar no histórico apenas se a quantidade for maior que 0 e o item foi adicionado com sucesso
       if (addedItem && Number(newItem.quantidade) > 0) {
+        console.log('Registrando no histórico...');
         await addHistoricoItem({
           item_nome: newItem.nome,
           quantidade: Number(newItem.quantidade),
@@ -130,6 +148,7 @@ export default function CamaraFria() {
           observacoes: 'Adição de novo item ao estoque',
           unidade_item: unidadeParaItem
         });
+        console.log('Histórico registrado com sucesso');
       }
       
       // Reset form
@@ -150,6 +169,8 @@ export default function CamaraFria() {
         variant: "default",
       });
       
+      console.log('=== ITEM ADICIONADO COM SUCESSO ===');
+      
     } catch (error) {
       console.error('Erro ao adicionar item:', error);
       toast({
@@ -160,13 +181,10 @@ export default function CamaraFria() {
     }
   };
 
+  // ... resto do código permanece igual
   const handleUpdateQuantity = async (id: string, newQuantity: number, tipo: 'entrada' | 'saida') => {
     if (!canModify) {
-      toast({
-        title: "Acesso negado",
-        description: "Apenas administradores e gerentes podem atualizar quantidades.",
-        variant: "destructive",
-      });
+      console.error('Acesso negado: apenas administradores e gerentes podem atualizar quantidades');
       return;
     }
     
@@ -186,11 +204,6 @@ export default function CamaraFria() {
       }
     } catch (error) {
       console.error('Erro ao atualizar quantidade:', error);
-      toast({
-        title: "Erro ao atualizar",
-        description: "Não foi possível atualizar a quantidade.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -208,11 +221,7 @@ export default function CamaraFria() {
 
   const handleConfirmChange = async (id: string) => {
     if (!canModify) {
-      toast({
-        title: "Acesso negado",
-        description: "Apenas administradores e gerentes podem editar itens.",
-        variant: "destructive",
-      });
+      console.error('Acesso negado: apenas administradores e gerentes podem editar itens');
       return;
     }
     
@@ -269,11 +278,7 @@ export default function CamaraFria() {
 
   const handleConfirmThaw = async (id: string) => {
     if (!canModify) {
-      toast({
-        title: "Acesso negado",
-        description: "Apenas administradores e gerentes podem descongelar itens.",
-        variant: "destructive",
-      });
+      console.error('Acesso negado: apenas administradores e gerentes podem descongelar itens');
       return;
     }
     
@@ -283,7 +288,14 @@ export default function CamaraFria() {
       const newQuantity = item.quantidade - thawQuantity;
       await updateItemQuantity(id, newQuantity);
       
+      console.log('=== MOVENDO PARA CÂMARA REFRIGERADA ===');
+      console.log('Item original:', item);
+      console.log('Unidade do item original:', item.unidade_item);
+      
+      // GARANTIR que a unidade seja preservada corretamente
       const unidadeCorreta = item.unidade_item || 'juazeiro_norte';
+      
+      console.log('Unidade que será enviada:', unidadeCorreta);
       
       await addCamaraRefrigeradaItem({
         nome: item.nome,
@@ -294,7 +306,7 @@ export default function CamaraFria() {
         data_entrada: new Date().toISOString().split('T')[0],
         temperatura_ideal: item.temperatura_ideal,
         observacoes: `Movido da câmara fria para descongelamento`,
-        unidade_item: unidadeCorreta
+        unidade_item: unidadeCorreta // USAR A UNIDADE CORRETA DO ITEM ORIGINAL
       });
       
       await addHistoricoItem({
@@ -312,11 +324,6 @@ export default function CamaraFria() {
         delete newState[id];
         return newState;
       });
-
-      toast({
-        title: "Item movido com sucesso!",
-        description: `${thawQuantity} ${item.unidade} de ${item.nome} movido para câmara refrigerada.`,
-      });
     }
   };
 
@@ -330,11 +337,7 @@ export default function CamaraFria() {
 
   const handleDeleteItem = async (id: string) => {
     if (!canModify) {
-      toast({
-        title: "Acesso negado",
-        description: "Apenas administradores e gerentes podem deletar itens.",
-        variant: "destructive",
-      });
+      console.error('Acesso negado: apenas administradores e gerentes podem deletar itens');
       return;
     }
     
@@ -352,18 +355,8 @@ export default function CamaraFria() {
           unidade_item: deletedItem.unidade_item
         });
       }
-
-      toast({
-        title: "Item removido",
-        description: `${deletedItem?.nome} foi removido do estoque.`,
-      });
     } catch (error) {
       console.error('Erro ao deletar item:', error);
-      toast({
-        title: "Erro ao remover item",
-        description: "Não foi possível remover o item.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -376,11 +369,7 @@ export default function CamaraFria() {
 
   const handleTransferItems = async (itemIds: string[], targetUnidade: 'juazeiro_norte' | 'fortaleza') => {
     if (!canTransferItems()) {
-      toast({
-        title: "Acesso negado",
-        description: "Apenas administradores podem transferir itens.",
-        variant: "destructive",
-      });
+      console.error('Acesso negado: apenas administradores podem transferir itens');
       return;
     }
     
@@ -415,11 +404,6 @@ export default function CamaraFria() {
       );
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
-      toast({
-        title: "Erro ao gerar PDF",
-        description: "Não foi possível gerar o relatório.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -429,6 +413,17 @@ export default function CamaraFria() {
         selectedUnidade={selectedUnidade}
         onUnidadeChange={setSelectedUnidade}
       />
+
+      {/* Debug info */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h4 className="font-semibold text-yellow-800 mb-2">🔧 Debug Info</h4>
+        <div className="text-sm text-yellow-700 space-y-1">
+          <p>Permissão para modificar: {canModify ? '✅ Sim' : '❌ Não'}</p>
+          <p>Formulário válido: {(newItem.nome.trim() !== '' && newItem.categoria !== '') ? '✅ Sim' : '❌ Não'}</p>
+          <p>Nome preenchido: {newItem.nome.trim() !== '' ? '✅ Sim' : '❌ Não'}</p>
+          <p>Categoria selecionada: {newItem.categoria !== '' ? '✅ Sim' : '❌ Não'}</p>
+        </div>
+      </div>
 
       <CamaraFriaHeader
         itemsCount={filteredItems.length}
@@ -552,6 +547,7 @@ export default function CamaraFria() {
       {showScanner && (
         <QRScanner
           onScanSuccess={(data) => {
+            console.log('QR Code scanned:', data);
             setShowScanner(false);
           }}
           onClose={() => setShowScanner(false)}

@@ -3,24 +3,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
-export interface CamaraFriaHistoricoItem {
+export interface CamaraRefrigeradaHistoricoItem {
   id: string;
   item_nome: string;
   quantidade: number;
   unidade: string;
   categoria: string;
-  tipo: 'entrada' | 'saida';
+  tipo: 'retirada' | 'volta_freezer' | 'entrada';
   data_operacao: string;
   observacoes?: string;
   unidade_item?: 'juazeiro_norte' | 'fortaleza';
 }
 
-export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas') {
-  const [historico, setHistorico] = useState<CamaraFriaHistoricoItem[]>([]);
+export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas') {
+  const [historico, setHistorico] = useState<CamaraRefrigeradaHistoricoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const lastFetchRef = useRef<number>(0);
-  const cacheRef = useRef<{ data: CamaraFriaHistoricoItem[], timestamp: number, unidade: string } | null>(null);
+  const cacheRef = useRef<{ data: CamaraRefrigeradaHistoricoItem[], timestamp: number, unidade: string } | null>(null);
   const pendingRequestRef = useRef<boolean>(false);
 
   // Cache duration: 60 seconds for history
@@ -36,7 +36,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
     if (cacheRef.current && 
         (now - cacheRef.current.timestamp) < CACHE_DURATION && 
         cacheRef.current.unidade === cacheKey) {
-      console.log('Using cached data for camara fria history');
+      console.log('Using cached data for camara refrigerada history');
       setHistorico(cacheRef.current.data);
       setLoading(false);
       return;
@@ -44,7 +44,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
 
     // Throttle requests
     if (now - lastFetchRef.current < 10000) {
-      console.log('Throttling camara fria history fetch request');
+      console.log('Throttling camara refrigerada history fetch request');
       return;
     }
 
@@ -53,8 +53,8 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
     
     try {
       let query = supabase
-        .from('camara_fria_historico')
-        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
+        .from('camara_refrigerada_historico')
+        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade,unidade_medida')
         .order('data_operacao', { ascending: false })
         .limit(100);
 
@@ -66,13 +66,13 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
 
       if (error) throw error;
       
-      const mappedHistorico: CamaraFriaHistoricoItem[] = (data || []).map(item => ({
+      const mappedHistorico: CamaraRefrigeradaHistoricoItem[] = (data || []).map(item => ({
         id: item.id,
         item_nome: item.item_nome,
-        quantidade: Number(item.quantidade), // Garantir que é número
-        unidade: item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza' ? 'pç' : item.unidade,
+        quantidade: item.quantidade,
+        unidade: item.unidade_medida || 'pç', // Usar unidade_medida se disponível
         categoria: item.categoria,
-        tipo: item.tipo as 'entrada' | 'saida',
+        tipo: item.tipo as 'retirada' | 'volta_freezer' | 'entrada',
         data_operacao: item.data_operacao,
         observacoes: item.observacoes,
         unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
@@ -99,7 +99,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
     }
   };
 
-  const addHistoricoItem = async (item: Omit<CamaraFriaHistoricoItem, 'id' | 'data_operacao'>) => {
+  const addHistoricoItem = async (item: Omit<CamaraRefrigeradaHistoricoItem, 'id' | 'data_operacao'>) => {
     if (!user || pendingRequestRef.current) return;
 
     // Verificar se não é uma duplicação recente
@@ -116,43 +116,39 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
     }
 
     try {
-      console.log('=== ADICIONANDO AO HISTÓRICO DA CÂMARA FRIA ===');
-      console.log('Item para histórico:', item);
-
       const unidadeParaSalvar = item.unidade_item || 'juazeiro_norte';
       
       const itemParaInserir = {
         item_nome: item.item_nome,
-        quantidade: Number(item.quantidade), // Garantir que é número
+        quantidade: item.quantidade,
         categoria: item.categoria,
         tipo: item.tipo,
         observacoes: item.observacoes || null,
         user_id: user.id,
-        unidade: unidadeParaSalvar
+        unidade: unidadeParaSalvar,
+        unidade_medida: item.unidade || 'pç'
       };
 
-      console.log('Item para inserir no histórico:', itemParaInserir);
+      console.log('Inserindo no histórico da câmara refrigerada:', itemParaInserir);
 
       const { data, error } = await supabase
-        .from('camara_fria_historico')
+        .from('camara_refrigerada_historico')
         .insert([itemParaInserir])
-        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
+        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade,unidade_medida')
         .single();
 
       if (error) throw error;
       
-      console.log('Item inserido no histórico:', data);
-
       // Clear cache on data change
       cacheRef.current = null;
       
-      const mappedItem: CamaraFriaHistoricoItem = {
+      const mappedItem: CamaraRefrigeradaHistoricoItem = {
         id: data.id,
         item_nome: data.item_nome,
-        quantidade: Number(data.quantidade),
-        unidade: data.unidade === 'juazeiro_norte' || data.unidade === 'fortaleza' ? 'pç' : data.unidade,
+        quantidade: data.quantidade,
+        unidade: data.unidade_medida || 'pç',
         categoria: data.categoria,
-        tipo: data.tipo as 'entrada' | 'saida',
+        tipo: data.tipo as 'retirada' | 'volta_freezer' | 'entrada',
         data_operacao: data.data_operacao,
         observacoes: data.observacoes,
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
@@ -160,7 +156,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
       
       setHistorico(prev => [mappedItem, ...prev].slice(0, 100));
       
-      console.log('Histórico da câmara fria inserido com sucesso:', mappedItem);
+      console.log('Histórico inserido com sucesso:', mappedItem);
     } catch (error) {
       console.error('Error adding history item:', error);
       toast({

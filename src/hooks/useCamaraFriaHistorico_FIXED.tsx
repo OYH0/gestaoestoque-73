@@ -54,7 +54,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
     try {
       let query = supabase
         .from('camara_fria_historico')
-        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
+        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade,unidade_medida')
         .order('data_operacao', { ascending: false })
         .limit(100);
 
@@ -70,7 +70,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
         id: item.id,
         item_nome: item.item_nome,
         quantidade: Number(item.quantidade), // Garantir que é número
-        unidade: item.unidade === 'juazeiro_norte' || item.unidade === 'fortaleza' ? 'pç' : item.unidade,
+        unidade: item.unidade_medida || 'pç', // Usar unidade_medida se disponível
         categoria: item.categoria,
         tipo: item.tipo as 'entrada' | 'saida',
         data_operacao: item.data_operacao,
@@ -128,7 +128,8 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
         tipo: item.tipo,
         observacoes: item.observacoes || null,
         user_id: user.id,
-        unidade: unidadeParaSalvar
+        unidade: unidadeParaSalvar,
+        unidade_medida: item.unidade || 'pç'
       };
 
       console.log('Item para inserir no histórico:', itemParaInserir);
@@ -136,7 +137,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
       const { data, error } = await supabase
         .from('camara_fria_historico')
         .insert([itemParaInserir])
-        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
+        .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade,unidade_medida')
         .single();
 
       if (error) throw error;
@@ -150,7 +151,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
         id: data.id,
         item_nome: data.item_nome,
         quantidade: Number(data.quantidade),
-        unidade: data.unidade === 'juazeiro_norte' || data.unidade === 'fortaleza' ? 'pç' : data.unidade,
+        unidade: data.unidade_medida || 'pç',
         categoria: data.categoria,
         tipo: data.tipo as 'entrada' | 'saida',
         data_operacao: data.data_operacao,

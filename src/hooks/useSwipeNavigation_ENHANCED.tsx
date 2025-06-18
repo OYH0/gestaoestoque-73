@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
 import { useCallback, useRef, useState } from 'react';

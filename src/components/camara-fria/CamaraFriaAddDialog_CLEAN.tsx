@@ -109,10 +109,10 @@ export function CamaraFriaAddDialog({
   };
 
   return (
-    <DialogContent className="sm:max-w-[425px]" aria-describedby="dialog-description">
+    <DialogContent>
       <DialogHeader>
         <DialogTitle>Adicionar Nova Carne</DialogTitle>
-        <DialogDescription id="dialog-description">
+        <DialogDescription>
           Preencha os dados da nova carne para adicionar ao estoque da câmara fria
         </DialogDescription>
       </DialogHeader>
@@ -125,12 +125,9 @@ export function CamaraFriaAddDialog({
             value={newItem.nome}
             onChange={(e) => setNewItem({...newItem, nome: e.target.value})}
             className={!newItem.nome.trim() ? 'border-red-300' : ''}
-            aria-describedby={!newItem.nome.trim() ? 'nome-error' : undefined}
           />
           {!newItem.nome.trim() && (
-            <p id="nome-error" className="text-xs text-red-500" role="alert">
-              Nome é obrigatório
-            </p>
+            <p className="text-xs text-red-500">Nome é obrigatório</p>
           )}
         </div>
         
@@ -144,9 +141,8 @@ export function CamaraFriaAddDialog({
             placeholder="Digite a quantidade"
             value={newItem.quantidade === 0 ? '' : newItem.quantidade.toString()}
             onChange={handleQuantidadeChange}
-            aria-describedby="quantidade-help"
           />
-          <p id="quantidade-help" className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500">
             Você pode adicionar com quantidade zero para registrar o item no estoque
           </p>
         </div>
@@ -157,7 +153,7 @@ export function CamaraFriaAddDialog({
             value={newItem.unidade}
             onValueChange={(value) => setNewItem({...newItem, unidade: value})}
           >
-            <SelectTrigger id="unidade">
+            <SelectTrigger>
               <SelectValue placeholder="Selecione a unidade" />
             </SelectTrigger>
             <SelectContent>
@@ -175,11 +171,7 @@ export function CamaraFriaAddDialog({
             value={newItem.categoria}
             onValueChange={(value) => setNewItem({...newItem, categoria: value})}
           >
-            <SelectTrigger 
-              id="categoria"
-              className={!newItem.categoria ? 'border-red-300' : ''}
-              aria-describedby={!newItem.categoria ? 'categoria-error' : undefined}
-            >
+            <SelectTrigger className={!newItem.categoria ? 'border-red-300' : ''}>
               <SelectValue placeholder="Selecione a categoria" />
             </SelectTrigger>
             <SelectContent>
@@ -189,9 +181,7 @@ export function CamaraFriaAddDialog({
             </SelectContent>
           </Select>
           {!newItem.categoria && (
-            <p id="categoria-error" className="text-xs text-red-500" role="alert">
-              Categoria é obrigatória
-            </p>
+            <p className="text-xs text-red-500">Categoria é obrigatória</p>
           )}
         </div>
         
@@ -205,14 +195,13 @@ export function CamaraFriaAddDialog({
             placeholder="Digite o estoque mínimo (pode ser 0)"
             value={newItem.minimo === 0 ? '' : newItem.minimo.toString()}
             onChange={handleMinimoChange}
-            aria-describedby="minimo-help"
           />
-          <p id="minimo-help" className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500">
             Quando o estoque atingir esta quantidade, será exibido um alerta
           </p>
         </div>
         
-        <div className="flex gap-2 justify-end pt-4">
+        <div className="flex gap-2 justify-end">
           <Button variant="outline" onClick={() => setDialogOpen(false)}>
             Cancelar
           </Button>
@@ -220,15 +209,9 @@ export function CamaraFriaAddDialog({
             onClick={handleAddItem} 
             className="bg-blue-500 hover:bg-blue-600"
             disabled={!isFormValid}
-            aria-describedby={!isFormValid ? 'button-help' : undefined}
           >
-            Adicionar
+            {isFormValid ? 'Adicionar' : 'Preencha os campos obrigatórios'}
           </Button>
-          {!isFormValid && (
-            <span id="button-help" className="sr-only">
-              Preencha os campos obrigatórios para habilitar o botão
-            </span>
-          )}
         </div>
       </div>
     </DialogContent>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,8 +53,7 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
       let query = supabase
         .from('estoque_seco_historico')
         .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
-        .order('data_operacao', { ascending: false })
-        .limit(100); // Limit to 100 most recent records
+        .order('data_operacao', { ascending: false });
 
       // Aplicar filtro por unidade se não for "todas"
       if (selectedUnidade && selectedUnidade !== 'todas') {
@@ -142,7 +140,7 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
-      setHistorico(prev => [mappedItem, ...prev].slice(0, 100)); // Keep only 100 most recent
+      setHistorico(prev => [mappedItem, ...prev]);
     } catch (error) {
       console.error('Error adding history item:', error);
       toast({

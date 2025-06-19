@@ -55,8 +55,7 @@ export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte'
       let query = supabase
         .from('camara_refrigerada_historico')
         .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
-        .order('data_operacao', { ascending: false })
-        .limit(100);
+        .order('data_operacao', { ascending: false });
 
       if (selectedUnidade && selectedUnidade !== 'todas') {
         query = query.eq('unidade', selectedUnidade);
@@ -153,7 +152,7 @@ export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte'
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
-      setHistorico(prev => [mappedItem, ...prev].slice(0, 100));
+      setHistorico(prev => [mappedItem, ...prev]);
       
       console.log('Histórico inserido com sucesso:', mappedItem);
     } catch (error) {
@@ -181,4 +180,3 @@ export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte'
     fetchHistorico
   };
 }
-

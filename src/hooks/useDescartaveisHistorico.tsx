@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,8 +53,7 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
       let query = supabase
         .from('descartaveis_historico')
         .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
-        .order('data_operacao', { ascending: false })
-        .limit(100);
+        .order('data_operacao', { ascending: false });
 
       if (selectedUnidade && selectedUnidade !== 'todas') {
         query = query.eq('unidade', selectedUnidade);
@@ -132,7 +130,7 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
-      setHistorico(prev => [mappedItem, ...prev].slice(0, 100));
+      setHistorico(prev => [mappedItem, ...prev]);
     } catch (error) {
       console.error('Error adding history item:', error);
       toast({

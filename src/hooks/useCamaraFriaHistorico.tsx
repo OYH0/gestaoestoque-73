@@ -55,8 +55,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
       let query = supabase
         .from('camara_fria_historico')
         .select('id,item_nome,quantidade,categoria,tipo,data_operacao,observacoes,unidade')
-        .order('data_operacao', { ascending: false })
-        .limit(100);
+        .order('data_operacao', { ascending: false });
 
       if (selectedUnidade && selectedUnidade !== 'todas') {
         query = query.eq('unidade', selectedUnidade);
@@ -158,7 +157,7 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
         unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
       };
       
-      setHistorico(prev => [mappedItem, ...prev].slice(0, 100));
+      setHistorico(prev => [mappedItem, ...prev]);
       
       console.log('Histórico da câmara fria inserido com sucesso:', mappedItem);
     } catch (error) {
@@ -186,4 +185,3 @@ export function useCamaraFriaHistorico(selectedUnidade?: 'juazeiro_norte' | 'for
     fetchHistorico
   };
 }
-

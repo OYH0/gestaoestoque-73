@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,12 +22,13 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
   const { user } = useAuth();
   const lastFetchRef = useRef<number>(0);
   const cacheRef = useRef<{ data: DescartaveisHistoricoItem[], timestamp: number, unidade: string } | null>(null);
+  const pendingRequestRef = useRef<boolean>(false);
 
   // Cache duration: 60 seconds for history
   const CACHE_DURATION = 60 * 1000;
 
   const fetchHistorico = async () => {
-    if (!user) return;
+    if (!user || pendingRequestRef.current) return;
     
     const now = Date.now();
     const cacheKey = selectedUnidade || 'todas';
@@ -48,6 +50,7 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
     }
 
     lastFetchRef.current = now;
+    pendingRequestRef.current = true;
     
     try {
       let query = supabase
@@ -92,11 +95,25 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
       });
     } finally {
       setLoading(false);
+      pendingRequestRef.current = false;
     }
   };
 
   const addHistoricoItem = async (item: Omit<DescartaveisHistoricoItem, 'id' | 'data_operacao'>) => {
-    if (!user) return;
+    if (!user || pendingRequestRef.current) return;
+
+    // Verificar se não é uma duplicação recente
+    const recentDuplicate = historico.find(h => 
+      h.item_nome === item.item_nome &&
+      h.quantidade === item.quantidade &&
+      h.tipo === item.tipo &&
+      new Date(h.data_operacao).getTime() > (Date.now() - 5000) // 5 segundos
+    );
+
+    if (recentDuplicate) {
+      console.log('Duplicação detectada nos descartáveis, ignorando inserção:', item);
+      return;
+    }
 
     try {
       const { data, error } = await supabase

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,12 +22,13 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
   const { user } = useAuth();
   const lastFetchRef = useRef<number>(0);
   const cacheRef = useRef<{ data: EstoqueSecoHistoricoItem[], timestamp: number, unidade: string } | null>(null);
+  const pendingRequestRef = useRef<boolean>(false);
 
   // Cache duration: 60 seconds for history (less frequently changing data)
   const CACHE_DURATION = 60 * 1000;
 
   const fetchHistorico = async () => {
-    if (!user) return;
+    if (!user || pendingRequestRef.current) return;
     
     const now = Date.now();
     const cacheKey = selectedUnidade || 'todas';
@@ -48,6 +50,7 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
     }
 
     lastFetchRef.current = now;
+    pendingRequestRef.current = true;
     
     try {
       let query = supabase
@@ -93,11 +96,25 @@ export function useEstoqueSecoHistorico(selectedUnidade?: 'juazeiro_norte' | 'fo
       });
     } finally {
       setLoading(false);
+      pendingRequestRef.current = false;
     }
   };
 
   const addHistoricoItem = async (item: Omit<EstoqueSecoHistoricoItem, 'id' | 'data_operacao'>) => {
-    if (!user) return;
+    if (!user || pendingRequestRef.current) return;
+
+    // Verificar se não é uma duplicação recente
+    const recentDuplicate = historico.find(h => 
+      h.item_nome === item.item_nome &&
+      h.quantidade === item.quantidade &&
+      h.tipo === item.tipo &&
+      new Date(h.data_operacao).getTime() > (Date.now() - 5000) // 5 segundos
+    );
+
+    if (recentDuplicate) {
+      console.log('Duplicação detectada no estoque seco, ignorando inserção:', item);
+      return;
+    }
 
     try {
       console.log('=== ADICIONANDO AO HISTÓRICO ESTOQUE SECO ===');

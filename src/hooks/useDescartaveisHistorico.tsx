@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,6 +24,7 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
   const lastFetchRef = useRef<number>(0);
   const cacheRef = useRef<{ data: DescartaveisHistoricoItem[], timestamp: number, unidade: string } | null>(null);
   const pendingRequestRef = useRef<boolean>(false);
+  const lastInsertRef = useRef<{ item: string, quantidade: number, tipo: string, timestamp: number } | null>(null);
 
   // Cache duration: 60 seconds for history
   const CACHE_DURATION = 60 * 1000;
@@ -102,18 +104,39 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
   const addHistoricoItem = async (item: Omit<DescartaveisHistoricoItem, 'id' | 'data_operacao'>) => {
     if (!user || pendingRequestRef.current) return;
 
-    // Verificar se não é uma duplicação recente
+    const now = Date.now();
+
+    // Verificar se não é uma duplicação recente (baseada em dados do banco)
     const recentDuplicate = historico.find(h => 
       h.item_nome === item.item_nome &&
       h.quantidade === item.quantidade &&
       h.tipo === item.tipo &&
-      new Date(h.data_operacao).getTime() > (Date.now() - 5000) // 5 segundos
+      new Date(h.data_operacao).getTime() > (now - 5000) // 5 segundos
     );
 
     if (recentDuplicate) {
-      console.log('Duplicação detectada nos descartáveis, ignorando inserção:', item);
+      console.log('Duplicação detectada nos descartáveis (histórico), ignorando inserção:', item);
       return;
     }
+
+    // Verificação de duplicação baseada na última inserção local
+    if (lastInsertRef.current &&
+        lastInsertRef.current.item === item.item_nome &&
+        lastInsertRef.current.quantidade === item.quantidade &&
+        lastInsertRef.current.tipo === item.tipo &&
+        (now - lastInsertRef.current.timestamp) < 3000) { // 3 segundos
+      console.log('Duplicação detectada nos descartáveis (local), ignorando inserção:', item);
+      return;
+    }
+
+    // Marcar que uma inserção está sendo processada
+    pendingRequestRef.current = true;
+    lastInsertRef.current = {
+      item: item.item_nome,
+      quantidade: item.quantidade,
+      tipo: item.tipo,
+      timestamp: now
+    };
 
     try {
       const { data, error } = await supabase
@@ -155,6 +178,8 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
         description: "Não foi possível registrar a operação no histórico.",
         variant: "destructive",
       });
+    } finally {
+      pendingRequestRef.current = false;
     }
   };
 
@@ -173,3 +198,4 @@ export function useDescartaveisHistorico(selectedUnidade?: 'juazeiro_norte' | 'f
     fetchHistorico
   };
 }
+

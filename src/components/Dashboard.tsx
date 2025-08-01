@@ -84,7 +84,6 @@ export function Dashboard() {
         } else {
           acc.push({ 
             tipo: item.nome, 
-            tipoAbrev: abreviarNome(item.nome),
             quantidade: item.quantidade
           });
         }
@@ -172,19 +171,16 @@ export function Dashboard() {
                 />
                 <YAxis 
                   type="category"
-                  dataKey="tipoAbrev" 
-                  width={80}
-                  tick={{ fontSize: 12, fill: '#374151' }}
+                  dataKey="tipo" 
+                  width={150}
+                  tick={{ fontSize: 11, fill: '#374151' }}
                   interval={0}
                   axisLine={{ stroke: '#e5e7eb' }}
                   tickLine={{ stroke: '#e5e7eb' }}
                 />
                 <Tooltip 
                   formatter={(value) => [`${value}pç`, 'Quantidade']}
-                  labelFormatter={(label) => {
-                    const item = meatTypesDataWithColors.find(d => d.tipoAbrev === label);
-                    return item ? item.tipo : label;
-                  }}
+                  labelFormatter={(label) => label}
                 />
                 <Bar 
                   dataKey="quantidade" 

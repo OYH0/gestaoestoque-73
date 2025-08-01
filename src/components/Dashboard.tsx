@@ -173,8 +173,8 @@ export function Dashboard() {
                 <YAxis 
                   type="category"
                   dataKey="tipoAbrev" 
-                  width={50}
-                  tick={{ fontSize: 10 }}
+                  width={80}
+                  tick={{ fontSize: 12, fill: '#374151' }}
                   interval={0}
                   axisLine={{ stroke: '#e5e7eb' }}
                   tickLine={{ stroke: '#e5e7eb' }}

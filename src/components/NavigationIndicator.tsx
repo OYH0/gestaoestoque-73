@@ -28,7 +28,7 @@ export const NavigationIndicator: React.FC<NavigationIndicatorProps> = ({
   const labels = routeLabels.length > 0 ? routeLabels : defaultLabels;
 
   return (
-    <div className={cn('flex items-center justify-center gap-3 bg-churrasco-cream relative z-30', className)}>
+    <div className={cn('flex items-center justify-center gap-3 relative z-30', className)}>
       {Array.from({ length: totalRoutes }, (_, index) => (
         <button
           key={index}

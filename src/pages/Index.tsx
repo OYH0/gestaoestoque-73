@@ -88,7 +88,7 @@ const Index = () => {
             <div className="flex-1 flex flex-col bg-churrasco-cream">
               {/* Indicador de navegação integrado - visível apenas em mobile */}
               {isMobile && (
-                <div className="sticky top-[64px] z-30 bg-churrasco-cream py-3 shadow-sm">
+                <div className="sticky top-[64px] z-30 py-3">
                   <NavigationIndicator
                     currentIndex={currentIndex}
                     totalRoutes={totalRoutes}
@@ -130,7 +130,7 @@ const Index = () => {
 
               {/* Indicador de navegação inferior integrado - visível em desktop */}
               {!isMobile && (
-                <div className="bg-churrasco-cream py-4 z-30 relative">
+                <div className="py-4 z-30 relative">
                   <NavigationIndicator
                     currentIndex={currentIndex}
                     totalRoutes={totalRoutes}

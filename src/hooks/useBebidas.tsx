@@ -46,60 +46,17 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
     try {
       setLoading(true);
       
-      // Dados mockados funcionais
-      const allMockItems: BebidasItem[] = [
-        {
-          id: '1',
-          nome: 'Coca-Cola 350ml',
-          quantidade: 50,
-          unidade: 'un',
-          categoria: 'Refrigerantes',
-          data_entrada: '2024-01-15',
-          unidade_item: 'juazeiro_norte',
-          minimo: 20,
-          preco_unitario: 3.50
-        },
-        {
-          id: '2',
-          nome: 'Água Mineral 500ml',
-          quantidade: 15,
-          unidade: 'un',
-          categoria: 'Águas',
-          data_entrada: '2024-01-14',
-          unidade_item: 'fortaleza',
-          minimo: 30,
-          preco_unitario: 2.00
-        },
-        {
-          id: '3',
-          nome: 'Suco de Laranja 1L',
-          quantidade: 25,
-          unidade: 'un',
-          categoria: 'Sucos',
-          data_entrada: '2024-01-16',
-          unidade_item: 'juazeiro_norte',
-          minimo: 15,
-          preco_unitario: 4.50
-        }
-      ];
+      // Obter dados do localStorage
+      const existingItems = JSON.parse(localStorage.getItem('bebidas_items') || '[]');
       
-      // Filtrar por unidade se necessário
-      let filteredItems = [...allMockItems];
+      // Filtrar por unidade se especificado
+      let filteredItems = existingItems;
       if (selectedUnidade && selectedUnidade !== 'todas') {
-        filteredItems = allMockItems.filter(item => item.unidade_item === selectedUnidade);
+        filteredItems = existingItems.filter((item: BebidasItem) => item.unidade_item === selectedUnidade);
       }
       
-      // Adicionar itens criados localmente
-      const existingItems = JSON.parse(localStorage.getItem('bebidas_added') || '[]');
-      const localItems = existingItems.filter((item: BebidasItem) => {
-        if (!selectedUnidade || selectedUnidade === 'todas') return true;
-        return item.unidade_item === selectedUnidade;
-      });
-      
-      const combinedItems = [...filteredItems, ...localItems];
-      
       if (!mountedRef.current) return;
-      setItems(combinedItems);
+      setItems(filteredItems);
       
     } catch (error) {
       console.error('Error fetching bebidas:', error);
@@ -161,21 +118,21 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         quantidade: Number(newItem.quantidade),
         unidade: newItem.unidade || 'un',
         categoria: newItem.categoria,
-        data_entrada: new Date().toISOString().split('T')[0],
+        data_entrada: newItem.data_entrada || new Date().toISOString().split('T')[0],
         data_validade: newItem.data_validade,
         temperatura: newItem.temperatura,
         temperatura_ideal: newItem.temperatura_ideal,
-        fornecedor: newItem.fornecedor?.trim() || undefined,
-        observacoes: newItem.observacoes?.trim() || undefined,
+        fornecedor: newItem.fornecedor?.trim(),
+        observacoes: newItem.observacoes?.trim(),
         unidade_item: newItem.unidade_item || 'juazeiro_norte',
         minimo: newItem.minimo || 10,
-        preco_unitario: newItem.preco_unitario || undefined
+        preco_unitario: newItem.preco_unitario
       };
 
       // Salvar no localStorage
-      const existingItems = JSON.parse(localStorage.getItem('bebidas_added') || '[]');
+      const existingItems = JSON.parse(localStorage.getItem('bebidas_items') || '[]');
       existingItems.push(newBebidasItem);
-      localStorage.setItem('bebidas_added', JSON.stringify(existingItems));
+      localStorage.setItem('bebidas_items', JSON.stringify(existingItems));
       
       // Atualizar estado local
       setItems(prev => [...prev, newBebidasItem]);
@@ -225,12 +182,12 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         throw new Error('Quantidade não pode ser negativa');
       }
 
-      // Atualizar no localStorage se for item adicionado
-      const existingItems = JSON.parse(localStorage.getItem('bebidas_added') || '[]');
+      // Atualizar no localStorage
+      const existingItems = JSON.parse(localStorage.getItem('bebidas_items') || '[]');
       const updatedItems = existingItems.map((item: BebidasItem) => 
         item.id === id ? { ...item, quantidade: Number(newQuantity) } : item
       );
-      localStorage.setItem('bebidas_added', JSON.stringify(updatedItems));
+      localStorage.setItem('bebidas_items', JSON.stringify(updatedItems));
 
       // Atualizar estado local
       setItems(prev => prev.map(item => 
@@ -285,10 +242,10 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         throw new Error('Item não encontrado');
       }
 
-      // Remover do localStorage se for item adicionado
-      const existingItems = JSON.parse(localStorage.getItem('bebidas_added') || '[]');
+      // Remover do localStorage
+      const existingItems = JSON.parse(localStorage.getItem('bebidas_items') || '[]');
       const filteredItems = existingItems.filter((item: BebidasItem) => item.id !== id);
-      localStorage.setItem('bebidas_added', JSON.stringify(filteredItems));
+      localStorage.setItem('bebidas_items', JSON.stringify(filteredItems));
 
       // Remover do estado local
       setItems(prev => prev.filter(item => item.id !== id));

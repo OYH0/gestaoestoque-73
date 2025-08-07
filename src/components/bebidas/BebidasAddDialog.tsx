@@ -1,14 +1,24 @@
 import React from 'react';
-import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from '@/hooks/use-toast';
+
+interface NewItem {
+  nome: string;
+  quantidade: number;
+  unidade: string;
+  categoria: string;
+  minimo: number;
+  unidade_item: 'juazeiro_norte' | 'fortaleza';
+  fornecedor?: string;
+}
 
 interface BebidasAddDialogProps {
-  newItem: any;
-  setNewItem: (item: any) => void;
+  newItem: NewItem;
+  setNewItem: (item: NewItem) => void;
   onAddNewItem: () => void;
   setDialogOpen: (open: boolean) => void;
   categorias: string[];
@@ -21,105 +31,198 @@ export function BebidasAddDialog({
   onAddNewItem,
   setDialogOpen,
   categorias,
-  selectedUnidade = 'todas'
+  selectedUnidade
 }: BebidasAddDialogProps) {
-  const isMobile = useIsMobile();
+  const isFormValid = newItem.nome.trim() !== '' && newItem.categoria !== '';
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('=== SUBMIT ADD BEBIDA ===');
-    console.log('Dados do formulário:', newItem);
-    onAddNewItem();
+  const handleQuantidadeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    // Se campo vazio, manter como 0
+    if (value === '') {
+      setNewItem({...newItem, quantidade: 0});
+      return;
+    }
+    
+    // Converter para número inteiro
+    const numValue = parseInt(value, 10);
+    
+    // Validar se é um número válido e positivo
+    if (!isNaN(numValue) && numValue >= 0) {
+      setNewItem({...newItem, quantidade: numValue});
+    }
+  };
+
+  const handleMinimoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      setNewItem({...newItem, minimo: 0});
+    } else {
+      const numValue = parseInt(value, 10);
+      if (!isNaN(numValue) && numValue >= 0) {
+        setNewItem({...newItem, minimo: numValue});
+      }
+    }
+  };
+
+  const handleAddItem = () => {
+    // Validação com feedback visual
+    if (!newItem.nome.trim()) {
+      toast({
+        title: "Nome obrigatório",
+        description: "Por favor, digite o nome da bebida.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!newItem.categoria) {
+      toast({
+        title: "Categoria obrigatória",
+        description: "Por favor, selecione uma categoria.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Garantir que a quantidade seja um número válido antes de enviar
+    const quantidadeValidada = Number(newItem.quantidade);
+    
+    const itemValidado = {
+      ...newItem,
+      quantidade: quantidadeValidada
+    };
+    
+    // Atualizar o estado com o item validado
+    setNewItem(itemValidado);
+    
+    try {
+      // Chamar a função de adicionar
+      onAddNewItem();
+    } catch (error) {
+      console.error('Erro ao chamar onAddNewItem:', error);
+      toast({
+        title: "Erro ao adicionar item",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <DialogContent className={`${isMobile ? 'w-[95%] max-w-sm' : 'sm:max-w-md'}`}>
+    <DialogContent className="sm:max-w-[425px]" aria-describedby="dialog-description">
       <DialogHeader>
-        <DialogTitle className={isMobile ? "text-lg" : "text-xl"}>
-          Adicionar Nova Bebida
-        </DialogTitle>
+        <DialogTitle>Adicionar Nova Bebida</DialogTitle>
+        <DialogDescription id="dialog-description">
+          Preencha os dados da nova bebida para adicionar ao estoque
+        </DialogDescription>
       </DialogHeader>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="nome" className={isMobile ? "text-sm" : ""}>
-            Nome da Bebida *
-          </Label>
+          <Label htmlFor="nome">Nome da Bebida *</Label>
           <Input
             id="nome"
-            type="text"
-            placeholder="Ex: Coca-Cola 2L"
+            placeholder="Ex: Coca-Cola 350ml, Água Mineral..."
             value={newItem.nome}
-            onChange={(e) => setNewItem({ ...newItem, nome: e.target.value })}
-            className={isMobile ? "text-sm" : ""}
-            required
+            onChange={(e) => setNewItem({...newItem, nome: e.target.value})}
+            className={!newItem.nome.trim() ? 'border-red-300' : ''}
+            aria-describedby={!newItem.nome.trim() ? 'nome-error' : undefined}
           />
+          {!newItem.nome.trim() && (
+            <p id="nome-error" className="text-xs text-red-500" role="alert">
+              Nome é obrigatório
+            </p>
+          )}
         </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="quantidade" className={isMobile ? "text-sm" : ""}>
-              Quantidade *
-            </Label>
-            <Input
-              id="quantidade"
-              type="number"
-              min="0"
-              value={newItem.quantidade}
-              onChange={(e) => setNewItem({ ...newItem, quantidade: e.target.value })}
-              className={isMobile ? "text-sm" : ""}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="minimo" className={isMobile ? "text-sm" : ""}>
-              Estoque Mínimo
-            </Label>
-            <Input
-              id="minimo"
-              type="number"
-              min="0"
-              value={newItem.minimo}
-              onChange={(e) => setNewItem({ ...newItem, minimo: parseInt(e.target.value) || 0 })}
-              className={isMobile ? "text-sm" : ""}
-            />
-          </div>
-        </div>
-
+        
         <div className="space-y-2">
-          <Label htmlFor="categoria" className={isMobile ? "text-sm" : ""}>
-            Categoria *
-          </Label>
-          <Select
-            value={newItem.categoria}
-            onValueChange={(value) => setNewItem({ ...newItem, categoria: value })}
-            required
+          <Label htmlFor="quantidade">Quantidade em Estoque</Label>
+          <Input
+            id="quantidade"
+            type="number"
+            min="0"
+            step="1"
+            placeholder="Digite a quantidade"
+            value={newItem.quantidade === 0 ? '' : newItem.quantidade.toString()}
+            onChange={handleQuantidadeChange}
+            aria-describedby="quantidade-help"
+          />
+          <p id="quantidade-help" className="text-xs text-gray-500">
+            Você pode adicionar com quantidade zero para registrar o item no estoque
+          </p>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="unidade">Unidade de Medida</Label>
+          <Select 
+            value={newItem.unidade}
+            onValueChange={(value) => setNewItem({...newItem, unidade: value})}
           >
-            <SelectTrigger className={isMobile ? "text-sm" : ""}>
-              <SelectValue placeholder="Selecione uma categoria" />
+            <SelectTrigger id="unidade">
+              <SelectValue placeholder="Selecione a unidade" />
             </SelectTrigger>
             <SelectContent>
-              {categorias.filter(cat => cat !== 'Todos').map((categoria) => (
-                <SelectItem key={categoria} value={categoria}>
-                  {categoria}
-                </SelectItem>
+              <SelectItem value="un">Unidades</SelectItem>
+              <SelectItem value="lt">Litros</SelectItem>
+              <SelectItem value="ml">Mililitros</SelectItem>
+              <SelectItem value="lata">Latas</SelectItem>
+              <SelectItem value="garrafa">Garrafas</SelectItem>
+              <SelectItem value="caixa">Caixas</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="categoria">Categoria da Bebida *</Label>
+          <Select 
+            value={newItem.categoria}
+            onValueChange={(value) => setNewItem({...newItem, categoria: value})}
+          >
+            <SelectTrigger 
+              id="categoria"
+              className={!newItem.categoria ? 'border-red-300' : ''}
+              aria-describedby={!newItem.categoria ? 'categoria-error' : undefined}
+            >
+              <SelectValue placeholder="Selecione a categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              {categorias.slice(1).map(cat => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {!newItem.categoria && (
+            <p id="categoria-error" className="text-xs text-red-500" role="alert">
+              Categoria é obrigatória
+            </p>
+          )}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="minimo">Estoque Mínimo</Label>
+          <Input
+            id="minimo"
+            type="number"
+            min="0"
+            step="1"
+            placeholder="Digite o estoque mínimo (pode ser 0)"
+            value={newItem.minimo === 0 ? '' : newItem.minimo.toString()}
+            onChange={handleMinimoChange}
+            aria-describedby="minimo-help"
+          />
+          <p id="minimo-help" className="text-xs text-gray-500">
+            Quando o estoque atingir esta quantidade, será exibido um alerta
+          </p>
         </div>
 
         {selectedUnidade === 'todas' && (
           <div className="space-y-2">
-            <Label htmlFor="unidade_item" className={isMobile ? "text-sm" : ""}>
-              Unidade *
-            </Label>
-            <Select
+            <Label htmlFor="unidade_item">Unidade</Label>
+            <Select 
               value={newItem.unidade_item}
-              onValueChange={(value) => setNewItem({ ...newItem, unidade_item: value })}
-              required
+              onValueChange={(value: 'juazeiro_norte' | 'fortaleza') => setNewItem({...newItem, unidade_item: value})}
             >
-              <SelectTrigger className={isMobile ? "text-sm" : ""}>
+              <SelectTrigger id="unidade_item">
                 <SelectValue placeholder="Selecione a unidade" />
               </SelectTrigger>
               <SelectContent>
@@ -131,36 +234,34 @@ export function BebidasAddDialog({
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="fornecedor" className={isMobile ? "text-sm" : ""}>
-            Fornecedor
-          </Label>
+          <Label htmlFor="fornecedor">Fornecedor (opcional)</Label>
           <Input
             id="fornecedor"
-            type="text"
-            placeholder="Nome do fornecedor"
+            placeholder="Ex: Coca-Cola, Ambev..."
             value={newItem.fornecedor || ''}
-            onChange={(e) => setNewItem({ ...newItem, fornecedor: e.target.value })}
-            className={isMobile ? "text-sm" : ""}
+            onChange={(e) => setNewItem({...newItem, fornecedor: e.target.value})}
           />
         </div>
-
-        <div className="flex gap-3 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setDialogOpen(false)}
-            className={`flex-1 ${isMobile ? 'text-sm' : ''}`}
-          >
+        
+        <div className="flex gap-2 justify-end pt-4">
+          <Button variant="outline" onClick={() => setDialogOpen(false)}>
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            className={`flex-1 bg-blue-500 hover:bg-blue-600 ${isMobile ? 'text-sm' : ''}`}
+          <Button 
+            onClick={handleAddItem} 
+            className="bg-blue-500 hover:bg-blue-600"
+            disabled={!isFormValid}
+            aria-describedby={!isFormValid ? 'button-help' : undefined}
           >
             Adicionar
           </Button>
+          {!isFormValid && (
+            <span id="button-help" className="sr-only">
+              Preencha os campos obrigatórios para habilitar o botão
+            </span>
+          )}
         </div>
-      </form>
+      </div>
     </DialogContent>
   );
 }

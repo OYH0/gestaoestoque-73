@@ -127,9 +127,6 @@ export default function EstoqueSeco() {
 
   return (
     <div className="space-y-6 animate-enter">
-      <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Estoque Seco</h1>
-      </header>
       <div className={`flex flex-wrap gap-2 items-center ${isMobile ? 'justify-center' : ''}`}>
         <UnidadeSelector 
           selectedUnidade={selectedUnidade}
@@ -216,11 +213,11 @@ export default function EstoqueSeco() {
 
       <section className="animate-fade-in">
         <EstoqueSecoFilters
-          categorias={categories}
-          categoriaFiltro={filterCategory}
-          setCategoriaFiltro={setFilterCategory}
-          searchQuery={searchTerm}
-          setSearchQuery={setSearchTerm}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          categories={categories}
         />
       </section>
 

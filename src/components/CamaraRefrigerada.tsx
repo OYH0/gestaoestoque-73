@@ -291,9 +291,6 @@ export function CamaraRefrigerada() {
 
   return (
     <div className="space-y-6 animate-enter">
-      <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Câmara Refrigerada</h1>
-      </header>
       <UnidadeSelector 
         selectedUnidade={selectedUnidade}
         onUnidadeChange={setSelectedUnidade}

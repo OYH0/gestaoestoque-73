@@ -1,45 +1,44 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DescartaveisFiltersProps {
-  categorias: string[];
-  categoriaFiltro: string;
-  setCategoriaFiltro: (categoria: string) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  filterCategory: string;
+  setFilterCategory: (category: string) => void;
+  categories: string[];
 }
 
 export function DescartaveisFilters({
-  categorias,
-  categoriaFiltro,
-  setCategoriaFiltro,
-  searchQuery,
-  setSearchQuery
+  searchTerm,
+  setSearchTerm,
+  filterCategory,
+  setFilterCategory,
+  categories
 }: DescartaveisFiltersProps) {
   const isMobile = useIsMobile();
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
+  const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Debounced search para evitar re-renders excessivos
-  const debouncedSetSearchQuery = useCallback((value: string) => {
+  const debouncedSetSearchTerm = useCallback((value: string) => {
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
     
     debounceTimeoutRef.current = setTimeout(() => {
-      setSearchQuery(value);
+      setSearchTerm(value);
     }, isMobile ? 800 : 500); // Mais delay no mobile
-  }, [setSearchQuery, isMobile]);
+  }, [setSearchTerm, isMobile]);
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setLocalSearchQuery(value);
-    debouncedSetSearchQuery(value);
-  }, [debouncedSetSearchQuery]);
+    setLocalSearchTerm(value);
+    debouncedSetSearchTerm(value);
+  }, [debouncedSetSearchTerm]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -50,46 +49,42 @@ export function DescartaveisFilters({
     };
   }, []);
 
-  // Sync local state when external searchQuery changes
+  // Sync local state when external searchTerm changes
   useEffect(() => {
-    if (searchQuery !== localSearchQuery) {
-      setLocalSearchQuery(searchQuery);
+    if (searchTerm !== localSearchTerm) {
+      setLocalSearchTerm(searchTerm);
     }
-  }, [searchQuery]);
+  }, [searchTerm]);
 
   return (
-    <div className="space-y-4 w-full px-1">
-      <div className="relative w-full">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+    <div className={`flex gap-4 w-full px-1 ${isMobile ? 'flex-col' : 'flex-row'}`}>
+      <div className="relative flex-1 min-w-0">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
         <Input
+          type="text"
           placeholder="Buscar itens..."
-          value={localSearchQuery}
+          value={localSearchTerm}
           onChange={handleSearchChange}
-          className="pl-10 w-full border-2 shadow-sm mobile-optimized"
+          className={`pl-10 w-full border-2 shadow-sm mobile-optimized ${isMobile ? 'text-sm' : ''}`}
           autoComplete="off"
           spellCheck="false"
         />
       </div>
       
-      <Card className="w-full shadow-sm">
-        <CardContent className="p-4">
-          <div className={`flex flex-wrap gap-2 w-full ${isMobile ? 'justify-center' : 'justify-start'}`}>
-            {categorias.map((categoria) => (
-              <Button
-                key={categoria}
-                variant={categoriaFiltro === categoria ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCategoriaFiltro(categoria)}
-                className={`text-xs whitespace-nowrap shadow-sm mobile-optimized ${
-                  categoriaFiltro === categoria ? 'bg-green-500 hover:bg-green-600' : ''
-                } ${isMobile ? 'min-w-[80px]' : ''}`}
-              >
-                {categoria}
-              </Button>
+      <div className={`${isMobile ? 'w-full' : 'w-48'} flex-shrink-0`}>
+        <Select value={filterCategory} onValueChange={setFilterCategory}>
+          <SelectTrigger className={`${isMobile ? 'text-sm' : ''} w-full border-2 shadow-sm mobile-optimized`}>
+            <SelectValue placeholder="Filtrar por categoria" />
+          </SelectTrigger>
+          <SelectContent className="z-50 bg-white border shadow-lg max-h-60 overflow-y-auto">
+            {categories.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
             ))}
-          </div>
-        </CardContent>
-      </Card>
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }

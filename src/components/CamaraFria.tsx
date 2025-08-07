@@ -427,9 +427,6 @@ export default function CamaraFria() {
 
   return (
     <div className="space-y-6 animate-enter">
-      <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Câmara Fria</h1>
-      </header>
       <UnidadeSelector 
         selectedUnidade={selectedUnidade}
         onUnidadeChange={setSelectedUnidade}
@@ -509,11 +506,11 @@ export default function CamaraFria() {
 
       <section className="animate-fade-in">
         <CamaraFriaFilters
-          categorias={categories}
-          categoriaFiltro={filterCategory}
-          setCategoriaFiltro={setFilterCategory}
-          searchQuery={searchTerm}
-          setSearchQuery={setSearchTerm}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          categories={categories}
         />
       </section>
 

@@ -157,14 +157,150 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header da Dashboard */}
-      <div className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        </div>
-      </div>
+      {/* Layout Mobile - Elementos principais no topo */}
+      {isMobile && (
+        <div className="space-y-6">
+          {/* Carnes Mais Utilizadas - Mobile First */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Snowflake className="w-5 h-5 text-blue-500" />
+                Carnes Mais Utilizadas
+              </CardTitle>
+              <CardDescription>
+                Carnes com maior quantidade de saídas da câmara fria
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                {topUsedMeats.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={topUsedMeats}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, value, percent }) => `${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        innerRadius={40}
+                        fill="#8884d8"
+                        dataKey="value"
+                        strokeWidth={2}
+                        stroke="#ffffff"
+                      >
+                        {topUsedMeats.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value, name) => [`${value}kg utilizados`, name]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    <div className="text-center">
+                      <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Nenhuma saída de carne registrada</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Cards de Estatísticas Principais */}
+          {/* Movimentações - Mobile */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="w-5 h-5 text-green-500" />
+                Movimentações (7 dias)
+              </CardTitle>
+              <CardDescription>
+                Entradas e saídas registradas nos últimos dias
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={movementAnalysis}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value, name) => [
+                        `${value} ${name === 'entradas' ? 'entradas' : 'saídas'}`, 
+                        name === 'entradas' ? 'Entradas' : 'Saídas'
+                      ]}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="entradas" 
+                      stackId="1"
+                      stroke="#10b981" 
+                      fill="#10b981" 
+                      fillOpacity={0.6}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="saidas" 
+                      stackId="1"
+                      stroke="#ef4444" 
+                      fill="#ef4444" 
+                      fillOpacity={0.6}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Itens Mais Movimentados - Mobile */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-orange-500" />
+                Itens Mais Movimentados
+              </CardTitle>
+              <CardDescription>
+                Produtos com maior quantidade de entradas e saídas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {topMovedItems.length > 0 ? (
+                <div className="space-y-4">
+                  {topMovedItems.map((item: any, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{item.nome}</p>
+                          <p className="text-xs text-gray-600">
+                            {item.entradas} entradas • {item.saidas} saídas
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="secondary">
+                        {item.total} total
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Nenhuma movimentação registrada</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="hover-scale">
           <CardContent className="p-6">
@@ -221,8 +357,9 @@ export function Dashboard() {
         </Card>
       </div>
 
-      {/* Gráficos Principais */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Gráficos Principais - Desktop Only */}
+      {!isMobile && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Carnes Mais Utilizadas */}
         <Card className="shadow-lg">
           <CardHeader>
@@ -319,9 +456,11 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
+      )}
 
-      {/* Seção de Insights e Alertas */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Seção de Insights e Alertas - Desktop Only */}
+      {!isMobile && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Top Itens Movimentados */}
         <Card className="lg:col-span-2 shadow-lg">
           <CardHeader>
@@ -404,6 +543,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* Alertas de Baixo Estoque */}
       {stats.lowStockCount > 0 && (

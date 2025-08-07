@@ -8,6 +8,7 @@ import CamaraFria from '@/components/CamaraFria';
 import { CamaraRefrigerada } from '@/components/CamaraRefrigerada';
 import EstoqueSeco from '@/components/EstoqueSeco';
 import Descartaveis from '@/components/Descartaveis';
+import Bebidas from '@/components/Bebidas';
 import { UserManagement } from '@/components/UserManagement';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { NavigationIndicator } from '@/components/NavigationIndicator';
@@ -26,6 +27,7 @@ const Index = () => {
     '/camara-refrigerada',
     '/estoque-seco',
     '/descartaveis',
+    '/bebidas',
     '/configuracoes',
   ];
 
@@ -35,6 +37,7 @@ const Index = () => {
     'Câmara Refrigerada',
     'Estoque Seco',
     'Descartáveis',
+    'Bebidas',
     'Configurações',
   ];
 
@@ -47,9 +50,9 @@ const Index = () => {
     canSwipeRight,
   } = useSwipeNavigation({
     routes: routesConfig,
-    enableSwipe: true,
+    enableSwipe: isMobile, // Swipe apenas no mobile
     preventScrollOnSwipe: true,
-    trackMouse: true,
+    trackMouse: false, // Desabilitar mouse tracking
   });
 
   // Mostrar dica de deslizamento na primeira visita
@@ -76,13 +79,16 @@ const Index = () => {
         >
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0 min-h-screen relative z-10">
-            <Header />
+            {/* Header sticky */}
+            <div className="sticky top-0 z-20 bg-churrasco-cream border-b border-border shadow-sm">
+              <Header />
+            </div>
             
             {/* Container unificado para navegação e conteúdo - sem bordas divisórias */}
             <div className="flex-1 flex flex-col bg-churrasco-cream">
               {/* Indicador de navegação integrado - visível apenas em mobile */}
               {isMobile && (
-                <div className="bg-churrasco-cream pt-2 pb-1">
+                <div className="sticky top-[80px] z-10 bg-churrasco-cream pt-2 pb-1 border-b border-border">
                   <NavigationIndicator
                     currentIndex={currentIndex}
                     totalRoutes={totalRoutes}
@@ -113,6 +119,7 @@ const Index = () => {
                       <Route path="/camara-refrigerada" element={<CamaraRefrigerada />} />
                       <Route path="/estoque-seco" element={<EstoqueSeco />} />
                       <Route path="/descartaveis" element={<Descartaveis />} />
+                      <Route path="/bebidas" element={<Bebidas />} />
                       <Route path="/configuracoes" element={<UserManagement />} />
                     </Routes>
                   </div>

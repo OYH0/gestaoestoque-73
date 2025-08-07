@@ -10,7 +10,7 @@ import { BebidasAddDialog } from '@/components/bebidas/BebidasAddDialog';
 import { BebidasHistoryDialog } from '@/components/bebidas/BebidasHistoryDialog';
 import { BebidasAlerts } from '@/components/bebidas/BebidasAlerts';
 import { BebidasHeader } from '@/components/bebidas/BebidasHeader';
-import { BebidasSimpleHeader } from '@/components/bebidas/BebidasSimpleHeader';
+
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 import { UnidadeSelector } from '@/components/UnidadeSelector';
@@ -306,8 +306,6 @@ export default function Bebidas() {
         selectedUnidade={selectedUnidade}
         onUnidadeChange={setSelectedUnidade}
       />
-
-      <BebidasSimpleHeader />
 
       <BebidasHeader
         itemsCount={filteredItems.length}

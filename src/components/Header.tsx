@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { LogOut, User, Home, Snowflake, Thermometer, Package2, FileText, Settings } from 'lucide-react';
+import { LogOut, User, Home, Snowflake, Thermometer, Package2, FileText, Settings, Wine } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -38,8 +38,13 @@ const routeConfig = {
   },
   '/descartaveis': {
     title: 'Descartáveis',
-    description: 'Materiais descartáveis',
+    description: 'Pratos, copos e utensílios descartáveis',
     icon: FileText
+  },
+  '/bebidas': {
+    title: 'Bebidas',
+    description: 'Refrigerantes, sucos e bebidas em geral',
+    icon: Wine
   },
   '/configuracoes': {
     title: 'Configurações',

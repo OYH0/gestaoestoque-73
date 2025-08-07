@@ -11,7 +11,7 @@ import { CamaraFriaAddDialog } from '@/components/camara-fria/CamaraFriaAddDialo
 import { CamaraFriaHistoryDialog } from '@/components/camara-fria/CamaraFriaHistoryDialog';
 import { CamaraFriaAlerts } from '@/components/camara-fria/CamaraFriaAlerts';
 import { CamaraFriaHeader } from '@/components/camara-fria/CamaraFriaHeader';
-import { CamaraFriaSimpleHeader } from '@/components/camara-fria/CamaraFriaSimpleHeader';
+
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 import { UnidadeSelector } from '@/components/UnidadeSelector';
@@ -430,8 +430,6 @@ export default function CamaraFria() {
         selectedUnidade={selectedUnidade}
         onUnidadeChange={setSelectedUnidade}
       />
-
-      <CamaraFriaSimpleHeader />
 
       <CamaraFriaHeader
         itemsCount={filteredItems.length}

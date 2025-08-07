@@ -9,7 +9,7 @@ import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { AdminGuard } from '@/components/AdminGuard';
 import { CamaraRefrigeradaHeader } from '@/components/camara-refrigerada/CamaraRefrigeradaHeader';
-import { CamaraRefrigeradaSimpleHeader } from '@/components/camara-refrigerada/CamaraRefrigeradaSimpleHeader';
+
 import { CamaraRefrigeradaStatusCards } from '@/components/camara-refrigerada/CamaraRefrigeradaStatusCards';
 import { CamaraRefrigeradaItemCard } from '@/components/camara-refrigerada/CamaraRefrigeradaItemCard';
 import { CamaraRefrigeradaEmptyState } from '@/components/camara-refrigerada/CamaraRefrigeradaEmptyState';
@@ -213,8 +213,6 @@ export function CamaraRefrigerada() {
 
   return (
     <div className="space-y-6">
-      <CamaraRefrigeradaSimpleHeader />
-      
       <UnidadeSelector 
         selectedUnidade={selectedUnidade}
         onUnidadeChange={setSelectedUnidade}

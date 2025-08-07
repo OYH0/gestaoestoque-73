@@ -27,8 +27,8 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
   const lastFetchRef = useRef<number>(0);
   const cacheRef = useRef<{ data: CamaraRefrigeradaItem[], timestamp: number, unidade: string } | null>(null);
 
-  // Cache duration: 30 seconds
-  const CACHE_DURATION = 30 * 1000;
+  // Cache duration: 2 minutes for better mobile performance
+  const CACHE_DURATION = 2 * 60 * 1000;
 
   const fetchItems = useCallback(async (unidadeFiltro?: 'juazeiro_norte' | 'fortaleza' | 'todas') => {
     if (!user || !mountedRef.current) return;
@@ -46,8 +46,8 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
       return;
     }
 
-    // Throttle requests - minimum 5 seconds between fetches
-    if (now - lastFetchRef.current < 5000) {
+    // Throttle requests - minimum 10 seconds between fetches for mobile
+    if (now - lastFetchRef.current < 10000) {
       console.log('Throttling camera refrigerada fetch request');
       return;
     }
@@ -135,12 +135,12 @@ export function useCamaraRefrigeradaData(selectedUnidade?: 'juazeiro_norte' | 'f
     }
   }, [user, fetchItems]);
 
-  // Effect for unit changes - with debounce
+  // Effect for unit changes - with longer debounce for mobile
   useEffect(() => {
     if (user) {
       const timeoutId = setTimeout(() => {
         fetchItems(selectedUnidade);
-      }, 500); // 500ms debounce
+      }, 1000); // 1000ms debounce for better mobile performance
 
       return () => clearTimeout(timeoutId);
     }

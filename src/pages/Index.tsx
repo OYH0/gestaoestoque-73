@@ -101,15 +101,15 @@ const Index = () => {
 
               {/* Conteúdo principal integrado com animações */}
               <main 
-                {...handlers} 
-                className="flex-1 px-4 py-4 md:px-6 md:py-6 relative overflow-x-hidden overflow-y-auto touch-pan-y select-none bg-churrasco-cream"
-                style={{ 
+                {...(isMobile ? handlers : {})} 
+                className="flex-1 px-4 py-4 md:px-6 md:py-6 relative overflow-x-hidden overflow-y-auto bg-churrasco-cream"
+                style={isMobile ? { 
                   touchAction: 'pan-y',
                   userSelect: 'none',
                   WebkitUserSelect: 'none',
                   MozUserSelect: 'none',
                   msUserSelect: 'none'
-                }}
+                } : undefined}
               >
                 <PageTransition className="relative z-10 w-full h-full">
                   <div className="h-full w-full overflow-y-auto overflow-x-hidden">

@@ -44,11 +44,11 @@ export const useSwipeNavigation = (config: SwipeNavigationConfig) => {
       
       navigate(routes[index]);
       
-      // Resetar estado após animação
+      // Resetar estado após animação - reduzido para melhor performance
       navigationTimeoutRef.current = setTimeout(() => {
         setIsNavigating(false);
         onNavigationEnd?.();
-      }, 400); // Duração da animação + buffer
+      }, 200); // Reduzido de 400ms para 200ms
     }
   }, [navigate, routes, isNavigating, onNavigationStart, onNavigationEnd]);
 
@@ -76,8 +76,9 @@ export const useSwipeNavigation = (config: SwipeNavigationConfig) => {
     onSwipedRight: () => handleSwipe('right'),
     preventScrollOnSwipe,
     trackMouse,
-    swipeDuration: 500,
+    swipeDuration: 300, // Reduzido para melhor responsividade
     trackTouch: true,
+    delta: 60, // Menor sensibilidade para evitar gestos acidentais
   });
 
   // Navegação por teclado

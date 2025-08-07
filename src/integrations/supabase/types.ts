@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      bebidas_historico: {
+        Row: {
+          categoria: string
+          data_operacao: string
+          id: string
+          item_nome: string
+          observacoes: string | null
+          quantidade: number
+          tipo: string
+          unidade: string
+          user_id: string
+        }
+        Insert: {
+          categoria: string
+          data_operacao?: string
+          id?: string
+          item_nome: string
+          observacoes?: string | null
+          quantidade: number
+          tipo: string
+          unidade: string
+          user_id: string
+        }
+        Update: {
+          categoria?: string
+          data_operacao?: string
+          id?: string
+          item_nome?: string
+          observacoes?: string | null
+          quantidade?: number
+          tipo?: string
+          unidade?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bebidas_items: {
+        Row: {
+          categoria: string
+          created_at: string
+          data_entrada: string
+          data_validade: string | null
+          fornecedor: string | null
+          id: string
+          minimo: number | null
+          nome: string
+          observacoes: string | null
+          preco_unitario: number | null
+          quantidade: number
+          temperatura: number | null
+          temperatura_ideal: number | null
+          unidade: string
+          unidade_item: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          data_entrada?: string
+          data_validade?: string | null
+          fornecedor?: string | null
+          id?: string
+          minimo?: number | null
+          nome: string
+          observacoes?: string | null
+          preco_unitario?: number | null
+          quantidade?: number
+          temperatura?: number | null
+          temperatura_ideal?: number | null
+          unidade?: string
+          unidade_item?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          data_entrada?: string
+          data_validade?: string | null
+          fornecedor?: string | null
+          id?: string
+          minimo?: number | null
+          nome?: string
+          observacoes?: string | null
+          preco_unitario?: number | null
+          quantidade?: number
+          temperatura?: number | null
+          temperatura_ideal?: number | null
+          unidade?: string
+          unidade_item?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       camara_fria_historico: {
         Row: {
           categoria: string

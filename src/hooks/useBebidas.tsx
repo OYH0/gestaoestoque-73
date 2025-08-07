@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { useQRCodeGenerator } from '@/hooks/useQRCodeGenerator';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface BebidasItem {
   id: string;
@@ -46,17 +47,29 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
     try {
       setLoading(true);
       
-      // Obter dados do localStorage
-      const existingItems = JSON.parse(localStorage.getItem('bebidas_items') || '[]');
-      
+      // Buscar dados do Supabase
+      let query = supabase
+        .from('bebidas_items')
+        .select('*')
+        .order('created_at', { ascending: false });
+
       // Filtrar por unidade se especificado
-      let filteredItems = existingItems;
       if (selectedUnidade && selectedUnidade !== 'todas') {
-        filteredItems = existingItems.filter((item: BebidasItem) => item.unidade_item === selectedUnidade);
+        query = query.eq('unidade_item', selectedUnidade);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
       }
       
       if (!mountedRef.current) return;
-      setItems(filteredItems);
+      const mappedData = (data || []).map(item => ({
+        ...item,
+        unidade_item: item.unidade_item as 'juazeiro_norte' | 'fortaleza'
+      }));
+      setItems(mappedData);
       
     } catch (error) {
       console.error('Error fetching bebidas:', error);
@@ -112,27 +125,37 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         throw new Error('Quantidade não pode ser negativa');
       }
 
-      const newBebidasItem: BebidasItem = {
-        id: `bebida_${Date.now()}`,
+      const itemData = {
+        user_id: user.id,
         nome: newItem.nome.trim(),
         quantidade: Number(newItem.quantidade),
         unidade: newItem.unidade || 'un',
         categoria: newItem.categoria,
         data_entrada: newItem.data_entrada || new Date().toISOString().split('T')[0],
-        data_validade: newItem.data_validade,
-        temperatura: newItem.temperatura,
-        temperatura_ideal: newItem.temperatura_ideal,
-        fornecedor: newItem.fornecedor?.trim(),
-        observacoes: newItem.observacoes?.trim(),
+        data_validade: newItem.data_validade || null,
+        temperatura: newItem.temperatura || null,
+        temperatura_ideal: newItem.temperatura_ideal || null,
+        fornecedor: newItem.fornecedor?.trim() || null,
+        observacoes: newItem.observacoes?.trim() || null,
         unidade_item: newItem.unidade_item || 'juazeiro_norte',
         minimo: newItem.minimo || 10,
-        preco_unitario: newItem.preco_unitario
+        preco_unitario: newItem.preco_unitario || null
       };
 
-      // Salvar no localStorage
-      const existingItems = JSON.parse(localStorage.getItem('bebidas_items') || '[]');
-      existingItems.push(newBebidasItem);
-      localStorage.setItem('bebidas_items', JSON.stringify(existingItems));
+      const { data, error } = await supabase
+        .from('bebidas_items')
+        .insert([itemData])
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const newBebidasItem = {
+        ...data,
+        unidade_item: data.unidade_item as 'juazeiro_norte' | 'fortaleza'
+      };
       
       // Atualizar estado local
       setItems(prev => [...prev, newBebidasItem]);
@@ -182,12 +205,17 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         throw new Error('Quantidade não pode ser negativa');
       }
 
-      // Atualizar no localStorage
-      const existingItems = JSON.parse(localStorage.getItem('bebidas_items') || '[]');
-      const updatedItems = existingItems.map((item: BebidasItem) => 
-        item.id === id ? { ...item, quantidade: Number(newQuantity) } : item
-      );
-      localStorage.setItem('bebidas_items', JSON.stringify(updatedItems));
+      // Atualizar no Supabase
+      const { data, error } = await supabase
+        .from('bebidas_items')
+        .update({ quantidade: Number(newQuantity) })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
 
       // Atualizar estado local
       setItems(prev => prev.map(item => 
@@ -242,10 +270,15 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         throw new Error('Item não encontrado');
       }
 
-      // Remover do localStorage
-      const existingItems = JSON.parse(localStorage.getItem('bebidas_items') || '[]');
-      const filteredItems = existingItems.filter((item: BebidasItem) => item.id !== id);
-      localStorage.setItem('bebidas_items', JSON.stringify(filteredItems));
+      // Remover do Supabase
+      const { error } = await supabase
+        .from('bebidas_items')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
 
       // Remover do estado local
       setItems(prev => prev.filter(item => item.id !== id));

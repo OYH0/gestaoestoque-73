@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface HistoricoItem {
   id: string;
@@ -17,22 +19,41 @@ export interface HistoricoItem {
 export function useBebidasHistorico(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas') {
   const [historico, setHistorico] = useState<HistoricoItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const addHistoricoItem = useCallback(async (item: Omit<HistoricoItem, 'id' | 'data_operacao' | 'user_id'>) => {
+    if (!user) return;
+    
     try {
-      // Simular adição ao histórico
-      const mockHistoricoItem: HistoricoItem = {
-        id: Date.now().toString(),
-        ...item,
-        data_operacao: new Date().toISOString(),
-        user_id: 'mock-user-id'
+      const itemData = {
+        user_id: user.id,
+        item_nome: item.item_nome,
+        quantidade: item.quantidade,
+        unidade: item.unidade,
+        categoria: item.categoria,
+        tipo: item.tipo,
+        observacoes: item.observacoes || null
       };
 
-      setHistorico(prev => [mockHistoricoItem, ...prev]);
+      const { data, error } = await supabase
+        .from('bebidas_historico')
+        .insert([itemData])
+        .select()
+        .single();
 
-      console.log('Histórico simulado atualizado:', mockHistoricoItem);
+      if (error) {
+        throw error;
+      }
 
-      return mockHistoricoItem;
+      const newHistoricoItem: HistoricoItem = {
+        ...data,
+        tipo: data.tipo as 'entrada' | 'saida',
+        data_operacao: data.data_operacao
+      };
+
+      setHistorico(prev => [newHistoricoItem, ...prev]);
+
+      return newHistoricoItem;
     } catch (error) {
       console.error('Error adding historico item:', error);
       toast({
@@ -42,38 +63,41 @@ export function useBebidasHistorico(selectedUnidade?: 'juazeiro_norte' | 'fortal
       });
       throw error;
     }
-  }, []);
+  }, [user]);
 
   const fetchHistorico = useCallback(async () => {
+    if (!user) return;
+    
     setLoading(true);
     try {
-      // Simular fetch do histórico
-      const mockHistorico: HistoricoItem[] = [
-        {
-          id: '1',
-          item_nome: 'Coca-Cola 350ml',
-          quantidade: 10,
-          unidade: 'un',
-          categoria: 'Refrigerantes',
-          tipo: 'entrada',
-          data_operacao: new Date().toISOString(),
-          observacoes: 'Entrada inicial simulada',
-          user_id: 'mock-user-id',
-          unidade_item: 'juazeiro_norte'
-        }
-      ];
-      setHistorico(mockHistorico);
+      let query = supabase
+        .from('bebidas_historico')
+        .select('*')
+        .order('data_operacao', { ascending: false });
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      const mappedData = (data || []).map(item => ({
+        ...item,
+        tipo: item.tipo as 'entrada' | 'saida'
+      }));
+
+      setHistorico(mappedData);
     } catch (error) {
       console.error('Error fetching historico:', error);
       toast({
         title: "Erro ao carregar histórico",
-        description: "As tabelas de histórico ainda não foram criadas.",
+        description: "Não foi possível carregar o histórico.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   return {
     historico,

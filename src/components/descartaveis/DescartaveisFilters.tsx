@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,27 +23,27 @@ export function DescartaveisFilters({
   const isMobile = useIsMobile();
 
   return (
-    <div className="space-y-4 w-full overflow-hidden">
+    <div className="space-y-4 w-full px-1">
       <div className="relative w-full">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
         <Input
           placeholder="Buscar itens..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 w-full"
+          className="pl-10 w-full border-2 shadow-sm"
         />
       </div>
       
-      <Card className="w-full">
+      <Card className="w-full shadow-sm">
         <CardContent className="p-4">
-          <div className={`flex flex-wrap gap-2 w-full overflow-x-auto ${isMobile ? 'justify-center' : 'justify-start'}`}>
+          <div className={`flex flex-wrap gap-2 w-full ${isMobile ? 'justify-center' : 'justify-start'}`}>
             {categorias.map((categoria) => (
               <Button
                 key={categoria}
                 variant={categoriaFiltro === categoria ? "default" : "outline"}
                 size="sm"
                 onClick={() => setCategoriaFiltro(categoria)}
-                className={`text-xs whitespace-nowrap ${categoriaFiltro === categoria ? 'bg-green-500 hover:bg-green-600' : ''} ${isMobile ? 'min-w-[80px]' : ''}`}
+                className={`text-xs whitespace-nowrap shadow-sm ${categoriaFiltro === categoria ? 'bg-green-500 hover:bg-green-600' : ''} ${isMobile ? 'min-w-[80px]' : ''}`}
               >
                 {categoria}
               </Button>

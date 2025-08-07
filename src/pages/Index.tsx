@@ -102,7 +102,7 @@ const Index = () => {
               {/* Conteúdo principal integrado com animações */}
               <main 
                 {...handlers} 
-                className="flex-1 px-2 py-4 md:px-4 md:py-6 relative overflow-x-hidden overflow-y-auto touch-pan-y select-none bg-churrasco-cream"
+                className="flex-1 px-4 py-4 md:px-6 md:py-6 relative overflow-x-hidden overflow-y-auto touch-pan-y select-none bg-churrasco-cream"
                 style={{ 
                   touchAction: 'pan-y',
                   userSelect: 'none',

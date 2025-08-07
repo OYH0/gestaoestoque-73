@@ -228,7 +228,7 @@ export default function Descartaveis() {
         <DescartaveisAlerts itemsBaixoEstoque={lowStockItems} />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-1">
         {filteredItems.map((item) => (
           <DescartaveisItemCard
             key={item.id}

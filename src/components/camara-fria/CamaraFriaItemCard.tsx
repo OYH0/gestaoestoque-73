@@ -66,7 +66,7 @@ export function CamaraFriaItemCard({
   };
 
   return (
-    <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'ring-2 ring-red-300' : ''}`}>
+    <Card className={`transition-all duration-200 hover:shadow-md shadow-sm border-2 ${isLowStock ? 'ring-2 ring-red-300' : ''}`}>
       <CardHeader className={`pb-3 ${isMobile ? 'p-4' : ''}`}>
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0 pr-2">

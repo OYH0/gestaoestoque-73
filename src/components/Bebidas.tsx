@@ -407,7 +407,7 @@ export default function Bebidas() {
       </section>
 
       <section className="animate-fade-in">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-1">
           {filteredItems.map((item) => (
             <BebidasItemCard
               key={item.id}

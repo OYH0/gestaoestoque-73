@@ -37,7 +37,7 @@ export function Login() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           {/* Logo centralizado */}
-          <div className="mx-auto w-24 h-24 mb-6 flex items-center justify-center">
+          <div className="mx-auto w-40 h-40 mb-6 flex items-center justify-center">
             <img 
               src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
               alt="Companhia do Churrasco Logo"

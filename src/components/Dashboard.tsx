@@ -76,7 +76,30 @@ export function Dashboard() {
     };
   }, [camaraFriaItems, estoqueSecoItems, descartaveisItems, bebidasItems, camaraRefrigeradaItems, camaraFriaHistorico]);
 
-  // Dados para gráfico de distribuição por categoria
+  // Dados das carnes mais utilizadas (baseado nas saídas da câmara fria)
+  const topUsedMeats = useMemo(() => {
+    const meatUsage = camaraFriaHistorico
+      .filter(item => item.tipo === 'saida')
+      .reduce((acc, item) => {
+        const existing = acc.find(a => a.name === item.item_nome);
+        if (existing) {
+          existing.value += item.quantidade;
+        } else {
+          acc.push({ 
+            name: item.item_nome, 
+            value: item.quantidade,
+            color: CHART_COLORS[acc.length % CHART_COLORS.length]
+          });
+        }
+        return acc;
+      }, [] as any[])
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6); // Top 6 carnes mais utilizadas
+
+    return meatUsage;
+  }, [camaraFriaHistorico]);
+
+  // Dados para resumo de categorias
   const categoryData = useMemo(() => [
     { name: 'Câmara Fria', value: stats.categories.camaraFria, icon: Snowflake, color: '#3b82f6' },
     { name: 'Estoque Seco', value: stats.categories.estoqueSeco, icon: Package, color: '#f59e0b' },
@@ -200,28 +223,28 @@ export function Dashboard() {
 
       {/* Gráficos Principais */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Distribuição por Categoria */}
+        {/* Carnes Mais Utilizadas */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-blue-500" />
-              Distribuição por Categoria
+              <Snowflake className="w-5 h-5 text-blue-500" />
+              Carnes Mais Utilizadas
             </CardTitle>
             <CardDescription>
-              Quantidade de itens em cada categoria de estoque
+              Carnes com maior quantidade de saídas da câmara fria
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
-              {categoryData.length > 0 ? (
+              {topUsedMeats.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={categoryData}
+                      data={topUsedMeats}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, value, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, value, percent }) => `${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
                       innerRadius={40}
                       fill="#8884d8"
@@ -229,12 +252,12 @@ export function Dashboard() {
                       strokeWidth={2}
                       stroke="#ffffff"
                     >
-                      {categoryData.map((entry, index) => (
+                      {topUsedMeats.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value, name) => [`${value} itens`, name]}
+                      formatter={(value, name) => [`${value}kg utilizados`, name]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -242,7 +265,7 @@ export function Dashboard() {
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
                     <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum item cadastrado</p>
+                    <p>Nenhuma saída de carne registrada</p>
                   </div>
                 </div>
               )}

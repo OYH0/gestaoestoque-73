@@ -3,8 +3,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+interface BebidasItem {
+  id: string;
+  nome: string;
+  quantidade: number;
+  unidade: string;
+  minimo?: number;
+  unidade_item?: 'juazeiro_norte' | 'fortaleza';
+}
+
 interface BebidasAlertsProps {
-  lowStockItems: any[];
+  lowStockItems: BebidasItem[];
   selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 'todas';
 }
 
@@ -22,7 +31,7 @@ export function BebidasAlerts({ lowStockItems, selectedUnidade }: BebidasAlertsP
     if (!acc[unidade]) acc[unidade] = [];
     acc[unidade].push(item);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, BebidasItem[]>);
 
   return (
     <div className="space-y-3">

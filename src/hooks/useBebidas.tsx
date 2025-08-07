@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { useQRCodeGenerator } from '@/hooks/useQRCodeGenerator';
@@ -45,45 +44,40 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
     }
     
     try {
-      let query = supabase
-        .from('bebidas_items')
-        .select('*')
-        .order('nome');
-
-      if (stableSelectedUnidade.current && stableSelectedUnidade.current !== 'todas') {
-        query = query.eq('unidade', stableSelectedUnidade.current);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
+      // Simular dados de bebidas enquanto as tabelas não são criadas
+      const mockItems: BebidasItem[] = [
+        {
+          id: '1',
+          nome: 'Coca-Cola 350ml',
+          quantidade: 50,
+          unidade: 'un',
+          categoria: 'Refrigerantes',
+          data_entrada: '2024-01-15',
+          unidade_item: 'juazeiro_norte',
+          minimo: 20,
+          preco_unitario: 3.50
+        },
+        {
+          id: '2',
+          nome: 'Água Mineral 500ml',
+          quantidade: 15,
+          unidade: 'un',
+          categoria: 'Águas',
+          data_entrada: '2024-01-14',
+          unidade_item: 'fortaleza',
+          minimo: 30,
+          preco_unitario: 2.00
+        }
+      ];
       
       if (!mountedRef.current) return;
-      
-      const mappedItems: BebidasItem[] = (data || []).map(item => ({
-        id: item.id,
-        nome: item.nome,
-        quantidade: Number(item.quantidade),
-        unidade: 'un',
-        categoria: item.categoria,
-        data_entrada: item.data_entrada,
-        data_validade: item.data_validade,
-        temperatura: undefined,
-        temperatura_ideal: item.temperatura_ideal || undefined,
-        fornecedor: item.fornecedor,
-        observacoes: item.observacoes,
-        unidade_item: item.unidade as 'juazeiro_norte' | 'fortaleza',
-        minimo: item.minimo || 10,
-        preco_unitario: item.preco_unitario || undefined,
-      }));
-      
-      setItems(mappedItems);
+      setItems(mockItems);
     } catch (error) {
       console.error('Error fetching bebidas:', error);
       if (mountedRef.current) {
         toast({
           title: "Erro ao carregar dados",
-          description: "Não foi possível carregar as bebidas.",
+          description: "As tabelas de bebidas ainda não foram criadas no banco de dados.",
           variant: "destructive",
         });
       }
@@ -132,38 +126,23 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         throw new Error('Quantidade não pode ser negativa');
       }
 
-      const itemToInsert = {
+      // Simular criação do item
+      const mockId = Date.now().toString();
+      const mappedData: BebidasItem = {
+        id: mockId,
         nome: newItem.nome.trim(),
         quantidade: Number(newItem.quantidade),
+        unidade: 'un',
         categoria: newItem.categoria,
-        minimo: newItem.minimo || 10,
         data_entrada: new Date().toISOString().split('T')[0],
         data_validade: newItem.data_validade,
-        temperatura_ideal: newItem.temperatura_ideal,
-        fornecedor: newItem.fornecedor?.trim() || null,
-        observacoes: newItem.observacoes?.trim() || null,
-        preco_unitario: newItem.preco_unitario,
-        user_id: user.id,
-        unidade: newItem.unidade_item || 'juazeiro_norte'
-      };
-
-      const { data, error } = await supabase
-        .from('bebidas_items')
-        .insert([itemToInsert])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const mappedData = {
-        ...data,
-        quantidade: Number(data.quantidade),
-        unidade: 'un',
-        unidade_item: data.unidade as 'juazeiro_norte' | 'fortaleza',
-        minimo: data.minimo || 10,
         temperatura: undefined,
-        temperatura_ideal: data.temperatura_ideal || undefined,
-        preco_unitario: data.preco_unitario || undefined
+        temperatura_ideal: newItem.temperatura_ideal,
+        fornecedor: newItem.fornecedor?.trim() || undefined,
+        observacoes: newItem.observacoes?.trim() || undefined,
+        unidade_item: newItem.unidade_item || 'juazeiro_norte',
+        minimo: newItem.minimo || 10,
+        preco_unitario: newItem.preco_unitario || undefined
       };
       
       setItems(prev => [...prev, mappedData]);
@@ -180,9 +159,7 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
       
       toast({
         title: "Bebida adicionada",
-        description: Number(newItem.quantidade) > 0 
-          ? `${newItem.nome} foi adicionada ao estoque! QR codes serão gerados.`
-          : `${newItem.nome} foi adicionada ao estoque!`,
+        description: `${newItem.nome} foi adicionada ao estoque! (Modo simulado - tabelas não criadas)`,
       });
 
       return mappedData;
@@ -214,16 +191,6 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         throw new Error('Quantidade não pode ser negativa');
       }
 
-      const { error } = await supabase
-        .from('bebidas_items')
-        .update({ 
-          quantidade: Number(newQuantity),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-
       setItems(prev => prev.map(item => 
         item.id === id ? { ...item, quantidade: Number(newQuantity) } : item
       ));
@@ -244,7 +211,7 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
 
       toast({
         title: "Quantidade atualizada",
-        description: `Quantidade de ${currentItem.nome} atualizada para ${newQuantity}`,
+        description: `Quantidade de ${currentItem.nome} atualizada para ${newQuantity} (Modo simulado)`,
       });
 
       return {
@@ -276,18 +243,11 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         throw new Error('Item não encontrado');
       }
 
-      const { error } = await supabase
-        .from('bebidas_items')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
       setItems(prev => prev.filter(item => item.id !== id));
 
       toast({
         title: "Bebida removida",
-        description: "Bebida foi removida do estoque.",
+        description: "Bebida foi removida do estoque (Modo simulado).",
       });
 
       return currentItem;

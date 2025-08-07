@@ -7,7 +7,7 @@ export interface QRCodeData {
   id: string;
   nome: string;
   categoria: string;
-  tipo: 'CF' | 'ES' | 'DESC';
+  tipo: 'CF' | 'ES' | 'DESC' | 'BD';
   lote?: string;
   unidade?: string;
   fornecedor?: string;
@@ -22,12 +22,12 @@ const LOGO_URL = '/lovable-uploads/1f655875-b87f-4e01-b716-850dd285a60b.png';
 export function useQRCodeGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateQRCodeId = (tipo: 'CF' | 'ES' | 'DESC', itemId: string, index: number) => {
+  const generateQRCodeId = (tipo: 'CF' | 'ES' | 'DESC' | 'BD', itemId: string, index: number) => {
     const timestamp = Date.now().toString().slice(-6);
     return `${tipo}-${itemId.slice(-8)}-${timestamp}-${index.toString().padStart(3, '0')}`;
   };
 
-  const generateQRCodeData = (item: any, tipo: 'CF' | 'ES' | 'DESC', quantidade: number): QRCodeData[] => {
+  const generateQRCodeData = (item: any, tipo: 'CF' | 'ES' | 'DESC' | 'BD', quantidade: number): QRCodeData[] => {
     console.log('🚀 === INÍCIO generateQRCodeData ===');
     console.log('📦 Item recebido:', item);
     console.log('🏷️ Tipo:', tipo);

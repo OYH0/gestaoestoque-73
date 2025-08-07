@@ -72,6 +72,10 @@ export default function Bebidas() {
       return;
     }
     
+    console.log('=== TENTANDO ADICIONAR BEBIDA ===');
+    console.log('Permissões:', { canModify });
+    console.log('Item:', newItem);
+    
     if (!newItem.nome.trim()) {
       toast({
         title: "Nome obrigatório",
@@ -246,6 +250,10 @@ export default function Bebidas() {
       return;
     }
     
+    console.log('=== TENTANDO DELETAR BEBIDA ===');
+    console.log('Permissões:', { canModify });
+    console.log('ID:', id);
+    
     try {
       const deletedItem = await deleteItem(id);
       
@@ -390,22 +398,24 @@ export default function Bebidas() {
         />
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredItems.map((item) => (
-          <BebidasItemCard
-            key={item.id}
-            item={item}
-            onUpdateQuantity={handleUpdateQuantity}
-            onDeleteItem={handleDeleteItem}
-            onStartEdit={handleStartEdit}
-            onUpdateEdit={handleUpdateEdit}
-            onConfirmChange={handleConfirmChange}
-            onCancelEdit={handleCancelEdit}
-            editingQuantity={editingItems[item.id]}
-            isEditing={item.id in editingItems}
-          />
-        ))}
-      </div>
+      <section className="animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredItems.map((item) => (
+            <BebidasItemCard
+              key={item.id}
+              item={item}
+              onUpdateQuantity={handleUpdateQuantity}
+              onDeleteItem={handleDeleteItem}
+              onStartEdit={handleStartEdit}
+              onUpdateEdit={handleUpdateEdit}
+              onConfirmChange={handleConfirmChange}
+              onCancelEdit={handleCancelEdit}
+              editingQuantity={editingItems[item.id]}
+              isEditing={item.id in editingItems}
+            />
+          ))}
+        </div>
+      </section>
 
       {filteredItems.length === 0 && (
         <div className="text-center py-12">

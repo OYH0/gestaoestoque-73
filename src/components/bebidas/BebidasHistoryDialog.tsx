@@ -5,11 +5,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, Download, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { generateHistoryPDF, generateHistoryTXT } from '@/utils/pdfGenerator';
 
 interface BebidasHistoryDialogProps {
   historico: any[];
@@ -46,12 +48,50 @@ export function BebidasHistoryDialog({ historico, loading = false }: BebidasHist
     );
   }
 
+  const handleDownloadPDF = () => {
+    try {
+      generateHistoryPDF(historico, 'Histórico de Bebidas', 'Movimentações do estoque de bebidas');
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+    }
+  };
+
+  const handleDownloadTXT = () => {
+    try {
+      generateHistoryTXT(historico, 'Histórico de Bebidas', 'Movimentações do estoque de bebidas');
+    } catch (error) {
+      console.error('Erro ao gerar TXT:', error);
+    }
+  };
+
   return (
     <DialogContent className={`${isMobile ? 'w-[95%] max-w-sm' : 'sm:max-w-2xl'}`}>
       <DialogHeader>
-        <DialogTitle className={isMobile ? "text-lg" : "text-xl"}>
-          Histórico de Bebidas
-        </DialogTitle>
+        <div className="flex items-center justify-between">
+          <DialogTitle className={isMobile ? "text-lg" : "text-xl"}>
+            Histórico de Bebidas
+          </DialogTitle>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadPDF}
+              className="text-xs"
+            >
+              <FileText className="w-3 h-3 mr-1" />
+              PDF
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadTXT}
+              className="text-xs"
+            >
+              <Download className="w-3 h-3 mr-1" />
+              TXT
+            </Button>
+          </div>
+        </div>
       </DialogHeader>
       
       <ScrollArea className="h-[400px] pr-4">

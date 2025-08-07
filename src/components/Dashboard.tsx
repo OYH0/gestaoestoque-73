@@ -194,7 +194,7 @@ export function Dashboard() {
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value, name) => [`${value}kg utilizados`, name]}
+                        formatter={(value, name) => [`${value} utilizados`, name]}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -394,7 +394,7 @@ export function Dashboard() {
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value, name) => [`${value}kg utilizados`, name]}
+                      formatter={(value, name) => [`${value} utilizados`, name]}
                     />
                   </PieChart>
                 </ResponsiveContainer>

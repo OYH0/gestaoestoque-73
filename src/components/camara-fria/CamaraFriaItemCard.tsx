@@ -103,14 +103,14 @@ export function CamaraFriaItemCard({
               Quantidade:
             </span>
             <span className={`font-bold ${isLowStock ? 'text-red-600' : 'text-green-600'} ${isMobile ? 'text-sm' : ''}`}>
-              {isEditing ? editValue : isThawing ? `${item.quantidade} (${thawValue} descongelando)` : item.quantidade} kg
+              {isEditing ? editValue : isThawing ? `${item.quantidade} (${thawValue} descongelando)` : item.quantidade} {item.unidade}
             </span>
           </div>
 
           {/* Estoque mínimo */}
           <div className="flex items-center justify-between">
             <span className={`text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              Mínimo: {item.minimo || 5} kg
+              Mínimo: {item.minimo || 5} {item.unidade}
             </span>
           </div>
 

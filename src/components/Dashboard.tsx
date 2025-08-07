@@ -136,20 +136,13 @@ export function Dashboard() {
     <div className="space-y-6 animate-fade-in">
       {/* Header da Dashboard */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-sm text-gray-600">Visão geral do sistema de estoque</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-green-600">
-            <CheckCircle className="w-4 h-4" />
-            <span>Sistema Ativo</span>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         </div>
       </div>
 
       {/* Cards de Estatísticas Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="hover-scale">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -182,26 +175,6 @@ export function Dashboard() {
             <div className="mt-4 flex items-center text-xs text-gray-600">
               <TrendingUp className="w-3 h-3 mr-1" />
               Requer atenção
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover-scale">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Valor Total</p>
-                <p className="text-2xl font-bold text-green-600">
-                  R$ {stats.totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-xs text-gray-600">
-              <BarChart3 className="w-3 h-3 mr-1" />
-              Estimativa do estoque
             </div>
           </CardContent>
         </Card>

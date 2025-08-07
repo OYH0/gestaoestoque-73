@@ -212,7 +212,10 @@ export function CamaraRefrigerada() {
   const sortedItems = [...items].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-enter">
+      <header className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Câmara Refrigerada</h1>
+      </header>
       <UnidadeSelector 
         selectedUnidade={selectedUnidade}
         onUnidadeChange={setSelectedUnidade}
@@ -242,25 +245,27 @@ export function CamaraRefrigerada() {
           </div>
         </div>
       }>
-        <CamaraRefrigeradaStatusCards items={items} />
+        <section className="animate-fade-in"><CamaraRefrigeradaStatusCards items={items} /></section>
 
-        <div className="grid gap-4">
-          {sortedItems.length === 0 ? (
-            <CamaraRefrigeradaEmptyState />
-          ) : (
-            sortedItems.map((item) => (
-              <CamaraRefrigeradaItemCard
-                key={item.id}
-                item={item}
-                onMoveToReady={moveToReady}
-                onMoveToFreezer={moveToFreezer}
-                onRemoveFromChamber={removeFromChamber}
-              />
-            ))
-          )}
-        </div>
+        <section className="animate-fade-in">
+          <div className="grid gap-4">
+            {sortedItems.length === 0 ? (
+              <CamaraRefrigeradaEmptyState />
+            ) : (
+              sortedItems.map((item) => (
+                <CamaraRefrigeradaItemCard
+                  key={item.id}
+                  item={item}
+                  onMoveToReady={moveToReady}
+                  onMoveToFreezer={moveToFreezer}
+                  onRemoveFromChamber={removeFromChamber}
+                />
+              ))
+            )}
+          </div>
+        </section>
 
-        <CamaraRefrigeradaInstructions />
+        <section className="animate-fade-in"><CamaraRefrigeradaInstructions /></section>
       </AdminGuard>
     </div>
   );

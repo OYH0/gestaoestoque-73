@@ -126,7 +126,10 @@ export default function EstoqueSeco() {
   const lowStockItems = filteredItems.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-enter">
+      <header className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Estoque Seco</h1>
+      </header>
       <div className={`flex flex-wrap gap-2 items-center ${isMobile ? 'justify-center' : ''}`}>
         <UnidadeSelector 
           selectedUnidade={selectedUnidade}
@@ -211,17 +214,21 @@ export default function EstoqueSeco() {
         )}
       </div>
 
-      <EstoqueSecoFilters
-        categorias={categories}
-        categoriaFiltro={filterCategory}
-        setCategoriaFiltro={setFilterCategory}
-        searchQuery={searchTerm}
-        setSearchQuery={setSearchTerm}
-      />
+      <section className="animate-fade-in">
+        <EstoqueSecoFilters
+          categorias={categories}
+          categoriaFiltro={filterCategory}
+          setCategoriaFiltro={setFilterCategory}
+          searchQuery={searchTerm}
+          setSearchQuery={setSearchTerm}
+        />
+      </section>
 
-      {showAlerts && (
-        <EstoqueSecoAlerts itemsBaixoEstoque={lowStockItems} />
-      )}
+      <section className="animate-fade-in">
+        {showAlerts && (
+          <EstoqueSecoAlerts itemsBaixoEstoque={lowStockItems} />
+        )}
+      </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map((item) => (

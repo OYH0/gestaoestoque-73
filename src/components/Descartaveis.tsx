@@ -126,7 +126,10 @@ export default function Descartaveis() {
   const lowStockItems = filteredItems.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-enter">
+      <header className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Descartáveis</h1>
+      </header>
       <div className={`flex flex-wrap gap-2 items-center ${isMobile ? 'justify-center' : ''}`}>
         <UnidadeSelector 
           selectedUnidade={selectedUnidade}
@@ -211,13 +214,15 @@ export default function Descartaveis() {
         )}
       </div>
 
-      <DescartaveisFilters
-        categorias={categories}
-        categoriaFiltro={filterCategory}
-        setCategoriaFiltro={setFilterCategory}
-        searchQuery={searchTerm}
-        setSearchQuery={setSearchTerm}
-      />
+      <section className="animate-fade-in">
+        <DescartaveisFilters
+          categorias={categories}
+          categoriaFiltro={filterCategory}
+          setCategoriaFiltro={setFilterCategory}
+          searchQuery={searchTerm}
+          setSearchQuery={setSearchTerm}
+        />
+      </section>
 
       {showAlerts && (
         <DescartaveisAlerts itemsBaixoEstoque={lowStockItems} />

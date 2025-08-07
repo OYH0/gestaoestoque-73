@@ -426,7 +426,10 @@ export default function CamaraFria() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-enter">
+      <header className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Câmara Fria</h1>
+      </header>
       <UnidadeSelector 
         selectedUnidade={selectedUnidade}
         onUnidadeChange={setSelectedUnidade}
@@ -504,17 +507,21 @@ export default function CamaraFria() {
         )}
       </div>
 
-      <CamaraFriaFilters
-        categorias={categories}
-        categoriaFiltro={filterCategory}
-        setCategoriaFiltro={setFilterCategory}
-        searchQuery={searchTerm}
-        setSearchQuery={setSearchTerm}
-      />
+      <section className="animate-fade-in">
+        <CamaraFriaFilters
+          categorias={categories}
+          categoriaFiltro={filterCategory}
+          setCategoriaFiltro={setFilterCategory}
+          searchQuery={searchTerm}
+          setSearchQuery={setSearchTerm}
+        />
+      </section>
 
-      {showAlerts && (
-        <CamaraFriaAlerts itemsBaixoEstoque={lowStockItems} />
-      )}
+      <section className="animate-fade-in">
+        {showAlerts && (
+          <CamaraFriaAlerts itemsBaixoEstoque={lowStockItems} />
+        )}
+      </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map((item) => (

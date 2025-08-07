@@ -302,7 +302,10 @@ export default function Bebidas() {
   const lowStockItems = filteredItems.filter(item => item.minimo && item.quantidade <= item.minimo);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-enter">
+      <header className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Bebidas</h1>
+      </header>
       <UnidadeSelector 
         selectedUnidade={selectedUnidade}
         onUnidadeChange={setSelectedUnidade}
@@ -368,20 +371,24 @@ export default function Bebidas() {
         )}
       </div>
 
-      {showAlerts && (
-        <BebidasAlerts 
-          lowStockItems={lowStockItems}
-          selectedUnidade={selectedUnidade}
-        />
-      )}
+      <section className="animate-fade-in">
+        {showAlerts && (
+          <BebidasAlerts 
+            lowStockItems={lowStockItems}
+            selectedUnidade={selectedUnidade}
+          />
+        )}
+      </section>
 
-      <BebidasFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        filterCategory={filterCategory}
-        setFilterCategory={setFilterCategory}
-        categories={categories}
-      />
+      <section className="animate-fade-in">
+        <BebidasFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          categories={categories}
+        />
+      </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map((item) => (

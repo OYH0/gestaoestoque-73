@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, ArrowRight, ArrowLeft } from 'lucide-react';
+import { SwapButton } from '@/components/ui/swap-button';
+import { Clock, ArrowLeft } from 'lucide-react';
 import { CamaraRefrigeradaItem } from '@/hooks/useCamaraRefrigeradaData';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -83,14 +84,14 @@ export function CamaraRefrigeradaItemCard({
           {/* Controles de ação */}
           <div className="flex gap-2">
             {item.status === 'descongelando' ? (
-              <Button
-                size="sm"
-                onClick={() => onMoveToReady(item.id)}
-                className="flex-1 bg-green-500 hover:bg-green-600"
-              >
-                <ArrowRight className="h-4 w-4 mr-1" />
-                Marcar como Pronto
-              </Button>
+              <div className="flex-1">
+                <SwapButton
+                  onSwipe={() => onMoveToReady(item.id)}
+                  className="w-full"
+                >
+                  Marcar como Pronto
+                </SwapButton>
+              </div>
             ) : (
               <Button
                 size="sm"

@@ -1,71 +1,32 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Package, 
+  TrendingUp, 
+  AlertTriangle, 
+  CheckCircle, 
+  Snowflake, 
+  Thermometer,
+  Wine,
+  FileText,
+  Activity,
+  ShoppingCart,
+  DollarSign,
+  Users,
+  Calendar,
+  BarChart3
+} from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, Area, AreaChart } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCamaraFriaData } from '@/hooks/useCamaraFriaData';
 import { useCamaraFriaHistorico } from '@/hooks/useCamaraFriaHistorico';
 import { useEstoqueSecoData } from '@/hooks/useEstoqueSecoData';
 import { useDescartaveisData } from '@/hooks/useDescartaveisData';
+import { useBebidas } from '@/hooks/useBebidas';
+import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
 
-// Cores fixas para os gráficos
-const CHART_COLORS = [
-  '#10b981', '#10b981', '#10b981', // Verde para os 3 primeiros
-  '#f59e0b', '#f59e0b', '#f59e0b', '#f59e0b', '#f59e0b', // Laranja para os próximos 5
-  '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444' // Vermelho para o resto
-];
-
-// Função para determinar a cor baseada na quantidade
-const getColorByQuantity = (quantidade: number, maxQuantity: number) => {
-  const percentage = quantidade / maxQuantity;
-  
-  if (percentage >= 0.7) {
-    return '#10b981'; // Verde para alta quantidade (70%+)
-  } else if (percentage >= 0.4) {
-    return '#f59e0b'; // Laranja para média quantidade (40-70%)
-  } else if (percentage >= 0.1) {
-    return '#ef4444'; // Vermelho para baixa quantidade (10-40%)
-  } else {
-    return '#991b1b'; // Vermelho escuro para quantidade muito baixa (<10%)
-  }
-};
-
-const PIE_COLORS = [
-  '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'
-];
-
-// Função para abreviar nomes longos
-const abreviarNome = (nome: string): string => {
-  const abreviacoes: { [key: string]: string } = {
-    'Filé de Peito': 'Pt',
-    'Coxa e Sobrecoxa': 'Sbcx',
-    'Coração de Frango': 'Crç',
-    'Coração de Frango ': 'Crç', // Versão com espaço no final
-    'Picanha Suína': 'PcS',
-    'Coxão Duro': 'CxD',
-    'Costela Janelinha': 'CtJ',
-    'Alcatra com Maminha': 'AlcM',
-    'Capa de Filé G': 'CpFG',
-    'Linguiça Mista': 'LgM',
-    'Costelão Bovino 9': 'CstB',
-    'Costelão Bovino': 'CstB',
-    'Cupim': 'Cpm',
-    'Contra Filé': 'CtF',
-    'Coxinha da Asa': 'CxA',
-    'Fralda': 'Frl',
-    'Capa de Filé P': 'CpFP',
-    'Costela Suína': 'CtS',
-    'Coxão Mole': 'CxM',
-    'Picanha Bovina': 'PcB',
-    'Linguiça de Frango': 'LgF',
-    'Pernil Suíno': 'PrS',
-    'Linguiça Apimentada': 'LgA',
-    'Maminha da Alcatra': 'MmA'
-  };
-  
-  return abreviacoes[nome] || nome;
-};
+const CHART_COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
 export function Dashboard() {
   const isMobile = useIsMobile();
@@ -73,289 +34,410 @@ export function Dashboard() {
   const { historico: camaraFriaHistorico } = useCamaraFriaHistorico();
   const { items: estoqueSecoItems } = useEstoqueSecoData();
   const { items: descartaveisItems } = useDescartaveisData();
+  const { items: bebidasItems } = useBebidas();
+  const { items: camaraRefrigeradaItems } = useCamaraRefrigeradaData();
 
-  // Memorizar processamento dos dados para gráfico de barras
-  const meatTypesDataWithColors = useMemo(() => {
-    const meatTypesData = camaraFriaItems
-      .reduce((acc, item) => {
-        const existing = acc.find(a => a.tipo === item.nome);
-        if (existing) {
-          existing.quantidade += item.quantidade;
-        } else {
-          acc.push({ 
-            tipo: item.nome, 
-            quantidade: item.quantidade
-          });
-        }
-        return acc;
-      }, [] as any[])
-      .sort((a, b) => b.quantidade - a.quantidade);
+  // Estatísticas gerais
+  const stats = useMemo(() => {
+    const totalItems = camaraFriaItems.length + estoqueSecoItems.length + descartaveisItems.length + bebidasItems.length + camaraRefrigeradaItems.length;
+    
+    const lowStockItems = [
+      ...camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5)),
+      ...estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5)),
+      ...descartaveisItems.filter(item => item.quantidade <= (item.minimo || 10)),
+      ...bebidasItems.filter(item => item.quantidade <= (item.minimo || 20))
+    ];
 
-    const maxQuantity = Math.max(...meatTypesData.map(item => item.quantidade));
+    const totalValue = [
+      ...camaraFriaItems.map(item => (item.preco_unitario || 0) * item.quantidade),
+      ...estoqueSecoItems.map(item => (item.preco_unitario || 0) * item.quantidade),
+      ...bebidasItems.map(item => (item.preco_unitario || 0) * item.quantidade)
+    ].reduce((sum, value) => sum + value, 0);
 
-    return meatTypesData.map(item => ({
-      ...item,
-      fill: getColorByQuantity(item.quantidade, maxQuantity)
-    }));
-  }, [camaraFriaItems]);
+    const recentMovements = camaraFriaHistorico.filter(item => {
+      const itemDate = new Date(item.data_operacao || '');
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return itemDate >= sevenDaysAgo;
+    }).length;
 
-  // Memorizar processamento do Top 5 carnes
-  const top5MeatUsageWithPercentage = useMemo(() => {
-    const top5MeatUsage = camaraFriaHistorico
-      .filter(item => item.tipo === 'saida')
-      .reduce((acc, item) => {
-        const existing = acc.find(a => a.nome === item.item_nome);
-        if (existing) {
-          existing.totalSaidas += item.quantidade;
-        } else {
-          acc.push({
-            nome: item.item_nome,
-            totalSaidas: item.quantidade
-          });
-        }
-        return acc;
-      }, [] as any[])
-      .sort((a, b) => b.totalSaidas - a.totalSaidas)
-      .slice(0, 5);
+    return {
+      totalItems,
+      lowStockCount: lowStockItems.length,
+      totalValue,
+      recentMovements,
+      categories: {
+        camaraFria: camaraFriaItems.length,
+        estoqueSeco: estoqueSecoItems.length,
+        descartaveis: descartaveisItems.length,
+        bebidas: bebidasItems.length,
+        camaraRefrigerada: camaraRefrigeradaItems.length
+      }
+    };
+  }, [camaraFriaItems, estoqueSecoItems, descartaveisItems, bebidasItems, camaraRefrigeradaItems, camaraFriaHistorico]);
 
-    const totalSaidas = top5MeatUsage.reduce((acc, item) => acc + item.totalSaidas, 0);
+  // Dados para gráfico de distribuição por categoria
+  const categoryData = useMemo(() => [
+    { name: 'Câmara Fria', value: stats.categories.camaraFria, icon: Snowflake, color: '#3b82f6' },
+    { name: 'Estoque Seco', value: stats.categories.estoqueSeco, icon: Package, color: '#f59e0b' },
+    { name: 'Descartáveis', value: stats.categories.descartaveis, icon: FileText, color: '#10b981' },
+    { name: 'Bebidas', value: stats.categories.bebidas, icon: Wine, color: '#ef4444' },
+    { name: 'Câmara Refrigerada', value: stats.categories.camaraRefrigerada, icon: Thermometer, color: '#8b5cf6' }
+  ].filter(item => item.value > 0), [stats.categories]);
 
-    return top5MeatUsage.map(item => ({
-      ...item,
-      percentage: totalSaidas > 0 ? ((item.totalSaidas / totalSaidas) * 100).toFixed(1) : 0
-    }));
+  // Análise de movimentação por dia (últimos 7 dias)
+  const movementAnalysis = useMemo(() => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toISOString().split('T')[0];
+    });
+
+    return last7Days.map(date => {
+      const dayMovements = camaraFriaHistorico.filter(item => 
+        item.data_operacao?.split('T')[0] === date
+      );
+
+      const entradas = dayMovements.filter(item => item.tipo === 'entrada').length;
+      const saidas = dayMovements.filter(item => item.tipo === 'saida').length;
+
+      return {
+        date,
+        day: new Date(date).toLocaleDateString('pt-BR', { weekday: 'short' }),
+        entradas,
+        saidas,
+        total: entradas + saidas
+      };
+    });
   }, [camaraFriaHistorico]);
 
-  // Memorizar dados de alertas
-  const alertsData = useMemo(() => {
-    const carnesBaixoEstoque = camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5));
-    const estoqueBaixo = estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5));
-    const temAlertas = carnesBaixoEstoque.length > 0 || estoqueBaixo.length > 0;
+  // Top itens mais movimentados
+  const topMovedItems = useMemo(() => {
+    const itemMovements = camaraFriaHistorico.reduce((acc, movement) => {
+      const key = movement.item_nome;
+      if (!acc[key]) {
+        acc[key] = { nome: key, total: 0, entradas: 0, saidas: 0 };
+      }
+      acc[key].total += movement.quantidade;
+      if (movement.tipo === 'entrada') {
+        acc[key].entradas += movement.quantidade;
+      } else {
+        acc[key].saidas += movement.quantidade;
+      }
+      return acc;
+    }, {} as Record<string, any>);
 
-    return { carnesBaixoEstoque, estoqueBaixo, temAlertas };
-  }, [camaraFriaItems, estoqueSecoItems]);
+    return Object.values(itemMovements)
+      .sort((a: any, b: any) => b.total - a.total)
+      .slice(0, 5);
+  }, [camaraFriaHistorico]);
 
-  // Componente do gráfico de barras
-  const BarChartCard = useMemo(() => (
-    <Card className="shadow-md border-0">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-500" />
-          Estoque por Tipo de Carne
-        </CardTitle>
-        <CardDescription>
-          Quantidade disponível de cada tipo de carne (pç)
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[600px] w-full">
-          {meatTypesDataWithColors && meatTypesDataWithColors.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={meatTypesDataWithColors} 
-                layout="vertical"
-                margin={{ 
-                  top: 20, 
-                  right: 20, 
-                  left: 10, 
-                  bottom: 20 
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" />
-                <XAxis 
-                  type="number"
-                  domain={[0, 'dataMax + 10']}
-                  tick={{ fontSize: 12 }}
-                  axisLine={{ stroke: '#e5e7eb' }}
-                  tickLine={{ stroke: '#e5e7eb' }}
-                />
-                <YAxis 
-                  type="category"
-                  dataKey="tipo" 
-                  width={150}
-                  tick={{ fontSize: 11, fill: '#374151' }}
-                  interval={0}
-                  axisLine={{ stroke: '#e5e7eb' }}
-                  tickLine={{ stroke: '#e5e7eb' }}
-                />
-                <Tooltip 
-                  formatter={(value) => [`${value}pç`, 'Quantidade']}
-                  labelFormatter={(label) => label}
-                />
-                <Bar 
-                  dataKey="quantidade" 
-                  stroke="#ffffff"
-                  strokeWidth={1}
-                  radius={[0, 6, 6, 0]} // Reduzido o arredondamento para 6
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
-              <div className="text-center">
-                <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>Nenhum item na câmara fria</p>
-                <p className="text-xs mt-1">Total de itens: {camaraFriaItems?.length || 0}</p>
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header da Dashboard */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-sm text-gray-600">Visão geral do sistema de estoque</p>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-green-600">
+            <CheckCircle className="w-4 h-4" />
+            <span>Sistema Ativo</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Cards de Estatísticas Principais */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="hover-scale">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total de Itens</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalItems}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Package className="w-6 h-6 text-blue-600" />
               </div>
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  ), [meatTypesDataWithColors, camaraFriaItems]);
+            <div className="mt-4 flex items-center text-xs text-gray-600">
+              <Activity className="w-3 h-3 mr-1" />
+              Todos os estoques
+            </div>
+          </CardContent>
+        </Card>
 
-  // Componente do gráfico de pizza
-  const PieChartCard = useMemo(() => (
-    <Card className="shadow-md border-0">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Package className="w-5 h-5 text-green-500" />
-          Top 5 Carnes Mais Utilizadas
-        </CardTitle>
-        <CardDescription>
-          Carnes com maior quantidade de saídas registradas
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="h-96">
-          {top5MeatUsageWithPercentage.length > 0 ? (
-            <div className="space-y-4">
-              <div className="h-64">
+        <Card className="hover-scale">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Baixo Estoque</p>
+                <p className="text-2xl font-bold text-red-600">{stats.lowStockCount}</p>
+              </div>
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-xs text-gray-600">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              Requer atenção
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover-scale">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Valor Total</p>
+                <p className="text-2xl font-bold text-green-600">
+                  R$ {stats.totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-xs text-gray-600">
+              <BarChart3 className="w-3 h-3 mr-1" />
+              Estimativa do estoque
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover-scale">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Movimentações</p>
+                <p className="text-2xl font-bold text-purple-600">{stats.recentMovements}</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <ShoppingCart className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-xs text-gray-600">
+              <Calendar className="w-3 h-3 mr-1" />
+              Últimos 7 dias
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Gráficos Principais */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Distribuição por Categoria */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-blue-500" />
+              Distribuição por Categoria
+            </CardTitle>
+            <CardDescription>
+              Quantidade de itens em cada categoria de estoque
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              {categoryData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={top5MeatUsageWithPercentage}
+                      data={categoryData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={(entry) => `${entry.percentage}%`}
+                      label={({ name, value, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
                       innerRadius={40}
                       fill="#8884d8"
-                      dataKey="totalSaidas"
+                      dataKey="value"
                       strokeWidth={2}
                       stroke="#ffffff"
-                      cornerRadius={4} // Reduzido de 10 para 4
                     >
-                      {top5MeatUsageWithPercentage.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value, name, props) => [
-                        `${value}pç (${props.payload.percentage}%)`, 
-                        'Total de Saídas'
-                      ]}
-                      labelFormatter={(label, payload) => {
-                        if (payload && payload.length > 0) {
-                          return payload[0].payload.nome;
-                        }
-                        return label;
-                      }}
+                      formatter={(value, name) => [`${value} itens`, name]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
-              </div>
-              
-              <div className="grid grid-cols-1 gap-2 text-xs">
-                {top5MeatUsageWithPercentage.map((item, index) => (
-                  <div key={index} className="flex items-center justify-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-sm flex-shrink-0"
-                      style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
-                    />
-                    <span className="text-center">
-                      {item.nome} ({item.percentage}%)
-                    </span>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <div className="text-center">
+                    <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum item cadastrado</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Movimentações dos Últimos 7 Dias */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="w-5 h-5 text-green-500" />
+              Movimentações (7 dias)
+            </CardTitle>
+            <CardDescription>
+              Entradas e saídas registradas nos últimos dias
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={movementAnalysis}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="day" />
+                  <YAxis />
+                  <Tooltip 
+                    formatter={(value, name) => [
+                      `${value} ${name === 'entradas' ? 'entradas' : 'saídas'}`, 
+                      name === 'entradas' ? 'Entradas' : 'Saídas'
+                    ]}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="entradas" 
+                    stackId="1"
+                    stroke="#10b981" 
+                    fill="#10b981" 
+                    fillOpacity={0.6}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="saidas" 
+                    stackId="1"
+                    stroke="#ef4444" 
+                    fill="#ef4444" 
+                    fillOpacity={0.6}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Seção de Insights e Alertas */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Top Itens Movimentados */}
+        <Card className="lg:col-span-2 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-orange-500" />
+              Itens Mais Movimentados
+            </CardTitle>
+            <CardDescription>
+              Produtos com maior quantidade de entradas e saídas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {topMovedItems.length > 0 ? (
+              <div className="space-y-4">
+                {topMovedItems.map((item: any, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{item.nome}</p>
+                        <p className="text-xs text-gray-600">
+                          {item.entradas} entradas • {item.saidas} saídas
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">
+                      {item.total} total
+                    </Badge>
                   </div>
                 ))}
               </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
-              <div className="text-center">
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
                 <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>Nenhuma movimentação de saída registrada</p>
+                <p>Nenhuma movimentação registrada</p>
               </div>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  ), [top5MeatUsageWithPercentage]);
+            )}
+          </CardContent>
+        </Card>
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-center md:justify-end">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <CheckCircle className="w-4 h-4 text-green-500" />
-          Sistema atualizado
-        </div>
-      </div>
-
-      {/* Gráficos com ordem diferente para mobile e desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {isMobile ? (
-          <>
-            {PieChartCard}
-            {BarChartCard}
-          </>
-        ) : (
-          <>
-            {BarChartCard}
-            {PieChartCard}
-          </>
-        )}
-      </div>
-
-      {/* Alertas */}
-      {alertsData.temAlertas && (
-        <Card className="shadow-md border-0 border-l-4 border-l-orange-500">
+        {/* Resumo por Categoria */}
+        <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-600">
-              <AlertTriangle className="w-5 h-5" />
-              Alertas de Baixo Estoque
+            <CardTitle className="flex items-center gap-2">
+              <Package className="w-5 h-5 text-indigo-500" />
+              Resumo de Categorias
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {alertsData.carnesBaixoEstoque.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-sm text-gray-700 mb-2">Câmara Fria - Carnes</h4>
-                  <div className="space-y-2">
-                    {alertsData.carnesBaixoEstoque.map((item, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
-                        <AlertTriangle className="w-4 h-4 text-red-500" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{item.nome}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Estoque atual: {item.quantidade}pç | Mínimo: {item.minimo || 5}pç
-                          </p>
-                        </div>
+              {categoryData.map((category, index) => {
+                const IconComponent = category.icon;
+                return (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: `${category.color}20` }}
+                      >
+                        <IconComponent 
+                          className="w-4 h-4" 
+                          style={{ color: category.color }}
+                        />
                       </div>
-                    ))}
+                      <div>
+                        <p className="text-sm font-medium">{category.name}</p>
+                        <p className="text-xs text-gray-600">{category.value} itens</p>
+                      </div>
+                    </div>
+                    <div 
+                      className="w-2 h-8 rounded-full"
+                      style={{ backgroundColor: category.color }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Alertas de Baixo Estoque */}
+      {stats.lowStockCount > 0 && (
+        <Card className="shadow-lg border-l-4 border-l-red-500 bg-red-50/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-700">
+              <AlertTriangle className="w-5 h-5" />
+              Alertas de Baixo Estoque ({stats.lowStockCount} itens)
+            </CardTitle>
+            <CardDescription className="text-red-600">
+              Itens que precisam de reposição urgente
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                ...camaraFriaItems.filter(item => item.quantidade <= (item.minimo || 5)).slice(0, 6),
+                ...estoqueSecoItems.filter(item => item.quantidade <= (item.minimo || 5)).slice(0, 3),
+                ...bebidasItems.filter(item => item.quantidade <= (item.minimo || 20)).slice(0, 3)
+              ].map((item, index) => (
+                <div key={index} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-red-200">
+                  <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{item.nome}</p>
+                    <p className="text-xs text-red-600">
+                      {item.quantidade} / {item.minimo || 5} mín.
+                    </p>
                   </div>
                 </div>
-              )}
-              
-              {alertsData.estoqueBaixo.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-sm text-gray-700 mb-2">Estoque Seco</h4>
-                  <div className="space-y-2">
-                    {alertsData.estoqueBaixo.map((item, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-                        <AlertTriangle className="w-4 h-4 text-orange-500" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{item.nome}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Estoque atual: {item.quantidade} | Mínimo: {item.minimo || 5}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              ))}
             </div>
           </CardContent>
         </Card>

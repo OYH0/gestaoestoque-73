@@ -150,27 +150,33 @@ export function BebidasItemCard({
               </div>
             ) : (
               <div className="flex gap-2">
-                {canModify && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onStartEdit(item.id, item.quantidade)}
-                      className="flex-1"
-                    >
-                      <Edit3 className="h-4 w-4 mr-1" />
-                      Editar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onDeleteItem(item.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    console.log('=== CLICOU EDITAR BEBIDA ===');
+                    console.log('Item ID:', item.id);
+                    console.log('canModify:', canModify);
+                    onStartEdit(item.id, item.quantidade);
+                  }}
+                  className="flex-1"
+                >
+                  <Edit3 className="h-4 w-4 mr-1" />
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    console.log('=== CLICOU DELETAR BEBIDA ===');
+                    console.log('Item ID:', item.id);
+                    console.log('canModify:', canModify);
+                    onDeleteItem(item.id);
+                  }}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             )}
           </AdminGuard>

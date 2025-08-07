@@ -27,6 +27,8 @@ export function BebidasAddDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('=== SUBMIT ADD BEBIDA ===');
+    console.log('Dados do formulário:', newItem);
     onAddNewItem();
   };
 

@@ -103,12 +103,16 @@ export default function Bebidas() {
     };
 
     try {
+      console.log('=== EXECUTANDO ADIÇÃO ===');
+      console.log('Item a ser adicionado:', itemWithUnidade);
+      
       toast({
         title: "Adicionando item...",
         description: "Aguarde enquanto o item é adicionado ao estoque.",
       });
       
       const addedItem = await addItem(itemWithUnidade);
+      console.log('=== ITEM ADICIONADO ===', addedItem);
       
       if (addedItem && Number(newItem.quantidade) > 0) {
         await addHistoricoItem({
@@ -255,7 +259,11 @@ export default function Bebidas() {
     console.log('ID:', id);
     
     try {
+      console.log('=== EXECUTANDO DELEÇÃO ===');
+      console.log('ID para deletar:', id);
+      
       const deletedItem = await deleteItem(id);
+      console.log('=== ITEM DELETADO ===', deletedItem);
       
       if (deletedItem && deletedItem.quantidade > 0) {
         await addHistoricoItem({

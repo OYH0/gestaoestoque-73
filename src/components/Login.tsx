@@ -32,82 +32,33 @@ export function Login() {
   };
 
   return (
-    <div className="relative flex items-center justify-center min-h-[100svh] bg-churrasco-cream overflow-hidden">
-      {/* Bg image churrasco - em toda a tela */}
-      <div
-        className="absolute inset-0 w-full h-full z-0"
-        aria-hidden="true"
-        style={{
-          backgroundImage: "url('/lovable-uploads/dec7bb0c-8b1d-4d76-bfb6-ecd835292847.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: "blur(6px)",
-        }}
-      />
-      {/* Overlay para escurecer e garantir contraste */}
-      <div className="absolute inset-0 bg-black/40 z-10" aria-hidden="true" />
-
-      {/* Conteúdo */}
-      <div className="relative z-20 flex w-full">
-        {/* Left side - Branding */}
-        <div className="hidden lg:flex lg:flex-1 items-center justify-center p-12">
-          <div className="max-w-md text-center space-y-8">
-            <div className="space-y-6">
-              <div className="mx-auto w-48 h-48 flex items-center justify-center">
-                <img 
-                  src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
-                  alt="Companhia do Churrasco Logo"
-                  className="w-full h-full object-contain drop-shadow-2xl"
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <p className="text-xl text-churrasco-brown font-medium">
-                Sistema de Gestão de Estoque
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                Controle inteligente e eficiente do seu estoque, 
-                desde a câmara fria até os descartáveis.
-              </p>
-            </div>
+    <div className="min-h-[100svh] bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center p-4">
+      {/* Conteúdo centralizado */}
+      <div className="w-full max-w-lg">
+        <div className="text-center mb-8">
+          {/* Logo centralizado */}
+          <div className="mx-auto w-24 h-24 mb-6 flex items-center justify-center">
+            <img 
+              src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
+              alt="Companhia do Churrasco Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
+          
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            Sistema de Gestão
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            {isSignUp ? 'Crie sua conta para começar' : 'Acesse sua conta'}
+          </p>
         </div>
-        
-        {/* Right side - Login form */}
-        <div className="flex-1 flex items-center justify-center p-4 lg:p-12 py-8">
-          <div className="w-full max-w-md">
-            <Card className="shadow-2xl rounded-3xl overflow-hidden border-0">
-              {/* Mobile logo (visible only on small screens) */}
-              <div className="lg:hidden pt-8 pb-6">
-                <div className="text-center space-y-4">
-                  <div className="mx-auto w-32 h-32 flex items-center justify-center mb-2">
-                    <img 
-                      src="/lovable-uploads/802f7946-9f7b-4f8d-a604-5110eaf96fd9.png" 
-                      alt="Companhia do Churrasco Logo"
-                      className="w-full h-full object-contain drop-shadow-lg"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <h2 className="text-xl font-bold text-foreground">
-                      {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Desktop header */}
-              <CardHeader className="text-center space-y-3 pb-6 pt-8 px-8 lg:block hidden">
-                <h2 className="text-2xl font-bold text-foreground">
-                  {isSignUp ? 'Criar conta' : 'Bem-vindo de volta'}
-                </h2>
-                <p className="text-muted-foreground">
-                  {isSignUp ? 'Preencha os dados para criar sua conta' : 'Faça login para acessar o sistema'}
-                </p>
-              </CardHeader>
+
+        <Card className="border-2 shadow-lg">
+          <CardHeader className="text-center pb-4">
+            <h2 className="text-xl font-semibold text-foreground">
+              {isSignUp ? 'Criar conta' : 'Entrar'}
+            </h2>
+          </CardHeader>
               
               <CardContent className="px-8 pb-8">
                 <form onSubmit={handleSubmit} className="space-y-5">
@@ -219,9 +170,7 @@ export function Login() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

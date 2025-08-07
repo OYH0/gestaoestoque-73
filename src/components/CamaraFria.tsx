@@ -11,7 +11,7 @@ import { CamaraFriaAddDialog } from '@/components/camara-fria/CamaraFriaAddDialo
 import { CamaraFriaHistoryDialog } from '@/components/camara-fria/CamaraFriaHistoryDialog';
 import { CamaraFriaAlerts } from '@/components/camara-fria/CamaraFriaAlerts';
 import { CamaraFriaHeader } from '@/components/camara-fria/CamaraFriaHeader';
-import { CamaraFriaHeader as CamaraFriaStats } from '@/components/camara-fria/CamaraFriaHeaderStats';
+import { CamaraFriaSimpleHeader } from '@/components/camara-fria/CamaraFriaSimpleHeader';
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 import { UnidadeSelector } from '@/components/UnidadeSelector';
@@ -431,12 +431,7 @@ export default function CamaraFria() {
         onUnidadeChange={setSelectedUnidade}
       />
 
-      <CamaraFriaStats
-        itemsCount={filteredItems.length}
-        lowStockCount={lowStockItems.length}
-        items={filteredItems}
-        totalWeight={filteredItems.reduce((acc, item) => acc + item.quantidade, 0)}
-      />
+      <CamaraFriaSimpleHeader />
 
       <CamaraFriaHeader
         itemsCount={filteredItems.length}

@@ -16,6 +16,7 @@ import { QRScanner } from '@/components/qr-scanner/QRScanner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { generateInventoryPDF } from '@/utils/pdfGenerator';
 import { UnidadeSelector } from '@/components/UnidadeSelector';
+import { DescartaveisSimpleHeader } from '@/components/descartaveis/DescartaveisSimpleHeader';
 import { AdminGuard } from '@/components/AdminGuard';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 
@@ -125,6 +126,8 @@ export default function Descartaveis() {
 
   return (
     <div className="space-y-6">
+      <DescartaveisSimpleHeader />
+      
       <div className={`flex flex-wrap gap-2 items-center ${isMobile ? 'justify-center' : ''}`}>
         <UnidadeSelector 
           selectedUnidade={selectedUnidade}

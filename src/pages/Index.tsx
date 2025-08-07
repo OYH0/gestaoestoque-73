@@ -102,7 +102,7 @@ const Index = () => {
               {/* Conteúdo principal integrado com animações */}
               <main 
                 {...handlers} 
-                className="flex-1 p-4 md:p-6 relative overflow-hidden touch-pan-y select-none bg-churrasco-cream"
+                className="flex-1 px-2 py-4 md:px-4 md:py-6 relative overflow-x-hidden overflow-y-auto touch-pan-y select-none bg-churrasco-cream"
                 style={{ 
                   touchAction: 'pan-y',
                   userSelect: 'none',
@@ -111,17 +111,19 @@ const Index = () => {
                   msUserSelect: 'none'
                 }}
               >
-                <PageTransition className="relative z-10 max-w-full h-full">
-                  <div className="h-full overflow-y-auto">
-                    <Routes>
-                      <Route path="/" element={<Dashboard />} />
-                      <Route path="/camara-fria" element={<CamaraFria />} />
-                      <Route path="/camara-refrigerada" element={<CamaraRefrigerada />} />
-                      <Route path="/estoque-seco" element={<EstoqueSeco />} />
-                      <Route path="/descartaveis" element={<Descartaveis />} />
-                      <Route path="/bebidas" element={<Bebidas />} />
-                      <Route path="/configuracoes" element={<UserManagement />} />
-                    </Routes>
+                <PageTransition className="relative z-10 w-full h-full">
+                  <div className="h-full w-full overflow-y-auto overflow-x-hidden">
+                    <div className="max-w-full w-full space-y-4">
+                      <Routes>
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/camara-fria" element={<CamaraFria />} />
+                        <Route path="/camara-refrigerada" element={<CamaraRefrigerada />} />
+                        <Route path="/estoque-seco" element={<EstoqueSeco />} />
+                        <Route path="/descartaveis" element={<Descartaveis />} />
+                        <Route path="/bebidas" element={<Bebidas />} />
+                        <Route path="/configuracoes" element={<UserManagement />} />
+                      </Routes>
+                    </div>
                   </div>
                 </PageTransition>
               </main>

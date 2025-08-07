@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { UnidadeSelector } from '@/components/UnidadeSelector';
 import { useCamaraRefrigeradaData } from '@/hooks/useCamaraRefrigeradaData';
@@ -195,6 +196,83 @@ export function CamaraRefrigerada() {
     }
   };
 
+  // Funções de ação em massa
+  const markAllAsReady = async () => {
+    if (!canModify) {
+      toast({
+        title: "Acesso negado",
+        description: "Apenas administradores e gerentes podem alterar status",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const descongelando = items.filter(item => item.status === 'descongelando');
+    
+    if (descongelando.length === 0) {
+      toast({
+        title: "Nenhum item para marcar",
+        description: "Não há itens descongelando para marcar como prontos",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await Promise.all(descongelando.map(item => updateItemStatus(item.id, 'pronto')));
+      
+      toast({
+        title: "Sucesso!",
+        description: `${descongelando.length} itens marcados como prontos`,
+      });
+    } catch (error) {
+      console.error('Erro ao marcar todos como prontos:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível marcar todos os itens como prontos",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeAllFromChamber = async () => {
+    if (!canModify) {
+      toast({
+        title: "Acesso negado",
+        description: "Apenas administradores e gerentes podem remover itens",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const readyItems = items.filter(item => item.status === 'pronto');
+    
+    if (readyItems.length === 0) {
+      toast({
+        title: "Nenhum item para remover",
+        description: "Não há itens prontos para remover da câmara",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await Promise.all(readyItems.map(item => removeFromChamber(item.id)));
+      
+      toast({
+        title: "Sucesso!",
+        description: `${readyItems.length} itens removidos da câmara`,
+      });
+    } catch (error) {
+      console.error('Erro ao remover todos da câmara:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover todos os itens da câmara",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -247,8 +325,34 @@ export function CamaraRefrigerada() {
       }>
         <section className="animate-fade-in"><CamaraRefrigeradaStatusCards items={items} /></section>
 
+        {/* Botões de ação em massa */}
+        {items.length > 0 && (
+          <section className="animate-fade-in">
+            <div className="flex gap-4 justify-center flex-wrap px-1">
+              <Button
+                onClick={markAllAsReady}
+                className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2"
+                disabled={!items.some(item => item.status === 'descongelando')}
+              >
+                <CheckCircle className="w-4 h-4" />
+                Marcar Todas como Prontas
+              </Button>
+              
+              <Button
+                onClick={removeAllFromChamber}
+                variant="outline"
+                className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 flex items-center gap-2"
+                disabled={!items.some(item => item.status === 'pronto')}
+              >
+                <LogOut className="w-4 h-4" />
+                Retirar Todas da Câmara
+              </Button>
+            </div>
+          </section>
+        )}
+
         <section className="animate-fade-in">
-          <div className="grid gap-4">
+          <div className="grid gap-6 px-1">
             {sortedItems.length === 0 ? (
               <CamaraRefrigeradaEmptyState />
             ) : (

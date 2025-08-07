@@ -399,21 +399,25 @@ export default function Bebidas() {
       )}
 
       {/* QR Code Generator Dialog */}
-      <QRCodeGenerator
-        isOpen={showQRGenerator}
-        onOpenChange={setShowQRGenerator}
-        qrCodes={qrCodes}
-        lastAddedItem={lastAddedItem}
-      />
+      {showQRGenerator && (
+        <QRCodeGenerator
+          qrCodes={qrCodes}
+          onClose={() => setShowQRGenerator(false)}
+          itemName={lastAddedItem?.nome || ''}
+          stockType="Bebidas"
+        />
+      )}
 
       {/* QR Scanner Dialog */}
-      <QRScanner
-        isOpen={showScanner}
-        onOpenChange={setShowScanner}
-        onItemFound={(item) => {
-          console.log('Item encontrado:', item);
-        }}
-      />
+      {showScanner && (
+        <QRScanner
+          onClose={() => setShowScanner(false)}
+          onSuccess={() => {
+            console.log('QR Code processado com sucesso');
+            setShowScanner(false);
+          }}
+        />
+      )}
     </div>
   );
 }

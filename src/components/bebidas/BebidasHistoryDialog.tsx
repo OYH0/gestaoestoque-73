@@ -19,9 +19,18 @@ interface BebidasHistoryDialogProps {
 export function BebidasHistoryDialog({ historico, loading = false }: BebidasHistoryDialogProps) {
   const isMobile = useIsMobile();
 
+  // Helper to safely parse possible date fields
+  const getItemDate = (item: any): Date | null => {
+    const ds = item?.data_operacao ?? item?.created_at ?? item?.date ?? item?.createdAt ?? null;
+    if (!ds) return null;
+    const dt = new Date(ds);
+    return isNaN(dt.getTime()) ? null : dt;
+  };
+
   if (loading) {
     return (
       <DialogContent className={`${isMobile ? 'w-[95%] max-w-sm' : 'sm:max-w-2xl'}`}>
+
         <DialogHeader>
           <DialogTitle className={isMobile ? "text-lg" : "text-xl"}>
             Histórico de Bebidas
@@ -96,9 +105,9 @@ export function BebidasHistoryDialog({ historico, loading = false }: BebidasHist
                   </div>
                   
                   <div className={`text-right text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                    {format(new Date(item.created_at), 'dd/MM/yy', { locale: ptBR })}
+                    {(() => { const d = getItemDate(item); return d ? format(d, 'dd/MM/yy', { locale: ptBR }) : '-'; })()}
                     <br />
-                    {format(new Date(item.created_at), 'HH:mm', { locale: ptBR })}
+                    {(() => { const d = getItemDate(item); return d ? format(d, 'HH:mm', { locale: ptBR }) : '-'; })()}
                   </div>
                 </div>
               </div>

@@ -25,8 +25,8 @@ export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte'
   const pendingRequestRef = useRef<boolean>(false);
   const lastInsertRef = useRef<{ item: string, quantidade: number, tipo: string, timestamp: number } | null>(null);
 
-  // Cache duration: 60 seconds for history
-  const CACHE_DURATION = 60 * 1000;
+  // Cache duration: 5 minutes for history (longer cache)
+  const CACHE_DURATION = 5 * 60 * 1000;
 
   const fetchHistorico = async () => {
     if (!user || pendingRequestRef.current) return;
@@ -44,8 +44,8 @@ export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte'
       return;
     }
 
-    // Throttle requests
-    if (now - lastFetchRef.current < 10000) {
+    // Throttle requests - 30 seconds for history
+    if (now - lastFetchRef.current < 30000) {
       console.log('Throttling camara refrigerada history fetch request');
       return;
     }
@@ -193,7 +193,7 @@ export function useCamaraRefrigeradaHistorico(selectedUnidade?: 'juazeiro_norte'
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       fetchHistorico();
-    }, 300);
+    }, 1000); // Increased debounce for mobile
 
     return () => clearTimeout(timeoutId);
   }, [user, selectedUnidade]);

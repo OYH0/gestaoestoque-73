@@ -59,6 +59,7 @@ export default function Bebidas() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [showAlerts, setShowAlerts] = useState(false);
   const isMobile = useIsMobile();
   
   const handleAddNewItem = async () => {
@@ -357,16 +358,22 @@ export default function Bebidas() {
           {filteredItems.length} tipos
         </Badge>
         {lowStockItems.length > 0 && (
-          <Badge variant="destructive" className="text-xs">
+          <Badge 
+            variant="destructive" 
+            className="text-xs cursor-pointer hover:bg-red-600"
+            onClick={() => setShowAlerts(!showAlerts)}
+          >
             {lowStockItems.length} baixo estoque
           </Badge>
         )}
       </div>
 
-      <BebidasAlerts 
-        lowStockItems={lowStockItems}
-        selectedUnidade={selectedUnidade}
-      />
+      {showAlerts && (
+        <BebidasAlerts 
+          lowStockItems={lowStockItems}
+          selectedUnidade={selectedUnidade}
+        />
+      )}
 
       <BebidasFilters
         searchTerm={searchTerm}

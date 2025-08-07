@@ -30,6 +30,7 @@ export default function EstoqueSeco() {
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
+  const [showAlerts, setShowAlerts] = useState(false);
   const [newItem, setNewItem] = useState({
     nome: '',
     quantidade: 0,
@@ -200,7 +201,11 @@ export default function EstoqueSeco() {
           {filteredItems.length} itens
         </Badge>
         {lowStockItems.length > 0 && (
-          <Badge variant="destructive" className="text-xs">
+          <Badge 
+            variant="destructive" 
+            className="text-xs cursor-pointer hover:bg-red-600"
+            onClick={() => setShowAlerts(!showAlerts)}
+          >
             {lowStockItems.length} baixo estoque
           </Badge>
         )}
@@ -214,7 +219,9 @@ export default function EstoqueSeco() {
         setSearchQuery={setSearchTerm}
       />
 
-      <EstoqueSecoAlerts itemsBaixoEstoque={lowStockItems} />
+      {showAlerts && (
+        <EstoqueSecoAlerts itemsBaixoEstoque={lowStockItems} />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map((item) => (

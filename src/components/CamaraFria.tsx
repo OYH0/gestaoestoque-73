@@ -72,6 +72,7 @@ export default function CamaraFria() {
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [showAlerts, setShowAlerts] = useState(false);
   const isMobile = useIsMobile();
   
   const handleAddNewItem = async () => {
@@ -493,7 +494,11 @@ export default function CamaraFria() {
           {filteredItems.length} tipos
         </Badge>
         {lowStockItems.length > 0 && (
-          <Badge variant="destructive" className="text-xs">
+          <Badge 
+            variant="destructive" 
+            className="text-xs cursor-pointer hover:bg-red-600"
+            onClick={() => setShowAlerts(!showAlerts)}
+          >
             {lowStockItems.length} baixo estoque
           </Badge>
         )}
@@ -507,7 +512,9 @@ export default function CamaraFria() {
         setSearchQuery={setSearchTerm}
       />
 
-      <CamaraFriaAlerts itemsBaixoEstoque={lowStockItems} />
+      {showAlerts && (
+        <CamaraFriaAlerts itemsBaixoEstoque={lowStockItems} />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map((item) => (

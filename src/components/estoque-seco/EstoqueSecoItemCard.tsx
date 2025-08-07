@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Minus, Plus, Check, X, Trash2, Package } from 'lucide-react';
+import { Minus, Plus, Check, X, Trash2, Edit3 } from 'lucide-react';
 import { EstoqueSecoItem } from '@/hooks/useEstoqueSecoData';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AdminGuard } from '@/components/AdminGuard';
@@ -56,108 +56,149 @@ export function EstoqueSecoItemCard({ item, onUpdateQuantity, onDelete }: Estoqu
 
   const isLowStock = item.minimo && item.quantidade <= item.minimo;
 
+  const getCategoryColor = (categoria: string) => {
+    const colors = {
+      'Grãos': 'bg-yellow-100 text-yellow-800',
+      'Temperos': 'bg-green-100 text-green-800',
+      'Conservas': 'bg-orange-100 text-orange-800',
+      'Farinhas': 'bg-amber-100 text-amber-800',
+      'Óleos': 'bg-emerald-100 text-emerald-800'
+    };
+    return colors[categoria as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  };
+
   return (
-    <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
-      <CardContent className="p-4">
-        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row items-center'} gap-4`}>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-yellow-600" />
-                <h3 className="font-semibold text-lg">{item.nome}</h3>
-              </div>
-              <Badge variant={isLowStock ? "destructive" : "secondary"}>
+    <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'ring-2 ring-red-300' : ''}`}>
+      <CardHeader className={`pb-3 ${isMobile ? 'p-4' : ''}`}>
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0 pr-2">
+            <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 truncate`}>
+              {item.nome}
+            </CardTitle>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <Badge 
+                variant="secondary" 
+                className={`${getCategoryColor(item.categoria)} text-xs`}
+              >
                 {item.categoria}
               </Badge>
+              {item.unidade_item && (
+                <Badge variant="outline" className="text-xs">
+                  {item.unidade_item === 'juazeiro_norte' ? 'JN' : 'FOR'}
+                </Badge>
+              )}
               {isLowStock && (
                 <Badge variant="destructive" className="text-xs">
                   Baixo Estoque
                 </Badge>
               )}
             </div>
-            
-            <div className="space-y-1 text-sm text-gray-600">
-              <p>Quantidade: <span className="font-medium">{item.quantidade}{item.unidade && item.unidade !== 'juazeiro_norte' ? ' ' + item.unidade : ''}</span></p>
-              <p>Mínimo: <span className="font-medium">{item.minimo || 5}{item.unidade && item.unidade !== 'juazeiro_norte' ? ' ' + item.unidade : ''}</span></p>
-              {item.unidade_item && getUnidadeLabel(item.unidade_item) && (
-                <p>Unidade: <span className="font-medium">{getUnidadeLabel(item.unidade_item)}</span></p>
-              )}
-              {item.data_validade && (
-                <p>Validade: <span className="font-medium">
-                  <b>{new Date(item.data_validade).toLocaleDateString('pt-BR')}</b>
-                </span></p>
-              )}
-              <p>Unidade: <span className="font-medium">{getUnidadeFisicaLabel(item.unidade)}</span></p>
-            </div>
+          </div>
+        </div>
+      </CardHeader>
 
-            {item.observacoes && (
-              <p className="text-sm text-gray-500 mt-2">{item.observacoes}</p>
-            )}
+      <CardContent className={`pt-0 ${isMobile ? 'p-4 pt-0' : ''}`}>
+        <div className="space-y-3">
+          {/* Quantidade atual */}
+          <div className="flex items-center justify-between">
+            <span className={`font-medium text-gray-700 ${isMobile ? 'text-sm' : ''}`}>
+              Quantidade:
+            </span>
+            <span className={`font-bold ${isLowStock ? 'text-red-600' : 'text-green-600'} ${isMobile ? 'text-sm' : ''}`}>
+              {isEditing ? editValue : item.quantidade} {item.unidade}
+            </span>
           </div>
 
+          {/* Estoque mínimo */}
+          {item.minimo && (
+            <div className="flex items-center justify-between">
+              <span className={`text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                Mínimo: {item.minimo} {item.unidade}
+              </span>
+            </div>
+          )}
+
+          {/* Data de validade */}
+          {item.data_validade && (
+            <div className="flex items-center justify-between">
+              <span className={`text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                Validade: {new Date(item.data_validade).toLocaleDateString('pt-BR')}
+              </span>
+            </div>
+          )}
+
+          {/* Controles de edição */}
           <AdminGuard fallback={
             <div className="text-center py-2">
-              <p className="text-sm text-gray-500">Apenas administradores podem editar</p>
+              <span className="text-xs text-gray-500">Apenas administradores podem editar</span>
             </div>
           }>
-            <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2 ${isMobile ? '' : 'min-w-fit'}`}>
-              {isEditing ? (
-                <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap justify-center">
+            {isEditing ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleUpdateEdit(-1)}
-                    disabled={editValue <= 0}
+                    disabled={editValue === 0}
                     className="h-8 w-8 p-0"
                   >
-                    <Minus className="w-4 h-4" />
+                    <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="font-medium min-w-12 text-center">{editValue}</span>
+                  <span className="mx-3 font-bold text-lg min-w-[3rem] text-center">
+                    {editValue}
+                  </span>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleUpdateEdit(1)}
                     className="h-8 w-8 p-0"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="h-4 w-4" />
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleConfirmChange}
-                    className="bg-green-500 hover:bg-green-600 h-8 w-8 p-0"
-                  >
-                    <Check className="w-4 h-4" />
-                  </Button>
+                </div>
+                
+                <div className="flex gap-2">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={handleCancelEdit}
-                    className="h-8 w-8 p-0"
+                    className="flex-1"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleConfirmChange}
+                    className="flex-1 bg-green-500 hover:bg-green-600"
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Confirmar
                   </Button>
                 </div>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={handleStartEdit}
-                    className={isMobile ? "w-full" : "min-w-20"}
-                  >
-                    Ajustar
-                  </Button>
-                  
-                  <Button
-                    variant="destructive"
-                    onClick={() => onDelete(item.id)}
-                    className={isMobile ? "w-full" : "min-w-24"}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Remover
-                  </Button>
-                </>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleStartEdit}
+                  className="flex-1"
+                >
+                  <Edit3 className="h-4 w-4 mr-1" />
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onDelete(item.id)}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </AdminGuard>
         </div>
       </CardContent>

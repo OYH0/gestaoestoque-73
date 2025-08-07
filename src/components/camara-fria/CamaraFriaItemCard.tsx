@@ -1,10 +1,11 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Minus, Plus, Check, X, Snowflake, Trash2, ArrowRight } from 'lucide-react';
+import { Minus, Plus, Check, X, Trash2, ArrowRight, Edit3 } from 'lucide-react';
 import { CamaraFriaItem } from '@/hooks/useCamaraFriaData';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { AdminGuard } from '@/components/AdminGuard';
 
 interface CamaraFriaItemCardProps {
   item: CamaraFriaItem;
@@ -53,142 +54,197 @@ export function CamaraFriaItemCard({
     }
   };
   
+  const getCategoryColor = (categoria: string) => {
+    const colors = {
+      'Carnes': 'bg-red-100 text-red-800',
+      'Peixes': 'bg-blue-100 text-blue-800',
+      'Aves': 'bg-yellow-100 text-yellow-800',
+      'Embutidos': 'bg-purple-100 text-purple-800',
+      'Congelados': 'bg-cyan-100 text-cyan-800'
+    };
+    return colors[categoria as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  };
+
   return (
-    <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'border-l-4 border-l-red-500 bg-red-50/30' : ''}`}>
-      <CardContent className="p-4">
-        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row items-center'} gap-4`}>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex items-center gap-2">
-                <Snowflake className="w-4 h-4 text-blue-500" />
-                <h3 className="font-semibold text-lg">{item.nome}</h3>
-              </div>
-              <Badge variant={isLowStock ? "destructive" : "secondary"}>
+    <Card className={`transition-all duration-200 hover:shadow-md ${isLowStock ? 'ring-2 ring-red-300' : ''}`}>
+      <CardHeader className={`pb-3 ${isMobile ? 'p-4' : ''}`}>
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0 pr-2">
+            <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 truncate`}>
+              {item.nome}
+            </CardTitle>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <Badge 
+                variant="secondary" 
+                className={`${getCategoryColor(item.categoria)} text-xs`}
+              >
                 {item.categoria}
               </Badge>
+              {item.unidade_item && (
+                <Badge variant="outline" className="text-xs">
+                  {item.unidade_item === 'juazeiro_norte' ? 'JN' : 'FOR'}
+                </Badge>
+              )}
               {isLowStock && (
                 <Badge variant="destructive" className="text-xs">
                   Baixo Estoque
                 </Badge>
               )}
             </div>
-            
-            <div className="space-y-1 text-sm text-gray-600">
-              <p>Quantidade: <span className="font-medium">{item.quantidade}</span></p>
-              <p>Mínimo: <span className="font-medium">{item.minimo || 5}</span></p>
-              {item.unidade_item && (
-                <p>Unidade: <span className="font-medium">{getUnidadeLabel(item.unidade_item)}</span></p>
-              )}
-            </div>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className={`pt-0 ${isMobile ? 'p-4 pt-0' : ''}`}>
+        <div className="space-y-3">
+          {/* Quantidade atual */}
+          <div className="flex items-center justify-between">
+            <span className={`font-medium text-gray-700 ${isMobile ? 'text-sm' : ''}`}>
+              Quantidade:
+            </span>
+            <span className={`font-bold ${isLowStock ? 'text-red-600' : 'text-green-600'} ${isMobile ? 'text-sm' : ''}`}>
+              {isEditing ? editValue : isThawing ? `${item.quantidade} (${thawValue} descongelando)` : item.quantidade} kg
+            </span>
           </div>
 
-          <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2 ${isMobile ? '' : 'min-w-fit'}`}>
+          {/* Estoque mínimo */}
+          <div className="flex items-center justify-between">
+            <span className={`text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              Mínimo: {item.minimo || 5} kg
+            </span>
+          </div>
+
+          {/* Controles de edição */}
+          <AdminGuard fallback={
+            <div className="text-center py-2">
+              <span className="text-xs text-gray-500">Apenas administradores podem editar</span>
+            </div>
+          }>
             {isEditing ? (
-              <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg flex-wrap justify-center">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onUpdateEdit(item.id, -1)}
-                  disabled={editValue <= 0}
-                  className="h-8 w-8 p-0"
-                >
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <span className="font-medium min-w-12 text-center">{editValue}</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onUpdateEdit(item.id, 1)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => onConfirmChange(item.id)}
-                  className="bg-green-500 hover:bg-green-600 h-8 w-8 p-0"
-                >
-                  <Check className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onCancelEdit(item.id)}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onUpdateEdit(item.id, -1)}
+                    disabled={editValue === 0}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="mx-3 font-bold text-lg min-w-[3rem] text-center">
+                    {editValue}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onUpdateEdit(item.id, 1)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onCancelEdit(item.id)}
+                    className="flex-1"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => onConfirmChange(item.id)}
+                    className="flex-1 bg-green-500 hover:bg-green-600"
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Confirmar
+                  </Button>
+                </div>
               </div>
             ) : isThawing ? (
-              <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-lg flex-wrap justify-center">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onUpdateThaw(item.id, -1)}
-                  disabled={thawValue <= 1}
-                  className="h-8 w-8 p-0"
-                >
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <span className="font-medium min-w-12 text-center">{thawValue}</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onUpdateThaw(item.id, 1)}
-                  disabled={thawValue >= item.quantidade}
-                  className="h-8 w-8 p-0"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => onConfirmThaw(item.id)}
-                  className="bg-orange-500 hover:bg-orange-600 h-8 w-8 p-0"
-                >
-                  <Check className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onCancelThaw(item.id)}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onUpdateThaw(item.id, -1)}
+                    disabled={thawValue <= 1}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="mx-3 font-bold text-lg min-w-[3rem] text-center text-orange-600">
+                    {thawValue}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onUpdateThaw(item.id, 1)}
+                    disabled={thawValue >= item.quantidade}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onCancelThaw(item.id)}
+                    className="flex-1"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => onConfirmThaw(item.id)}
+                    className="flex-1 bg-orange-500 hover:bg-orange-600"
+                  >
+                    <ArrowRight className="h-4 w-4 mr-1" />
+                    Descongelar
+                  </Button>
+                </div>
               </div>
             ) : (
-              <>
+              <div className="flex gap-2">
                 <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => onStartEdit(item.id, item.quantidade)}
-                  className={isMobile ? "w-full" : "min-w-20"}
+                  className="flex-1"
                 >
-                  Ajustar
+                  <Edit3 className="h-4 w-4 mr-1" />
+                  Editar
                 </Button>
-                
                 {item.quantidade > 0 && (
                   <Button
+                    size="sm"
                     onClick={() => onStartThaw(item.id, 1)}
-                    className={`bg-orange-500 hover:bg-orange-600 ${isMobile ? 'w-full' : 'min-w-28'}`}
+                    className="flex-1 bg-orange-500 hover:bg-orange-600"
                   >
-                    <ArrowRight className="w-4 h-4 mr-2" />
+                    <ArrowRight className="h-4 w-4 mr-1" />
                     Descongelar
                   </Button>
                 )}
-                
                 {onDelete && (
                   <Button
-                    variant="destructive"
+                    size="sm"
+                    variant="outline"
                     onClick={() => onDelete(item.id)}
-                    className={isMobile ? "w-full" : "min-w-24"}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Remover
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
-              </>
+              </div>
             )}
-          </div>
+          </AdminGuard>
         </div>
       </CardContent>
     </Card>

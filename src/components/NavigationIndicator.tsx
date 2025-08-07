@@ -28,15 +28,15 @@ export const NavigationIndicator: React.FC<NavigationIndicatorProps> = ({
   const labels = routeLabels.length > 0 ? routeLabels : defaultLabels;
 
   return (
-    <div className={cn('flex items-center justify-center gap-2 bg-churrasco-cream', className)}>
+    <div className={cn('flex items-center justify-center gap-3 bg-churrasco-cream relative z-30', className)}>
       {Array.from({ length: totalRoutes }, (_, index) => (
         <button
           key={index}
           onClick={() => onNavigate(index)}
           className={cn(
-            'w-2 h-2 rounded-full transition-all duration-200 hover:scale-125',
+            'w-3 h-3 rounded-full transition-all duration-300 hover:scale-125 relative z-30',
             currentIndex === index
-              ? 'bg-churrasco-red scale-125 shadow-sm'
+              ? 'bg-churrasco-red scale-125 shadow-lg ring-2 ring-churrasco-red/30'
               : 'bg-churrasco-brown/40 hover:bg-churrasco-brown/60'
           )}
           title={labels[index] || `Aba ${index + 1}`}

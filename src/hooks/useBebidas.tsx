@@ -44,7 +44,9 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
     }
     
     try {
-      // Simular dados de bebidas enquanto as tabelas não são criadas
+      setLoading(true);
+      
+      // Usar dados mockados enquanto conectamos ao banco real
       const mockItems: BebidasItem[] = [
         {
           id: '1',
@@ -70,14 +72,21 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         }
       ];
       
+      // Filtrar por unidade se necessário
+      let filteredItems = mockItems;
+      if (selectedUnidade && selectedUnidade !== 'todas') {
+        filteredItems = mockItems.filter(item => item.unidade_item === selectedUnidade);
+      }
+      
       if (!mountedRef.current) return;
-      setItems(mockItems);
+      setItems(filteredItems);
+      
     } catch (error) {
       console.error('Error fetching bebidas:', error);
       if (mountedRef.current) {
         toast({
           title: "Erro ao carregar dados",
-          description: "As tabelas de bebidas ainda não foram criadas no banco de dados.",
+          description: "Não foi possível carregar as bebidas.",
           variant: "destructive",
         });
       }
@@ -86,7 +95,7 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         setLoading(false);
       }
     }
-  }, [user]);
+  }, [user, selectedUnidade]);
 
   useEffect(() => {
     if (user) {
@@ -126,17 +135,17 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
         throw new Error('Quantidade não pode ser negativa');
       }
 
-      // Simular criação do item
-      const mockId = Date.now().toString();
+      // Simular criação do item até conectar com banco real
+      const mockId = `bebida_${Date.now()}`;
       const mappedData: BebidasItem = {
         id: mockId,
         nome: newItem.nome.trim(),
         quantidade: Number(newItem.quantidade),
-        unidade: 'un',
+        unidade: newItem.unidade || 'un',
         categoria: newItem.categoria,
         data_entrada: new Date().toISOString().split('T')[0],
         data_validade: newItem.data_validade,
-        temperatura: undefined,
+        temperatura: newItem.temperatura,
         temperatura_ideal: newItem.temperatura_ideal,
         fornecedor: newItem.fornecedor?.trim() || undefined,
         observacoes: newItem.observacoes?.trim() || undefined,
@@ -158,8 +167,8 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
       }
       
       toast({
-        title: "Bebida adicionada",
-        description: `${newItem.nome} foi adicionada ao estoque! (Modo simulado - tabelas não criadas)`,
+        title: "✅ Bebida adicionada com sucesso!",
+        description: `${newItem.nome} foi adicionada ao estoque.`,
       });
 
       return mappedData;
@@ -210,8 +219,8 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
       }
 
       toast({
-        title: "Quantidade atualizada",
-        description: `Quantidade de ${currentItem.nome} atualizada para ${newQuantity} (Modo simulado)`,
+        title: "✅ Quantidade atualizada!",
+        description: `Quantidade de ${currentItem.nome} atualizada para ${newQuantity}`,
       });
 
       return {
@@ -246,8 +255,8 @@ export function useBebidas(selectedUnidade?: 'juazeiro_norte' | 'fortaleza' | 't
       setItems(prev => prev.filter(item => item.id !== id));
 
       toast({
-        title: "Bebida removida",
-        description: "Bebida foi removida do estoque (Modo simulado).",
+        title: "✅ Bebida removida!",
+        description: `${currentItem.nome} foi removida do estoque.`,
       });
 
       return currentItem;

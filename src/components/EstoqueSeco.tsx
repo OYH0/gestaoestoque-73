@@ -11,6 +11,7 @@ import { EstoqueSecoAlerts } from '@/components/estoque-seco/EstoqueSecoAlerts';
 import { EstoqueSecoHistoryDialog } from '@/components/estoque-seco/EstoqueSecoHistoryDialog';
 import { EstoqueSecoAddDialog } from '@/components/estoque-seco/EstoqueSecoAddDialog';
 import { EstoqueSecoItemCard } from '@/components/estoque-seco/EstoqueSecoItemCard';
+import { EstoqueSecoHeader as EstoqueSecoStats } from '@/components/estoque-seco/EstoqueSecoHeaderStats';
 import { QRCodeGenerator } from '@/components/qr-scanner/QRCodeGenerator';
 import { QRScanner } from '@/components/qr-scanner/QRScanner';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -131,6 +132,13 @@ export default function EstoqueSeco() {
           onUnidadeChange={setSelectedUnidade}
         />
       </div>
+
+      <EstoqueSecoStats
+        itemsCount={filteredItems.length}
+        lowStockCount={lowStockItems.length}
+        items={filteredItems}
+        totalQuantity={filteredItems.reduce((acc, item) => acc + item.quantidade, 0)}
+      />
 
       <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
         <Button 

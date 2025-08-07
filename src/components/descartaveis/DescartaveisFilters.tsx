@@ -77,11 +77,13 @@ export function DescartaveisFilters({
             <SelectValue placeholder="Filtrar por categoria" />
           </SelectTrigger>
           <SelectContent className="z-50 bg-white border shadow-lg max-h-60 overflow-y-auto">
-            {categories.map((category) => (
+            {categories && categories.length > 0 ? categories.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}
               </SelectItem>
-            ))}
+            )) : (
+              <SelectItem value="Todos">Todos</SelectItem>
+            )}
           </SelectContent>
         </Select>
       </div>
